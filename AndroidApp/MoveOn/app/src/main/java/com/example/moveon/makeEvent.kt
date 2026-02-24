@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 
 
@@ -34,7 +36,7 @@ fun MakeEvent(data: EventData) {
                     modifier = Modifier.padding(5.dp).size(64.dp).clip(CircleShape))
 
                 Column(modifier = Modifier.padding(start = 10.dp).padding(top = 8.dp)) {
-                    Text(text = data.name)
+                    Text(text = data.name, fontStyle = FontStyle.Italic)
                     Text(text = data.description)
                 }
             }
