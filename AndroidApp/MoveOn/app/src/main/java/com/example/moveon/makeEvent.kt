@@ -19,12 +19,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 
 @Composable
 fun MakeEvent(data: EventData) {
-    Card(modifier = Modifier.fillMaxWidth().padding(5.dp).padding(top = 20.dp),
+    Card(modifier = Modifier.fillMaxWidth().padding(4.dp).padding(top = 15.dp),
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
@@ -33,11 +35,11 @@ fun MakeEvent(data: EventData) {
                 Image(painter = painterResource(id = data.imageId),
                     contentDescription = "image",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.padding(5.dp).size(64.dp).clip(CircleShape))
+                    modifier = Modifier.padding(5.dp).size(68.dp).clip(CircleShape))
 
                 Column(modifier = Modifier.padding(start = 10.dp).padding(top = 8.dp)) {
-                    Text(text = data.name, fontStyle = FontStyle.Italic)
-                    Text(text = data.description)
+                    Text(text = data.name, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(text = data.description, fontSize = 15.sp)
                 }
             }
 
