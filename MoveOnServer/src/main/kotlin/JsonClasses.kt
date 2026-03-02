@@ -116,9 +116,7 @@ data class ViewEventResponse(
 
 @Serializable
 data class ViewEventRequest(
-    val success: Boolean,
-    val reason: String? = null,
-    val eventId: Int? = null
+    val eventId: Int
 )
 
 @Serializable
@@ -134,7 +132,7 @@ data class JoinApplicationRequest(
 )
 
 @Serializable
-data class SomeoneWantsToJoin(
+data class SomeoneWantsToJoin( // do we need this?
     val eventId: Int,
     val userId: Int,
     val userName: String,
@@ -171,7 +169,7 @@ data class EventApplication(
 )
 
 @Serializable
-data class OpenApplicationListRequest(
+data class OpenApplicationListRequest( //Applications made by user
     val userId: Int,
     val hasEventPassed: Boolean? = null
 )
@@ -180,7 +178,7 @@ data class OpenApplicationListRequest(
 data class OpenApplicationListResponse(
     val success: Boolean,
     val reason: String? = null,
-    val notifications: List<Notification>? = null
+    val eventApplications: List<EventApplication>? = null
 )
 
 @Serializable
@@ -191,7 +189,7 @@ data class Person(
 )
 
 @Serializable
-data class GetPersonListResponse(
+data class GetPersonsListResponse(
     val success: Boolean,
     val reason: String? = null,
     val persons: List<Person>? = null
