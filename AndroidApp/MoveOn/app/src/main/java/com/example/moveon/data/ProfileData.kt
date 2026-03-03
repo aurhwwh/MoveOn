@@ -1,4 +1,4 @@
-package com.example.moveon
+package com.example.moveon.data
 
 class ProfileData (
     val imageId: Int,
