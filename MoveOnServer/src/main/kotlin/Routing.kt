@@ -63,7 +63,7 @@ fun Application.configureRouting() {
                     1,
                     "Ivan",
                     "Ivanov",
-                    Date(0),
+                    "01.01.2001",
                     "no description",
                     5.0,
                     0
@@ -94,16 +94,16 @@ fun Application.configureRouting() {
         }
         post("/view_filtered_events_list"){
             val request = runCatching { call.receive<ViewFilteredEventsListRequest>() }
-            .getOrElse {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ViewFilteredEventsListResponse(
-                        false,
-                        "Invalid JSON format for viewing filtered events"
+                .getOrElse {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        ViewFilteredEventsListResponse(
+                            false,
+                            "Invalid JSON format for viewing filtered events"
+                        )
                     )
-                )
-                return@post
-            }
+                    return@post
+                }
             call.respond(
                 HttpStatusCode.OK,
                 ViewFilteredEventsListResponse(true,
@@ -113,11 +113,11 @@ fun Application.configureRouting() {
                         "Lets play",
                         "Moscow",
                         "Volleyball",
-                        Date(0),
+                        "01.01.2001",
                         8,
                         6,
                         5.0
-                        )
+                    )
                     )
                 )
             )
@@ -133,7 +133,7 @@ fun Application.configureRouting() {
                             "Invalid JSON format for viewing event"
                         )
                     )
-                return@post
+                    return@post
                 }
             call.respond(
                 HttpStatusCode.OK,
@@ -144,27 +144,27 @@ fun Application.configureRouting() {
                     listOf(1),
                     "Lets play",
                     "",
-                    Time(0),
-                    Date(0),
+                    "23:59:59:59",
+                    "01.01.2001",
                     1,
                     8,
                     "Volleyball"
-                    )
+                )
             )
             return@post
         }
         post("/join_application"){
             val request = runCatching { call.receive<JoinApplicationRequest>() }
-            .getOrElse {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    JoinApplicationResponse(
-                        false,
-                    "Invalid JSON format for join application"
+                .getOrElse {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        JoinApplicationResponse(
+                            false,
+                            "Invalid JSON format for join application"
+                        )
                     )
-                )
-                return@post
-            }
+                    return@post
+                }
             call.respond(
                 HttpStatusCode.OK,
                 JoinApplicationResponse(
@@ -174,16 +174,16 @@ fun Application.configureRouting() {
         }
         post("/open_notifications"){
             val request = runCatching { call.receive<OpenNotificationsRequest>() }
-            .getOrElse {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    OpenNotificationsResponse(
-                        false,
-                        "Invalid JSON format for open notifications"
+                .getOrElse {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        OpenNotificationsResponse(
+                            false,
+                            "Invalid JSON format for open notifications"
+                        )
                     )
-                )
-                return@post
-            }
+                    return@post
+                }
             call.respond(
                 HttpStatusCode.OK,
                 OpenNotificationsResponse(
@@ -216,7 +216,7 @@ fun Application.configureRouting() {
                     listOf(EventApplication(
                         1,
                         "Lets play",
-                        Date(0),
+                        "01.01.2001",
                         8,
                         1
                     ))
@@ -226,16 +226,16 @@ fun Application.configureRouting() {
         }
         post("/get_persons_list") {
             val request = runCatching{ call.receive<GetPersonsListRequest>()}
-            .getOrElse {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    GetPersonsListResponse(
-                        false,
-                        "Invalid JSON format for getting persons"
+                .getOrElse {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        GetPersonsListResponse(
+                            false,
+                            "Invalid JSON format for getting persons"
+                        )
                     )
-                )
-                return@post
-            }
+                    return@post
+                }
             call.respond(
                 HttpStatusCode.OK,
                 GetPersonsListResponse(
@@ -254,16 +254,16 @@ fun Application.configureRouting() {
         }
         post("/rate"){
             val request = runCatching { call.receive<RateRequest>() }
-            .getOrElse {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    RateResponse(
-                        false,
-                        "Invalid JSON format for rate"
+                .getOrElse {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        RateResponse(
+                            false,
+                            "Invalid JSON format for rate"
+                        )
                     )
-                )
-                return@post
-            }
+                    return@post
+                }
             call.respond(
                 HttpStatusCode.OK,
                 RateResponse(
@@ -273,15 +273,15 @@ fun Application.configureRouting() {
         }
         post("/accept_or_decline_event_application"){
             val request = runCatching{call.receive<AcceptOrDeclineEventApplicationRequest>()}
-            .getOrElse {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    AcceptOrDeclineEventApplicationResponse(
-                        false,
-                        "Invalid JSON format for accepting or declining application"
+                .getOrElse {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        AcceptOrDeclineEventApplicationResponse(
+                            false,
+                            "Invalid JSON format for accepting or declining application"
+                        )
                     )
-                )
-            }
+                }
             call.respond(
                 HttpStatusCode.OK,
                 AcceptOrDeclineEventApplicationResponse(
