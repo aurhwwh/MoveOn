@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.moveon.data.ProfileData
 import com.example.moveon.ui.theme.MGreen
 
 
@@ -43,15 +45,25 @@ fun ProfileScreen(navController : NavController) {
         Box(
             //modifier = Modifier.weight(0.6f)
         ) {
-            MakeProfile(ProfileData(
-                R.drawable.img,
-                "Krosh",
-                "01.01.2000",
-                "Romashkovaya dolina",
-                4.6,
-                "In search of a Yozhik bla bla lba that's a description lalala there are some stats below")
+            MakeProfile(
+                ProfileData(
+                    R.drawable.img,
+                    "Krosh",
+                    "01.01.2000",
+                    "Romashkovaya dolina",
+                    4.6,
+                    "In search of a Yozhik bla bla lba that's a description lalala there are some stats below"
+                )
+            )
+            Icon(
+                imageVector = Icons.Filled.Edit,
+                contentDescription = null,
+                tint = Color.Black,
+                modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)
             )
         }
+
+
 
         Row(modifier = Modifier.fillMaxWidth().padding(8.dp).padding(top = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly)

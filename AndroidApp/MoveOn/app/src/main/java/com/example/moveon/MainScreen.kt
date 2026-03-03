@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.moveon.data.EventData
 import com.example.moveon.ui.theme.MGreen
 
 @Composable
@@ -97,8 +98,9 @@ fun MainScreen(navController : NavController) {
 
             LazyColumn(modifier = Modifier.weight(1f)) {
                 itemsIndexed(listOf(
-                    EventData(R.drawable.img,"Football","Let's play"),
-                    EventData(R.drawable.img,"Football","Let's play"))) {
+                    EventData(R.drawable.img, "Football", "Let's play", "14.03 14:03", "4/10"),
+                    EventData(R.drawable.img, "Football", "Let's play", "14.03 14:03", "4/10")
+                )) {
                         _, data ->
                     MakeEvent(data = data)
                 }

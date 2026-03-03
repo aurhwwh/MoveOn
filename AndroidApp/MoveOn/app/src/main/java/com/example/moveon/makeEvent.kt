@@ -1,6 +1,7 @@
 package com.example.moveon
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -22,6 +24,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moveon.data.EventData
 
 
 @Composable
@@ -38,8 +41,15 @@ fun MakeEvent(data: EventData) {
                     modifier = Modifier.padding(5.dp).size(68.dp).clip(CircleShape))
 
                 Column(modifier = Modifier.padding(start = 10.dp).padding(top = 8.dp)) {
-                    Text(text = data.name, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                    Text(text = data.description, fontSize = 15.sp)
+                    Text(text = data.name, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                    Text(text = data.description, fontSize = 18.sp)
+                    Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, end = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Text(text = data.time, fontSize = 15.sp)
+                        Text(text = data.amount_of_ppl, fontSize = 15.sp)
+                    }
                 }
             }
 
