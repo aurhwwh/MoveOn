@@ -1,8 +1,7 @@
 package MoveOn
 
 import kotlinx.serialization.Serializable
-import java.sql.Date
-import java.sql.Time
+
 
 @Serializable
 data class RegisterResponse(
@@ -14,7 +13,7 @@ data class RegisterResponse(
 data class RegisterRequest(
     val userName: String,
     val userSurname: String,
-    val dateOfBirth: Date,
+    val dateOfBirth: String,
     val email: String,
     val password: String,
     val gender: String
@@ -40,7 +39,7 @@ data class ViewProfileResponse(
     val photoId: Int? = null, //temporary
     val userName: String? = null,
     val userSurname: String? = null,
-    val dateOfBirth: Date? = null,
+    val dateOfBirth: String? = null,
     val description: String? = null,
     val rating: Double? = null,
     val friendsAmount: Int? = null
@@ -62,8 +61,8 @@ data class CreateEventResponse(
 data class CreateEventRequest(
     val title: String,
     val description: String,
-    val time: Time,
-    val date: Date,
+    val time: String,
+    val date: String,
     //val position: Position, пока непонятно в каком формате, есть какие-то встроенные
     val maxAmountOfPeople: Int,
     val sportType: String,
@@ -76,7 +75,7 @@ data class EventListElement(
     val title: String,
     val city: String,
     val sportType: String,
-    val date: Date,
+    val date: String,
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int,
     val creatorRating: Double,
@@ -94,7 +93,7 @@ data class ViewFilteredEventsListRequest(
     val title: String,
     val city: String,
     val sportType: String,
-    val date: Date,
+    val date: String,
     val maxAmountOfPeople: Int,
     val creatorRating: Double
 )
@@ -107,8 +106,8 @@ data class ViewEventResponse(
     val participantIds: List<Int>? = null,
     val title: String? = null,
     val description: String? = null,
-    val time: Time? = null,
-    val date: Date? = null,
+    val time: String? = null,
+    val date: String? = null,
     val currentAmountOfPeople: Int? = null,
     val maxAmountOfPeople: Int? = null,
     val sportType: String? = null
@@ -138,7 +137,7 @@ data class SomeoneWantsToJoin( // do we need this?
     val userName: String,
     val userSurname: String,
     val title: String,
-    val date: Date
+    val date: String
 )
 
 @Serializable
@@ -163,7 +162,7 @@ data class OpenNotificationsResponse(
 data class EventApplication(
     val eventId: Int,
     val title: String,
-    val date: Date,
+    val date: String,
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int
 )

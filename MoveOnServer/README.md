@@ -13,9 +13,11 @@ Here are some useful links to get you started:
 
 Here's a list of features included in this project:
 
-| Name                                       | Description                       |
-|--------------------------------------------|-----------------------------------|
-| [Routing](https://start.ktor.io/p/routing) | Provides a structured routing DSL |
+| Name                                                                   | Description                                                                        |
+|------------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| [Routing](https://start.ktor.io/p/routing)                             | Provides a structured routing DSL                                                  |
+| [Content Negotiation](https://start.ktor.io/p/content-negotiation)     | Provides automatic content conversion according to Content-Type and Accept headers |
+| [kotlinx.serialization](https://start.ktor.io/p/kotlinx-serialization) | Handles JSON serialization using kotlinx.serialization library                     |
 
 ## Building & Running
 
