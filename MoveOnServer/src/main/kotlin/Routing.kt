@@ -5,8 +5,6 @@ import io.ktor.server.application.*
 import io.ktor.server.request.receive
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.sql.Date
-import java.sql.Time
 
 
 fun Application.configureRouting() {
@@ -44,18 +42,15 @@ fun Application.configureRouting() {
             )
             return@post
         }
-        post("/view_user_profile"){
-            val request = runCatching { call.receive<ViewProfileRequest>() }
-                .getOrElse {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        ViewProfileResponse(
-                            false,
-                            "Invalid JSON format for viewing profile"
-                        )
-                    )
-                    return@post
-                }
+        get("/view_user_profile"){
+            val userId = call.request.queryParameters["userId"]?.toIntOrNull()
+            if (userId == null) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ViewProfileResponse(false, "userId is required")
+                )
+                return@get
+            }
             call.respond(
                 HttpStatusCode.OK,
                 ViewProfileResponse(true,
@@ -69,7 +64,7 @@ fun Application.configureRouting() {
                     0
                 )
             )
-            return@post
+            return@get
         }
         post("/create_event"){
             val request = runCatching { call.receive<CreateEventRequest>() }
@@ -92,7 +87,7 @@ fun Application.configureRouting() {
             )
             return@post
         }
-        post("/view_filtered_events_list"){
+        post("/view_filtered_events_list"){//todo: make get???
             val request = runCatching { call.receive<ViewFilteredEventsListRequest>() }
                 .getOrElse {
                     call.respond(
@@ -123,18 +118,14 @@ fun Application.configureRouting() {
             )
             return@post
         }
-        post("/view_event"){
-            val request = runCatching { call.receive<ViewEventRequest>() }
-                .getOrElse {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        ViewEventResponse(
-                            false,
-                            "Invalid JSON format for viewing event"
-                        )
+        get("/view_event"){
+            val eventId = call.request.queryParameters["eventId"]?.toIntOrNull()
+            if (eventId == null) {
+                call.respond(HttpStatusCode.BadRequest,
+                    ViewEventResponse(false, "eventId is required")
                     )
-                    return@post
-                }
+                return@get
+            }
             call.respond(
                 HttpStatusCode.OK,
                 ViewEventResponse(
@@ -151,7 +142,7 @@ fun Application.configureRouting() {
                     "Volleyball"
                 )
             )
-            return@post
+            return@get
         }
         post("/join_application"){
             val request = runCatching { call.receive<JoinApplicationRequest>() }
@@ -172,18 +163,15 @@ fun Application.configureRouting() {
                 )
             )
         }
-        post("/open_notifications"){
-            val request = runCatching { call.receive<OpenNotificationsRequest>() }
-                .getOrElse {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        OpenNotificationsResponse(
-                            false,
-                            "Invalid JSON format for open notifications"
-                        )
+        get("/open_notifications"){
+            val userId = call.request.queryParameters["userId"]?.toIntOrNull()
+            if (userId == null) {
+                call.respond(HttpStatusCode.BadRequest,
+                    OpenNotificationsResponse(false,
+                        "userId is required")
                     )
-                    return@post
-                }
+                return@get
+            }
             call.respond(
                 HttpStatusCode.OK,
                 OpenNotificationsResponse(
@@ -195,19 +183,18 @@ fun Application.configureRouting() {
                     ))
                 )
             )
-            return@post
+            return@get
         }
-        post("/open_application_list"){
-            val request = runCatching { call.receive<OpenApplicationListRequest>() }
-                .getOrElse {
-                    call.respond(HttpStatusCode.BadRequest,
-                        OpenApplicationListResponse(
-                            false,
-                            "Invalid JSON format for open application list"
-                        )
-                    )
-                    return@post
-                }
+        get("/open_application_list"){
+            val userId = call.request.queryParameters["userId"]?.toIntOrNull()
+            val hasEventPassed = call.request.queryParameters["hasEventPassed"]?.toBoolean()
+            if (userId == null) {
+                call.respond(HttpStatusCode.BadRequest,
+                    OpenNotificationsResponse(false,
+                        "userId is required")
+                )
+                return@get
+            }
             call.respond(
                 HttpStatusCode.OK,
                 OpenApplicationListResponse(
@@ -222,20 +209,15 @@ fun Application.configureRouting() {
                     ))
                 )
             )
-            return@post
+            return@get
         }
-        post("/get_persons_list") {
-            val request = runCatching{ call.receive<GetPersonsListRequest>()}
-                .getOrElse {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        GetPersonsListResponse(
-                            false,
-                            "Invalid JSON format for getting persons"
-                        )
-                    )
-                    return@post
-                }
+        get("/get_persons_list") {
+            val eventId = call.request.queryParameters["eventId"]?.toIntOrNull()
+            if (eventId == null) {
+                call.respond(HttpStatusCode.BadRequest,
+                    GetPersonsListResponse(false, "eventId is required")
+                )
+            }
             call.respond(
                 HttpStatusCode.OK,
                 GetPersonsListResponse(
@@ -250,7 +232,7 @@ fun Application.configureRouting() {
                     )
                 )
             )
-            return@post
+            return@get
         }
         post("/rate"){
             val request = runCatching { call.receive<RateRequest>() }

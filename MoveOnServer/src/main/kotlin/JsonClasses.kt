@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class RegisterResponse(
     val success: Boolean,
-    val reason: String? = null
+    val errorMessage: String? = null
 )
 
 @Serializable
@@ -22,7 +22,7 @@ data class RegisterRequest(
 @Serializable
 data class LoginResponse(
     val success: Boolean,
-    val reason: String? = null,
+    val errorMessage: String? = null,
     val userId: Int? = null
 )
 
@@ -35,7 +35,7 @@ data class LoginRequest(
 @Serializable
 data class ViewProfileResponse(
     val success: Boolean,
-    val reason: String? = null,
+    val errorMessage: String? = null,
     val photoId: Int? = null, //temporary
     val userName: String? = null,
     val userSurname: String? = null,
@@ -45,15 +45,15 @@ data class ViewProfileResponse(
     val friendsAmount: Int? = null
 )
 
-@Serializable
-data class ViewProfileRequest(
-    val userId: Int
-)
+//@Serializable
+//data class ViewProfileRequest(
+//    val userId: Int
+//)
 
 @Serializable
 data class CreateEventResponse(
     val success: Boolean,
-    val reason: String? = null,
+    val errorMessage: String? = null,
     val eventId: Int? = null
 )
 
@@ -84,7 +84,7 @@ data class EventListElement(
 @Serializable
 data class ViewFilteredEventsListResponse(
     val success: Boolean,
-    val reason: String? = null,
+    val errorMessage: String? = null,
     val events: List<EventListElement>? = null
 )
 
@@ -101,7 +101,7 @@ data class ViewFilteredEventsListRequest(
 @Serializable
 data class ViewEventResponse(
     val success: Boolean,
-    val reason: String? = null,
+    val errorMessage: String? = null,
     val creatorId: Int? = null,
     val participantIds: List<Int>? = null,
     val title: String? = null,
@@ -113,15 +113,15 @@ data class ViewEventResponse(
     val sportType: String? = null
 )
 
-@Serializable
-data class ViewEventRequest(
-    val eventId: Int
-)
+//@Serializable
+//data class ViewEventRequest(
+//    val eventId: Int
+//)
 
 @Serializable
 data class JoinApplicationResponse(
     val success: Boolean,
-    val reason: String? = null
+    val errorMessage: String? = null
 )
 
 @Serializable
@@ -146,15 +146,15 @@ data class Notification( //todo: add more fields
     val otherUserId: Int? = null,
 )
 
-@Serializable
-data class OpenNotificationsRequest(
-    val userId: Int
-)
+//@Serializable
+//data class OpenNotificationsRequest(
+//    val userId: Int
+//)
 
 @Serializable
 data class OpenNotificationsResponse(
     val success: Boolean,
-    val reason: String? = null,
+    val errorMessage: String? = null,
     val notifications: List<Notification>? = null
 )
 
@@ -167,16 +167,16 @@ data class EventApplication(
     val currentAmountOfPeople: Int
 )
 
-@Serializable
-data class OpenApplicationListRequest( //Applications made by user
-    val userId: Int,
-    val hasEventPassed: Boolean? = null
-)
+//@Serializable
+//data class OpenApplicationListRequest( //Applications made by user
+//    val userId: Int,
+//    val hasEventPassed: Boolean? = null
+//)
 
 @Serializable
 data class OpenApplicationListResponse(
     val success: Boolean,
-    val reason: String? = null,
+    val errorMessage: String? = null,
     val eventApplications: List<EventApplication>? = null
 )
 
@@ -190,14 +190,14 @@ data class Person(
 @Serializable
 data class GetPersonsListResponse(
     val success: Boolean,
-    val reason: String? = null,
+    val errorMessage: String? = null,
     val persons: List<Person>? = null
 )
 
-@Serializable
-data class GetPersonsListRequest(
-    val eventId: Int? = null
-)
+//@Serializable
+//data class GetPersonsListRequest(
+//    val eventId: Int? = null
+//)
 
 @Serializable
 data class RateRequest(
@@ -211,13 +211,13 @@ data class RateRequest(
 @Serializable
 data class RateResponse(
     val success: Boolean,
-    val reason: String? = null
+    val errorMessage: String? = null
 )
 
 @Serializable
 data class AcceptOrDeclineEventApplicationResponse(
     val success: Boolean,
-    val reason: String? = null
+    val errorMessage: String? = null
 )
 
 @Serializable
