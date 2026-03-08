@@ -1,7 +1,5 @@
-package com.example.moveon
+package com.example.moveon.ui.profile
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.AddReaction
@@ -22,48 +19,52 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.moveon.client.handlers.ProfileHandler
 import com.example.moveon.data.ProfileData
-import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.ui.common.BottomBar
+import com.example.moveon.ui.common.TopBar
 
 
 @Composable
-fun ProfileScreen(navController : NavController) {
+fun ProfileScreen(navController : NavController, profileHandler: ProfileHandler) {
     Column(modifier = Modifier.fillMaxSize()) {
         TopBar(city = "Saint-Petersburg")
 
-        Box(
-            //modifier = Modifier.weight(0.6f)
-        ) {
-            MakeProfile(
-                ProfileData(
-                    R.drawable.img,
-                    "Krosh",
-                    "01.01.2000",
-                    "Romashkovaya dolina",
-                    4.6,
-                    "In search of a Yozhik bla bla lba that's a description lalala there are some stats below"
-                )
-            )
-            Icon(
-                imageVector = Icons.Filled.Edit,
-                contentDescription = null,
-                tint = Color.Black,
-                modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)
-            )
+        var profile by remember { mutableStateOf<ProfileData?>(null) }
+
+        LaunchedEffect(Unit) {
+            try {
+                profile = profileHandler.getProfile(1)
+            } catch (e : Exception) {
+                e.printStackTrace()
+            }
         }
 
-
+        profile?.let {
+            Box(
+                //modifier = Modifier.weight(0.6f)
+            ) {
+                MakeProfile(it)
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = null,
+                    tint = Color.Black,
+                    modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)
+                )
+            }
+        }
 
         Row(modifier = Modifier.fillMaxWidth().padding(8.dp).padding(top = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly)

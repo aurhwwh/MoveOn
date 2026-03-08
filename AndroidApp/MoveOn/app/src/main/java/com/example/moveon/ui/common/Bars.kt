@@ -1,4 +1,4 @@
-package com.example.moveon
+package com.example.moveon.ui.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
