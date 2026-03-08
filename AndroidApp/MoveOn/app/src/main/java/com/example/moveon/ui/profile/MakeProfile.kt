@@ -1,4 +1,4 @@
-package com.example.moveon
+package com.example.moveon.ui.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -6,11 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +23,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
 import com.example.moveon.data.ProfileData
 
 
@@ -33,13 +31,13 @@ fun MakeProfile(data: ProfileData) {
     Box(modifier = Modifier.padding(8.dp)) {
         Column() {
             Row() {
-                Image(painter = painterResource(id = data.imageId),
+                Image(painter = painterResource(id = data.photoId),
                     contentDescription = "image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.padding(5.dp).size(100.dp).clip(CircleShape))
 
                 Column(modifier = Modifier.padding(start = 10.dp).padding(top = 8.dp)) {
-                    Text(text = data.name,
+                    Text(text = data.name + " " + data.surname,
                         fontSize = 28.sp,
                         modifier = Modifier.padding(2.dp))
                     Text(text = data.birth,
@@ -89,7 +87,7 @@ fun DrawStars(rating: Double) {
                         contentDescription = null,
                         tint = Color.Yellow,
                         modifier = Modifier.clip(
-                            androidx.compose.foundation.shape.GenericShape { size, _ ->
+                            GenericShape { size, _ ->
                                 addRect(
                                     Rect(
                                         0f,
