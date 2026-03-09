@@ -87,18 +87,13 @@ fun Application.configureRouting() {
             )
             return@post
         }
-        post("/view_filtered_events_list"){//todo: make get???
-            val request = runCatching { call.receive<ViewFilteredEventsListRequest>() }
-                .getOrElse {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        ViewFilteredEventsListResponse(
-                            false,
-                            "Invalid JSON format for viewing filtered events"
-                        )
-                    )
-                    return@post
-                }
+        get("/view_filtered_events_list"){
+            val title = call.request.queryParameters["title"].toString()
+            val city = call.request.queryParameters["city"].toString()
+            val sportType = call.request.queryParameters["sportType"].toString()
+            val datetime = call.request.queryParameters["datetime"]?.toLong()
+            val maxAmountOfPeople = call.request.queryParameters["maxAmountOfPeople"]?.toInt()
+            val creatorRating = call.request.queryParameters["creatorRating"]?.toDouble()
             call.respond(
                 HttpStatusCode.OK,
                 ViewFilteredEventsListResponse(true,
@@ -116,7 +111,7 @@ fun Application.configureRouting() {
                     )
                 )
             )
-            return@post
+            return@get
         }
         get("/view_event"){
             val eventId = call.request.queryParameters["eventId"]?.toIntOrNull()
