@@ -1,7 +1,20 @@
 package MoveOn
 
+import com.sun.org.apache.xpath.internal.compiler.Token
 import kotlinx.serialization.Serializable
 
+
+@Serializable
+data class RefreshRequest(
+    val oldRefreshToken: String
+)
+@Serializable
+data class RefreshResponse(
+    val success: Boolean,
+    val errorMessage: String? = null,
+    val newRefreshToken: String? = null,
+    val newAccessToken: String? = null
+)
 
 @Serializable
 data class RegisterResponse(
@@ -23,7 +36,8 @@ data class RegisterRequest(
 data class LoginResponse(
     val success: Boolean,
     val errorMessage: String? = null,
-    val userId: Int? = null
+    val accessToken: String? = null,
+    val refreshToken: String? = null
 )
 
 @Serializable
@@ -65,8 +79,7 @@ data class CreateEventRequest(
     val date: String,
     //val position: Position, пока непонятно в каком формате, есть какие-то встроенные
     val maxAmountOfPeople: Int,
-    val sportType: String,
-    val creatorId: Int,
+    val sportType: String
 )
 
 @Serializable
@@ -128,11 +141,10 @@ data class JoinApplicationResponse(
 
 @Serializable
 data class JoinApplicationRequest(
-    val eventId: Int,
-    val userId: Int
+    val eventId: Int
 )
 
-@Serializable
+/*@Serializable
 data class SomeoneWantsToJoin( // do we need this?
     val eventId: Int,
     val userId: Int,
@@ -140,7 +152,7 @@ data class SomeoneWantsToJoin( // do we need this?
     val userSurname: String,
     val title: String,
     val date: String
-)
+)*/
 
 @Serializable
 data class Notification( //todo: add more fields
@@ -203,7 +215,6 @@ data class GetPersonsListResponse(
 
 @Serializable
 data class RateRequest(
-    val userWhoRatesId: Int,
     val ratedUserId: Int,
     val rating: Double,
     val eventId: Int?=null,
