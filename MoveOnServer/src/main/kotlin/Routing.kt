@@ -88,9 +88,9 @@ fun Application.configureRouting() {
             return@post
         }
         get("/view_filtered_events_list"){
-            val title = call.request.queryParameters["title"].toString()
-            val city = call.request.queryParameters["city"].toString()
-            val sportType = call.request.queryParameters["sportType"].toString()
+            val title = call.request.queryParameters["title"]
+            val city = call.request.queryParameters["city"]
+            val sportType = call.request.queryParameters["sportType"]
             val datetime = call.request.queryParameters["datetime"]?.toLong()
             val maxAmountOfPeople = call.request.queryParameters["maxAmountOfPeople"]?.toInt()
             val creatorRating = call.request.queryParameters["creatorRating"]?.toDouble()
