@@ -71,7 +71,7 @@ data class CreateEventRequest(
 
 @Serializable
 data class EventListElement(
-    val eventId: Int?,
+    val eventId: Int,
     val title: String,
     val city: String,
     val sportType: String,
@@ -79,6 +79,8 @@ data class EventListElement(
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int,
     val creatorRating: Double,
+    val photoId: Int,
+    val description: String
 )
 
 @Serializable
@@ -88,7 +90,7 @@ data class ViewFilteredEventsListResponse(
     val events: List<EventListElement>? = null
 )
 
-@Serializable
+/*@Serializable
 data class ViewFilteredEventsListRequest(
     val title: String,
     val city: String,
@@ -96,7 +98,7 @@ data class ViewFilteredEventsListRequest(
     val date: String,
     val maxAmountOfPeople: Int,
     val creatorRating: Double
-)
+)*/
 
 @Serializable
 data class ViewEventResponse(
