@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
@@ -24,11 +23,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.paging.compose.collectAsLazyPagingItems
+
 import com.example.moveon.R
-import com.example.moveon.data.EventData
 import com.example.moveon.ui.common.BottomBar
 import com.example.moveon.ui.common.TopBar
+import com.example.moveon.viewModel.EventsViewModel
 
 @Composable
 fun MainScreen(navController : NavController) {
@@ -77,13 +79,15 @@ fun MainScreen(navController : NavController) {
                 }
             }
 
+            val viewModel: EventsViewModel = viewModel()
+            val events = viewModel.eventsFlow.collectAsLazyPagingItems()
+
             LazyColumn(modifier = Modifier.weight(1f)) {
-                itemsIndexed(listOf(
-                    EventData(R.drawable.img, "Football", "Let's play", "14.03 14:03", "4/10"),
-                    EventData(R.drawable.img, "Football", "Let's play", "14.03 14:03", "4/10")
-                )) {
-                        _, data ->
-                    MakeEvent(data = data)
+                items(
+                    count = events.itemCount,
+                    key = {index -> events[index]?.eventId ?: index}
+                ) { index ->
+                    events[index]?.let { MakeEvent(data = it) }
                 }
             }
 
