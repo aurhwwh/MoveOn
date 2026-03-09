@@ -3,7 +3,7 @@ package com.example.moveon.client.jsonClasses
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ViewProfileResponse(
+data class ViewProfile(
     val success: Boolean,
     val errorMessage: String? = null,
     val photoId: Int? = null, //temporary

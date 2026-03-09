@@ -22,7 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moveon.data.EventData
+import com.example.moveon.client.jsonClasses.EventData
 
 
 @Composable
@@ -39,14 +39,14 @@ fun MakeEvent(data: EventData) {
                     modifier = Modifier.padding(5.dp).size(68.dp).clip(CircleShape))
 
                 Column(modifier = Modifier.padding(start = 10.dp).padding(top = 8.dp)) {
-                    Text(text = data.name, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                    Text(text = data.title, fontWeight = FontWeight.Bold, fontSize = 24.sp)
                     Text(text = data.description, fontSize = 18.sp)
                     Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, end = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Bottom
                     ) {
-                        Text(text = data.time, fontSize = 15.sp)
-                        Text(text = data.amount_of_ppl, fontSize = 15.sp)
+                        Text(text = data.date, fontSize = 15.sp)
+                        Text(text = data.date, fontSize = 15.sp)
                     }
                 }
             }
