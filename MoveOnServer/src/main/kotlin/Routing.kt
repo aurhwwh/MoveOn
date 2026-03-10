@@ -224,6 +224,7 @@ fun Application.configureRouting() {
                         OpenNotificationsResponse(false,
                             "Limit and page are required")
                     )
+                    return@get
                 }
                 call.respond(
                     HttpStatusCode.OK,
@@ -248,6 +249,7 @@ fun Application.configureRouting() {
                         OpenApplicationListResponse(false,
                             "Limit and page are required")
                     )
+                    return@get
                 }
                 call.respond(
                     HttpStatusCode.OK,
