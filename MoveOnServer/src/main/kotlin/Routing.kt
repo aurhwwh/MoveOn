@@ -92,6 +92,16 @@ fun Application.configureRouting() {
             val datetime = call.request.queryParameters["datetime"]?.toLong()
             val maxAmountOfPeople = call.request.queryParameters["maxAmountOfPeople"]?.toInt()
             val creatorRating = call.request.queryParameters["creatorRating"]?.toDouble()
+            val page = call.request.queryParameters["page"]?.toInt()
+            val limit = call.request.queryParameters["limit"]?.toInt()
+            if (page==null || limit == null){
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ViewProfileResponse(false,
+                        "Limit and page are required")
+                )
+                return@get
+            }
             call.respond(
                 HttpStatusCode.OK,
                 ViewFilteredEventsListResponse(true,
@@ -206,6 +216,15 @@ fun Application.configureRouting() {
             get("/open_notifications"){
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal!!.payload.getClaim("userId").asInt()
+                val page = call.request.queryParameters["page"]?.toInt()
+                val limit = call.request.queryParameters["limit"]?.toInt()
+                if (page==null || limit == null){
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        OpenNotificationsResponse(false,
+                            "Limit and page are required")
+                    )
+                }
                 call.respond(
                     HttpStatusCode.OK,
                     OpenNotificationsResponse(
@@ -221,6 +240,15 @@ fun Application.configureRouting() {
             }
             get("/open_application_list"){
                 val hasEventPassed = call.request.queryParameters["hasEventPassed"]?.toBoolean()
+                val page = call.request.queryParameters["page"]?.toInt()
+                val limit = call.request.queryParameters["limit"]?.toInt()
+                if (page==null || limit == null){
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        OpenApplicationListResponse(false,
+                            "Limit and page are required")
+                    )
+                }
                 call.respond(
                     HttpStatusCode.OK,
                     OpenApplicationListResponse(
