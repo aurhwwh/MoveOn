@@ -21,5 +21,11 @@ object Client {
                 }
             )
         }
+
+        install(HttpTimeout) {
+            requestTimeoutMillis = 15000
+            connectTimeoutMillis = 15000
+            socketTimeoutMillis = 15000
+        }
     }
 }

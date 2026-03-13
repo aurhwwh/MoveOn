@@ -52,7 +52,9 @@ class EventsViewModel () : ViewModel() {
     )
 
     val eventsFlow = Pager(
-        config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+        config = PagingConfig(pageSize = 20,
+            /* initialLoadSize = pageSize * 3 по дефолту (вроде),*/
+            enablePlaceholders = false),
         pagingSourceFactory = {EventsPagingSource(handler, defaultFilters)}
     ).flow.cachedIn(viewModelScope)
 }
