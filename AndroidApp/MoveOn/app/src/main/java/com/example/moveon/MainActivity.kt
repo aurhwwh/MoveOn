@@ -1,4 +1,4 @@
-package com.example.moveon.ui
+package com.example.moveon
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
