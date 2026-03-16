@@ -1,5 +1,6 @@
 package MoveOn
 
+import MoveOn.database.Database
 import io.ktor.server.application.*
 
 fun main(args: Array<String>) {
@@ -7,6 +8,7 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+    Database
     configureSerialization()
     configureSecurity()
     configureRouting()
