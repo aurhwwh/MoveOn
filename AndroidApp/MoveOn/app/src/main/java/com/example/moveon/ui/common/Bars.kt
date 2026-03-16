@@ -56,22 +56,7 @@ fun TopBar(
                 fontSize = 30.sp,
             )
 
-            Row(verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable {})
-            {
-                Icon(
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = "City",
-                    tint = Color.White,
-                    modifier = Modifier.size(25.dp)
-                )
-                Text(text = "Saint-Petersburg",
-                    color = Color.White,
-                    fontFamily = FontFamily.SansSerif,
-                    fontSize = 22.sp
-                    //modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally)
-                )
-            }
+            SelectCity()
         }
     }
 }
