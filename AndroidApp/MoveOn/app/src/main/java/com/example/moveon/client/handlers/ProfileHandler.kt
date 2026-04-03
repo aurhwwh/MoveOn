@@ -15,7 +15,7 @@ class ProfileHandler (private val api : ProfileApi) {
             photoId = response.photoId ?: -1,
             name = response.userName ?: "",
             surname = response.userSurname ?: "",
-            birth = response.dateOfBirth ?: "",
+            birth = response.dateOfBirth ?: throw Exception("Date of birth is missing"),
             city = response.city ?: "",
             description = response.description ?: "",
             rating = response.rating ?: 0.0

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ChatBubble
@@ -41,7 +42,7 @@ fun TopBar(
     Box(modifier = Modifier
         .fillMaxWidth()
         .background(MGreen)
-        .padding(WindowInsets.statusBars.asPaddingValues())
+        .windowInsetsPadding(WindowInsets.statusBars)
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(5.dp),
             horizontalArrangement = Arrangement.SpaceBetween,

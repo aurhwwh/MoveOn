@@ -15,8 +15,10 @@ import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,71 +49,78 @@ fun ProfileScreen(navController : NavController, profileHandler: ProfileHandler)
             bottomBar = { BottomBar(navController) }
         ) { padding ->
             var profile by remember { mutableStateOf<ProfileData?>(null) }
+            var isLoading by remember { mutableStateOf(true) }
+            var error by remember { mutableStateOf<String?>(null) }
 
             LaunchedEffect(Unit) {
                 try {
                     profile = profileHandler.getProfile(1)
                 } catch (e : Exception) {
                     e.printStackTrace()
+                } finally {
+                    isLoading = false;
                 }
             }
 
-            profile?.let {
-                Box(
-                    //modifier = Modifier.weight(0.6f)
-                ) {
-                    MakeProfile(it)
+            Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    when {
+                        isLoading -> Text("Loading")
+                        error != null -> Text(error!!)
+                        profile != null -> MakeProfile(profile!!)
+                    }
+                    IconButton(onClick = { navController.navigate("editProfile") }) {
+                        Icon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = null,
+                            tint = Color.Black,
+                            modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)
+                        )
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth().padding(8.dp).padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly)
+                {
                     Icon(
-                        imageVector = Icons.Filled.Edit,
+                        imageVector = Icons.Filled.Accessibility,
                         contentDescription = null,
                         tint = Color.Black,
-                        modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)
+                        modifier = Modifier.size(30.dp)
+                    )
+                    Icon(
+                        imageVector = Icons.Filled.AddReaction,
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(30.dp)
+                    )
+                    Icon(
+                        imageVector = Icons.Filled.Build,
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(30.dp)
+                    )
+                    Icon(
+                        imageVector = Icons.Filled.AutoAwesome,
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(30.dp)
                     )
                 }
-            }
 
-            Row(modifier = Modifier.fillMaxWidth().padding(8.dp).padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly)
-            {
-                Icon(
-                    imageVector = Icons.Filled.Accessibility,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.size(30.dp)
-                )
-                Icon(
-                    imageVector = Icons.Filled.AddReaction,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.size(30.dp)
-                )
-                Icon(
-                    imageVector = Icons.Filled.Build,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.size(30.dp)
-                )
-                Icon(
-                    imageVector = Icons.Filled.AutoAwesome,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.size(30.dp)
-                )
-            }
-
-            Row(modifier = Modifier.weight(1f).padding(start = 12.dp, top = 24.dp).clickable{})
-            {
-                Text(text = "My Events",
-                    color = Color.Black,
-                    fontFamily = FontFamily.SansSerif,
-                    fontSize = 22.sp
-                )
-                Icon(
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = "My Events",
-                    tint = Color.Black,
-                    modifier = Modifier.size(25.dp)
-                )
+                Row(modifier = Modifier.weight(1f).padding(start = 12.dp, top = 24.dp).clickable{})
+                {
+                    Text(text = "My Events",
+                        color = Color.Black,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 22.sp
+                    )
+                    Icon(
+                        imageVector = Icons.Filled.KeyboardArrowDown,
+                        contentDescription = "My Events",
+                        tint = Color.Black,
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
             }
         }
     }
