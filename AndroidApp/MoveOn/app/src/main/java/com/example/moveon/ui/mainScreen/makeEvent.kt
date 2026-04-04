@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moveon.R
 import com.example.moveon.client.jsonClasses.EventData
 
 
@@ -33,20 +34,20 @@ fun MakeEvent(data: EventData) {
     ) {
         Box() {
             Row() {
-                Image(painter = painterResource(id = data.imageId),
+                Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
                     contentDescription = "image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.padding(5.dp).size(68.dp).clip(CircleShape))
 
                 Column(modifier = Modifier.padding(start = 10.dp).padding(top = 8.dp)) {
-                    Text(text = data.title, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                    Text(text = data.title, fontWeight = FontWeight.Bold, fontSize = 22.sp)
                     Text(text = data.description, fontSize = 18.sp)
                     Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, end = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Bottom
                     ) {
                         Text(text = data.date, fontSize = 15.sp)
-                        Text(text = data.date, fontSize = 15.sp)
+                        Text(text = "${data.currentAmountOfPeople}/${data.maxAmountOfPeople}", fontSize = 15.sp)
                     }
                 }
             }

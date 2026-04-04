@@ -23,8 +23,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moveon.R
 import com.example.moveon.data.ProfileData
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.toJavaLocalDate
 
 
 @Composable
@@ -32,7 +33,7 @@ fun MakeProfile(data: ProfileData) {
     Box(modifier = Modifier.padding(8.dp)) {
         Column() {
             Row() {
-                Image(painter = painterResource(id = data.photoId),
+                Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
                     contentDescription = "image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.padding(5.dp).size(100.dp).clip(CircleShape))
@@ -42,7 +43,7 @@ fun MakeProfile(data: ProfileData) {
                         fontSize = 28.sp,
                         modifier = Modifier.padding(2.dp))
 
-                    val birth = data.birth.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                    val birth = data.birth.toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy"))
                     Text(text = birth,
                         color = Color.Gray,
                         fontStyle = FontStyle.Italic,

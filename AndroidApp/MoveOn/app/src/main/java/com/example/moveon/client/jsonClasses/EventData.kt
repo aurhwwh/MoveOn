@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class EventData(
     val eventId: Int,
-    val imageId: Int,
+    val photoId: Int?,
     val title: String,
     val description: String,
     val city: String,

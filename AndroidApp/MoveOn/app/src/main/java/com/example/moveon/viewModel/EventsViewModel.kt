@@ -27,7 +27,7 @@ class EventsPagingSource(
             return LoadResult.Page(
                 data = events,
                 prevKey = if (page == 0) null else page - 1,
-                nextKey = if (events.isEmpty()) null else page + 1
+                nextKey = if (events.size < params.loadSize) null else page + 1
             )
         } catch (e : Exception) {
             return LoadResult.Error(e)

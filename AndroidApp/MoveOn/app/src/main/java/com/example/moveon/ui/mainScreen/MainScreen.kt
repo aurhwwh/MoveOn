@@ -99,15 +99,11 @@ fun MainScreen(navController : NavController) {
 
                     else -> {
                         LazyColumn(modifier = Modifier.weight(1f)) {
-                            items(
-                                count = events.itemCount,
-                                key = {index -> events[index]?.eventId ?: index}
-                            ) { index ->
+                            items(count = events.itemCount) { index ->
                                 events[index]?.let { MakeEvent(data = it) }
                             }
                         }
                     }
-
                 }
             }
         }
