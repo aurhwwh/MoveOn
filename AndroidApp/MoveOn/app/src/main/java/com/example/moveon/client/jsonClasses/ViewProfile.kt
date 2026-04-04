@@ -11,7 +11,6 @@ data class ViewProfile(
     val photoId: Int? = null, //temporary
     val userName: String? = null,
     val userSurname: String? = null,
-    @Serializable(with = DateSerializer::class)
     val dateOfBirth: LocalDate? = null,
     val city: String? = null,
     val description: String? = null,

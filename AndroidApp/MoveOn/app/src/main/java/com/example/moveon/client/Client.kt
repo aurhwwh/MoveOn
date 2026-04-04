@@ -1,4 +1,5 @@
 package com.example.moveon.client
+import com.example.moveon.DateSerializer
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -7,6 +8,8 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.logging.*
+import kotlinx.serialization.modules.SerializersModule
+import java.time.LocalDate
 
 object Client {
     val client = HttpClient(OkHttp) {
@@ -18,6 +21,9 @@ object Client {
             json(
                 Json {
                     ignoreUnknownKeys = true
+                    serializersModule = SerializersModule {
+                        contextual(LocalDate::class, DateSerializer)
+                    }
                 }
             )
         }
