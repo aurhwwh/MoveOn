@@ -9,10 +9,12 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.request
+import kotlin.time.ExperimentalTime
 
 class EventsApi(private val client: HttpClient) {
     private val baseUrl = "http://10.0.2.2:8080"
 
+    @OptIn(ExperimentalTime::class)
     suspend fun getFilteredEventsList(
         request : ViewFilteredEventsListRequest, page: Int, limit: Int
     ): ViewFilteredEventsListResponse {

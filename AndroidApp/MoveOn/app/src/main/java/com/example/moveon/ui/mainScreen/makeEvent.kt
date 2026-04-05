@@ -14,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,8 +25,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moveon.R
 import com.example.moveon.client.jsonClasses.EventData
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
 
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun MakeEvent(data: EventData) {
     Card(modifier = Modifier.fillMaxWidth().padding(4.dp).padding(top = 15.dp),
@@ -46,7 +52,13 @@ fun MakeEvent(data: EventData) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Bottom
                     ) {
-                        Text(text = data.date, fontSize = 15.sp)
+                        val localDateTime = data.date.toLocalDateTime(TimeZone.currentSystemDefault())
+                        val formattedDate = remember(localDateTime) {
+                            java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").format(
+                                localDateTime.toJavaLocalDateTime()
+                            )
+                        }
+                        Text(text = formattedDate, fontSize = 15.sp)
                         Text(text = "${data.currentAmountOfPeople}/${data.maxAmountOfPeople}", fontSize = 15.sp)
                     }
                 }

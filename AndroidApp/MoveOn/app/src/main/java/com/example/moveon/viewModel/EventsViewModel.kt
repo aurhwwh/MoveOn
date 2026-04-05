@@ -11,6 +11,7 @@ import com.example.moveon.client.handlers.EventsHandler
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.client.jsonClasses.EventData
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
+import kotlin.time.ExperimentalTime
 
 
 class EventsPagingSource(
@@ -42,6 +43,7 @@ class EventsPagingSource(
 
 class EventsViewModel () : ViewModel() {
     private val handler = Handlers.eventsHandler
+    @OptIn(ExperimentalTime::class)
     private val defaultFilters = ViewFilteredEventsListRequest (
         title = null,
         city = null,

@@ -1,14 +1,16 @@
 package com.example.moveon.client.jsonClasses
 
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 
 @Serializable
+@OptIn(kotlin.time.ExperimentalTime::class)
 data class ViewFilteredEventsListRequest(
     val title: String? = null,
     val city: String? = null,
     val sportType: String? = null,
-    val date: String? = null,
+    val date: Instant? = null,
     val maxAmountOfPeople: Int? = null,
     val creatorRating: Double? = null
 )
