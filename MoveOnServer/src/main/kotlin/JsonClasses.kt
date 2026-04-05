@@ -87,7 +87,7 @@ data class EventListElement(
     val title: String,
     val city: String,
     val sportType: String,
-    val date: String,
+    val date: String?,
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int,
     val creatorRating: Double,

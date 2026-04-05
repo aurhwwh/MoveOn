@@ -178,7 +178,7 @@ fun Application.configureRouting() {
             try {
                 val events = Database.useConnection { conn ->
                     val sqlBuilder = StringBuilder("""
-                        SELECT e.id, e.title, e.city, e.sport_type, e.date, e.max_amount_of_people,
+                        SELECT e.id, e.title, e.city, e.sport_type, e.time, e.max_amount_of_people,  
                                (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount,
                                COALESCE((SELECT AVG(rating) FROM ratings WHERE to_user_id = e.creator_id), 0.0) as creator_rating
                         FROM events e
@@ -213,7 +213,7 @@ fun Application.configureRouting() {
                         sqlBuilder.append(" AND ").append(conditions.joinToString(" AND "))
                     }
 
-                    sqlBuilder.append(" ORDER BY e.date ASC")
+                    sqlBuilder.append(" ORDER BY e.time ASC")
 
                     val sql = sqlBuilder.toString()
                     conn.prepareStatement(sql).use { stmt ->
@@ -236,7 +236,8 @@ fun Application.configureRouting() {
                                     title = rs.getString("title"),
                                     city = rs.getString("city"),
                                     sportType = rs.getString("sport_type"),
-                                    date = rs.getDate("date").toString(),
+                                    //date = rs.getDate("date").toString(),
+                                    date = rs.getTimestamp("time")?.toInstant()?.toString(),
                                     maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                     currentAmountOfPeople = rs.getInt("current_amount"),
                                     creatorRating = creatorRating1,
