@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +48,7 @@ fun MakeEvent(data: EventData) {
 
                 Column(modifier = Modifier.padding(start = 10.dp).padding(top = 8.dp)) {
                     Text(text = data.title, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                    Text(text = data.sportType, fontStyle = FontStyle.Italic, fontSize = 20.sp)
                     Text(text = data.description, fontSize = 18.sp)
                     Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, end = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
