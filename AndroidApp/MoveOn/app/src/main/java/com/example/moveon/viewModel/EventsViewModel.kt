@@ -11,6 +11,7 @@ import com.example.moveon.client.handlers.EventsHandler
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.client.jsonClasses.EventData
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
+import kotlin.time.ExperimentalTime
 
 
 class EventsPagingSource(
@@ -27,7 +28,7 @@ class EventsPagingSource(
             return LoadResult.Page(
                 data = events,
                 prevKey = if (page == 0) null else page - 1,
-                nextKey = if (events.isEmpty()) null else page + 1
+                nextKey = if (events.size < params.loadSize) null else page + 1
             )
         } catch (e : Exception) {
             return LoadResult.Error(e)
@@ -42,6 +43,7 @@ class EventsPagingSource(
 
 class EventsViewModel () : ViewModel() {
     private val handler = Handlers.eventsHandler
+    @OptIn(ExperimentalTime::class)
     private val defaultFilters = ViewFilteredEventsListRequest (
         title = null,
         city = null,

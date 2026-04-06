@@ -1,8 +1,7 @@
 package com.example.moveon.client.jsonClasses
 
-import com.example.moveon.DateSerializer
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 @Serializable
 data class ViewProfile(

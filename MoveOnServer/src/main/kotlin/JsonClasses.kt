@@ -1,6 +1,9 @@
 package MoveOn
 
 import kotlinx.serialization.Serializable
+import kotlinx.datetime.LocalDate
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 
 @Serializable
@@ -25,7 +28,7 @@ data class RegisterResponse(
 data class RegisterRequest(
     val userName: String,
     val userSurname: String,
-    val dateOfBirth: String,
+    val dateOfBirth: LocalDate,
     val email: String,
     val password: String,
     val gender: String
@@ -52,7 +55,7 @@ data class ViewProfileResponse(
     val photoId: Int? = null, //temporary
     val userName: String? = null,
     val userSurname: String? = null,
-    val dateOfBirth: String? = null,
+    val dateOfBirth: LocalDate? = null,
     val description: String? = null,
     val rating: Double? = null,
     val friendsAmount: Int? = null
@@ -71,23 +74,22 @@ data class CreateEventResponse(
 )
 
 @Serializable
-data class CreateEventRequest(
+data class CreateEventRequest @OptIn(ExperimentalTime::class) constructor(
     val title: String,
     val description: String,
-    val time: String,
-    val date: String,
+    val dateTime: Instant,
     //val position: Position, пока непонятно в каком формате, есть какие-то встроенные
     val maxAmountOfPeople: Int,
     val sportType: String
 )
 
 @Serializable
-data class EventListElement(
+data class EventListElement @OptIn(ExperimentalTime::class) constructor(
     val eventId: Int,
     val title: String,
     val city: String,
     val sportType: String,
-    val date: String,
+    val dateTime: Instant?,
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int,
     val creatorRating: Double,
@@ -113,15 +115,14 @@ data class ViewFilteredEventsListRequest(
 )*/
 
 @Serializable
-data class ViewEventResponse(
+data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(
     val success: Boolean,
     val errorMessage: String? = null,
     val creatorId: Int? = null,
     val participantIds: List<Int>? = null,
     val title: String? = null,
     val description: String? = null,
-    val time: String? = null,
-    val date: String? = null,
+    val dateTime: Instant? = null,
     val currentAmountOfPeople: Int? = null,
     val maxAmountOfPeople: Int? = null,
     val sportType: String? = null
@@ -172,10 +173,10 @@ data class OpenNotificationsResponse(
 )
 
 @Serializable
-data class EventApplication(
+data class EventApplication @OptIn(ExperimentalTime::class) constructor(
     val eventId: Int,
     val title: String,
-    val date: String,
+    val dateTime: Instant?,
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int
 )

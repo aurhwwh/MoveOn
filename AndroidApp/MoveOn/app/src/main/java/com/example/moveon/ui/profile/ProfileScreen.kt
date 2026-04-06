@@ -69,12 +69,13 @@ fun ProfileScreen(navController : NavController, profileHandler: ProfileHandler)
                         error != null -> Text(error!!)
                         profile != null -> MakeProfile(profile!!)
                     }
-                    IconButton(onClick = { navController.navigate("editProfile") }) {
+                    IconButton(onClick = { navController.navigate("editProfile") },
+                        modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Filled.Edit,
                             contentDescription = null,
                             tint = Color.Black,
-                            modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)
                         )
                     }
                 }

@@ -57,10 +57,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.moveon.R
 import com.example.moveon.ui.theme.MGreen
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.Instant
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.minus
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @Composable
 fun EditProfileScreen(navController : NavController) {
@@ -159,12 +164,12 @@ fun EditProfileScreen(navController : NavController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
 
-    val formatter = remember { DateTimeFormatter.ofPattern("dd.MM.yyyy") }
+    val formatter = remember { java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy") }
 
     Box(
         modifier = Modifier
@@ -172,10 +177,10 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
             .clickable { showDialog = true }
     ) {
         TextField(
-            value = selectedDate?.format(formatter) ?: "",
+            value = selectedDate?.toJavaLocalDate()?.format(formatter) ?: "",
             onValueChange = {},
             readOnly = true,
-            enabled = false, // отключаем ввод
+            enabled = false,
             label = { Text("Date of birth") },
             modifier = Modifier.fillMaxWidth(),
 
@@ -188,14 +193,15 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
         )
     }
 
-    val today = LocalDate.now()
-    val minDate = today.minusYears(100)
-    val maxDate = today.minusYears(16)
+    val today = Instant.fromEpochMilliseconds(System.currentTimeMillis()).toLocalDateTime(TimeZone.currentSystemDefault()).date
+
+    val minDate = today.minus(100, DateTimeUnit.YEAR)
+    val maxDate = today.minus(16, DateTimeUnit.YEAR)
 
     if (showDialog) {
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis =
-                maxDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                maxDate.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
 
             selectableDates = object : SelectableDates {
                 override fun isSelectableYear(year: Int): Boolean {
@@ -204,9 +210,9 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
 
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                     val date = Instant
-                        .ofEpochMilli(utcTimeMillis)
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate()
+                        .fromEpochMilliseconds(utcTimeMillis)
+                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                        .date
 
                     return date in minDate..maxDate
                 }
@@ -220,9 +226,8 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
                     val millis = datePickerState.selectedDateMillis
                     if (millis != null) {
                         val date = Instant
-                            .ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
+                            .fromEpochMilliseconds(millis)
+                            .toLocalDateTime(TimeZone.currentSystemDefault()).date
 
                         onDateSelected(date)
                     }

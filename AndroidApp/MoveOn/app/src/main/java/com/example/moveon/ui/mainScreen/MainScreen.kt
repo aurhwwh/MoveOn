@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +34,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.moveon.R
 import com.example.moveon.ui.common.BottomBar
 import com.example.moveon.ui.common.TopBar
+import com.example.moveon.ui.theme.MGreen
 import com.example.moveon.viewModel.EventsViewModel
 
 @Composable
@@ -40,7 +43,18 @@ fun MainScreen(navController : NavController) {
 
         Scaffold(
             topBar = { TopBar(city = "Saint-Petersburg") },
-            bottomBar = { BottomBar(navController) }
+            bottomBar = { BottomBar(navController) },
+            floatingActionButton = {
+                IconButton(onClick = { navController.navigate("addEvent") },
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.AddCircle,
+                        contentDescription = null,
+                        tint = MGreen,
+                        modifier = Modifier.size(55.dp)
+                    )
+                }
+            }
         ) { padding ->
             Column(modifier = Modifier.weight(1f).padding(padding)) {
                 Box(modifier = Modifier.padding(PaddingValues(8.dp))) {
@@ -99,15 +113,11 @@ fun MainScreen(navController : NavController) {
 
                     else -> {
                         LazyColumn(modifier = Modifier.weight(1f)) {
-                            items(
-                                count = events.itemCount,
-                                key = {index -> events[index]?.eventId ?: index}
-                            ) { index ->
+                            items(count = events.itemCount) { index ->
                                 events[index]?.let { MakeEvent(data = it) }
                             }
                         }
                     }
-
                 }
             }
         }

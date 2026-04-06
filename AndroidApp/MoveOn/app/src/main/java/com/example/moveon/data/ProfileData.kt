@@ -1,6 +1,6 @@
 package com.example.moveon.data
 
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 class ProfileData (
     val photoId: Int,

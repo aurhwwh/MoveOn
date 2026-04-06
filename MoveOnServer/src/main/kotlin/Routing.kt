@@ -10,9 +10,14 @@ import MoveOn.security.Security
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toKotlinLocalDate
 import java.sql.Date
-import java.sql.Time
+import kotlin.time.ExperimentalTime
+import kotlin.time.toJavaInstant
+import kotlin.time.toKotlinInstant
 
+@OptIn(ExperimentalTime::class)
 fun Application.configureRouting() {
     routing {
         post("/refresh") {
@@ -56,7 +61,7 @@ fun Application.configureRouting() {
                     conn.prepareStatement(insertSql).use { stmt ->
                         stmt.setString(1, request.userName)
                         stmt.setString(2, request.userSurname)
-                        stmt.setDate(3, Date.valueOf(request.dateOfBirth))
+                        stmt.setObject(3, request.dateOfBirth.toJavaLocalDate())
                         stmt.setString(4, request.email)
                         stmt.setString(5, hash)
                         stmt.setString(6, request.gender)
@@ -135,7 +140,7 @@ fun Application.configureRouting() {
                                 success = true,
                                 userName = rs.getString("user_name"),
                                 userSurname = rs.getString("user_surname"),
-                                dateOfBirth = rs.getDate("date_of_birth")?.toString(),
+                                dateOfBirth = rs.getDate("date_of_birth")?.toLocalDate()?.toKotlinLocalDate(),
                                 description = rs.getString("description"),
                                 rating = rs.getDouble("avg_rating"),
                                 friendsAmount = rs.getInt("friends_count"),
@@ -178,7 +183,7 @@ fun Application.configureRouting() {
             try {
                 val events = Database.useConnection { conn ->
                     val sqlBuilder = StringBuilder("""
-                        SELECT e.id, e.title, e.city, e.sport_type, e.date, e.max_amount_of_people,
+                        SELECT e.id, e.title, e.city, e.sport_type, e.time, e.max_amount_of_people,  
                                (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount,
                                COALESCE((SELECT AVG(rating) FROM ratings WHERE to_user_id = e.creator_id), 0.0) as creator_rating
                         FROM events e
@@ -213,7 +218,7 @@ fun Application.configureRouting() {
                         sqlBuilder.append(" AND ").append(conditions.joinToString(" AND "))
                     }
 
-                    sqlBuilder.append(" ORDER BY e.date ASC")
+                    sqlBuilder.append(" ORDER BY e.time ASC")
 
                     val sql = sqlBuilder.toString()
                     conn.prepareStatement(sql).use { stmt ->
@@ -236,7 +241,8 @@ fun Application.configureRouting() {
                                     title = rs.getString("title"),
                                     city = rs.getString("city"),
                                     sportType = rs.getString("sport_type"),
-                                    date = rs.getDate("date").toString(),
+                                    //date = rs.getDate("date").toString(),
+                                    dateTime = rs.getTimestamp("time")?.toInstant()?.toKotlinInstant(),
                                     maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                     currentAmountOfPeople = rs.getInt("current_amount"),
                                     creatorRating = creatorRating1,
@@ -265,7 +271,7 @@ fun Application.configureRouting() {
             try {
                 val eventData = Database.useConnection { conn ->
                     val sql = """
-                        SELECT e.id, e.title, e.description, e.time, e.date, e.max_amount_of_people, e.sport_type, e.creator_id,
+                        SELECT e.id, e.title, e.description, e.time, e.max_amount_of_people, e.sport_type, e.creator_id,
                                (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount
                         FROM events e
                         WHERE e.id = ?
@@ -290,8 +296,7 @@ fun Application.configureRouting() {
                                 participantIds = participantIds,
                                 title = rs.getString("title"),
                                 description = rs.getString("description"),
-                                time = rs.getTime("time")?.toString(),
-                                date = rs.getDate("date")?.toString(),
+                                dateTime = rs.getTimestamp("time")?.toInstant()?.toKotlinInstant(),
                                 currentAmountOfPeople = rs.getInt("current_amount"),
                                 maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                 sportType = rs.getString("sport_type")
@@ -368,18 +373,17 @@ fun Application.configureRouting() {
                 try {
                     val eventId = Database.transaction { conn ->
                         val sql = """
-                        INSERT INTO events (title, description, time, date, city, max_amount_of_people, sport_type, creator_id)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+                        INSERT INTO events (title, description, time, city, max_amount_of_people, sport_type, creator_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
                     """.trimIndent()
                         conn.prepareStatement(sql).use { stmt ->
                             stmt.setString(1, request.title)
                             stmt.setString(2, request.description)
-                            stmt.setTime(3, Time.valueOf(request.time))
-                            stmt.setDate(4, Date.valueOf(request.date))
-                            stmt.setString(5, "Unknown")
-                            stmt.setInt(6, request.maxAmountOfPeople)
-                            stmt.setString(7, request.sportType)
-                            stmt.setInt(8, creatorId)
+                            stmt.setTimestamp(3, java.sql.Timestamp.from(request.dateTime.toJavaInstant()))
+                            stmt.setString(4, "Unknown")
+                            stmt.setInt(5, request.maxAmountOfPeople)
+                            stmt.setString(6, request.sportType)
+                            stmt.setInt(7, creatorId)
                             val rs = stmt.executeQuery()
                             rs.next()
                             rs.getInt(1)
@@ -497,7 +501,7 @@ fun Application.configureRouting() {
                 try {
                     val applications = Database.useConnection { conn ->
                         val sqlBuilder = StringBuilder("""
-                        SELECT e.id, e.title, e.date, e.max_amount_of_people,
+                        SELECT e.id, e.title, e.time, e.max_amount_of_people,
                                (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount
                         FROM events e
                         JOIN event_participants ep ON e.id = ep.event_id
@@ -508,13 +512,13 @@ fun Application.configureRouting() {
 
                         if (hasEventPassed != null) {
                             if (hasEventPassed) {
-                                sqlBuilder.append(" AND e.date < CURRENT_DATE")
+                                sqlBuilder.append(" AND e.time < CURRENT_TIMESTAMP")
                             } else {
-                                sqlBuilder.append(" AND e.date >= CURRENT_DATE")
+                                sqlBuilder.append(" AND e.time >= CURRENT_TIMESTAMP")
                             }
                         }
 
-                        sqlBuilder.append(" ORDER BY e.date ASC")
+                        sqlBuilder.append(" ORDER BY e.time ASC")
 
                         conn.prepareStatement(sqlBuilder.toString()).use { stmt ->
                             params.forEachIndexed { index, value ->
@@ -527,7 +531,7 @@ fun Application.configureRouting() {
                                     EventApplication(
                                         eventId = rs.getInt("id"),
                                         title = rs.getString("title"),
-                                        date = rs.getDate("date").toString(),
+                                        dateTime = rs.getTimestamp("time")?.toInstant()?.toKotlinInstant(),
                                         maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                         currentAmountOfPeople = rs.getInt("current_amount")
                                     )
