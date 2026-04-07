@@ -200,7 +200,8 @@ data class Person(
     val id: Int,
     val name: String,
     val surname: String,
-    val rating: Double? = null
+    val rating: Double? = null,
+    val photoId: Int? = null
 )
 
 @Serializable
