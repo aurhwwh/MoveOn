@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
                     MainScreen(navController)
                 }
                 composable("profile") {
-                    ProfileScreen(navController, Handlers.profileHandler)
+                    ProfileScreen(navController)
                 }
                 composable("editProfile") {
                     EditProfileScreen(navController)

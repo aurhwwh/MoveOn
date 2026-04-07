@@ -32,41 +32,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.client.handlers.ProfileHandler
 import com.example.moveon.data.ProfileData
 import com.example.moveon.ui.common.BottomBar
 import com.example.moveon.ui.common.CityTopBar
+import com.example.moveon.viewModel.ProfileViewModel
 
 
 @Composable
-fun ProfileScreen(navController : NavController, profileHandler: ProfileHandler) {
+fun ProfileScreen(navController : NavController, viewModel: ProfileViewModel = viewModel()) {
     Column(modifier = Modifier.fillMaxSize()) {
+
+        LaunchedEffect(Unit) {
+            viewModel.loadProfile(1)
+        }
 
         Scaffold(
             topBar = { CityTopBar(city = "Saint-Petersburg") },
             bottomBar = { BottomBar(navController) }
         ) { padding ->
-            var profile by remember { mutableStateOf<ProfileData?>(null) }
-            var isLoading by remember { mutableStateOf(true) }
-            var error by remember { mutableStateOf<String?>(null) }
-
-            LaunchedEffect(Unit) {
-                try {
-                    profile = profileHandler.getProfile(1)
-                } catch (e : Exception) {
-                    e.printStackTrace()
-                } finally {
-                    isLoading = false;
-                }
-            }
 
             Column(modifier = Modifier.fillMaxSize().padding(padding)) {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     when {
-                        isLoading -> Text("Loading")
-                        error != null -> Text(error!!)
-                        profile != null -> MakeProfile(profile!!)
+                        viewModel.isLoading -> Text("Loading")
+                        viewModel.error != null -> Text(viewModel.error!!)
+                        viewModel.profile != null -> MakeProfile(viewModel.profile!!)
                     }
                     IconButton(onClick = { navController.navigate("editProfile") },
                         modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)
@@ -78,6 +71,7 @@ fun ProfileScreen(navController : NavController, profileHandler: ProfileHandler)
                         )
                     }
                 }
+
                 Row(modifier = Modifier.fillMaxWidth().padding(8.dp).padding(top = 8.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly)
                 {

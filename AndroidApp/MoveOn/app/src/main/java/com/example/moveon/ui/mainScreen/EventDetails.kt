@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -75,7 +76,7 @@ fun EventDetails(navController : NavController,
             }
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState(),)
                 ) {
                     MoveOnTopBar(navController, "main")
 
@@ -88,9 +89,9 @@ fun EventDetails(navController : NavController,
                         fontStyle = FontStyle.Italic,
                         fontFamily = FontFamily.SansSerif,
                         fontSize = 25.sp,
+                        modifier = Modifier.padding(8.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
 
                     val localDateTime = data.dateTime!!.toLocalDateTime(TimeZone.currentSystemDefault())
                     val formattedDate = remember(localDateTime) {
@@ -98,21 +99,31 @@ fun EventDetails(navController : NavController,
                             localDateTime.toJavaLocalDateTime()
                         )
                     }
-                    Text(text = formattedDate, fontSize = 15.sp)
+                    Text(
+                        text = formattedDate,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(8.dp),
+                        fontStyle = FontStyle.Italic
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(text = data.sportType!!, fontSize = 15.sp)
+                    Text(
+                        text = data.sportType!!,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(8.dp)
+                    )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp).padding(8.dp))
 
-                    Text(text = data.description ?: "", fontSize = 15.sp)
+                    Text(text = data.description ?: "", fontSize = 20.sp, modifier = Modifier.padding(8.dp))
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
 
-                    Text(text = "Организатор:", fontSize = 15.sp)
+                    Text(text = "Организатор:", fontSize = 20.sp, modifier = Modifier.padding(8.dp))
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Participant(data.participants!![0])
 
@@ -120,19 +131,22 @@ fun EventDetails(navController : NavController,
 
                     var expanded by remember { mutableStateOf(true) }
 
-                    Row(modifier = Modifier.clickable {expanded = !expanded}) {
-                        Text(text = "Учасники: ${data.currentAmountOfPeople}/${data.maxAmountOfPeople}", fontSize = 15.sp)
+                    Row(modifier = Modifier.clickable {expanded = !expanded}.padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "Учасники: ${data.currentAmountOfPeople}/${data.maxAmountOfPeople}", fontSize = 20.sp)
+
+                        Spacer(modifier = Modifier.width(4.dp))
 
                         Icon(
                             imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = Color.Black,
                             modifier = Modifier.size(25.dp)
                         )
                     }
 
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     AnimatedVisibility(
                         visible = expanded,
@@ -155,7 +169,7 @@ fun EventDetails(navController : NavController,
                         containerColor = MGreen
                     )
                 ) {
-                    Text(fontSize = 20.sp, text = "Join")
+                    Text(fontSize = 25.sp, text = "Join")
                 }
             }
 
@@ -165,7 +179,7 @@ fun EventDetails(navController : NavController,
 
 @Composable
 fun Participant(participant: Person) {
-    Row() {
+    Row(modifier = Modifier.padding(8.dp)) {
         Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
             contentDescription = "image",
             contentScale = ContentScale.Crop,
@@ -173,7 +187,7 @@ fun Participant(participant: Person) {
 
         Column(modifier = Modifier.padding(start = 10.dp, top = 8.dp)) {
             Text(text = participant.name + " " + participant.surname,
-                fontSize = 15.sp,
+                fontSize = 18.sp,
                 modifier = Modifier.padding(2.dp))
 
             DrawStars(participant.rating ?: 0.0)
