@@ -329,18 +329,19 @@ fun Application.configureRouting() {
                         val rs = stmt.executeQuery()
                         if (rs.next()) {
                             val participants = conn.prepareStatement(
-                                """SELECT u.id, 
-       u.user_name AS name, 
-       u.user_surname AS surname,
-       AVG(r.rating) AS rating
-FROM users u
-JOIN event_participants ep ON u.id = ep.user_id
-LEFT JOIN ratings r ON r.to_user_id = u.id
-WHERE ep.event_id = ? AND ep.status = 'accepted'
-GROUP BY u.id, u.user_name, u.user_surname
-    """
+                                """SELECT u.id, u.user_name AS name, u.user_surname AS surname,
+                                    AVG(r.rating) AS rating,
+                                    CASE WHEN u.id = ? THEN 1 ELSE 0 END AS is_creator
+                                    FROM users u
+                                    JOIN event_participants ep ON u.id = ep.user_id
+                                    LEFT JOIN ratings r ON r.to_user_id = u.id
+                                    WHERE ep.event_id = ? AND ep.status = 'accepted'
+                                    GROUP BY u.id, u.user_name, u.user_surname
+                                    ORDER BY is_creator DESC, u.id
+                                    """
                             ).use { pstmt ->
-                                pstmt.setInt(1, eventId)
+                                pstmt.setInt(1, rs.getInt("creator_id"))
+                                pstmt.setInt(2, eventId)
                                 val rs = pstmt.executeQuery()
                                 val list = mutableListOf<Person>()
 
@@ -440,11 +441,13 @@ GROUP BY u.id, u.user_name, u.user_surname
                 val creatorId = principal!!.payload.getClaim("userId").asInt()
                 try {
                     val eventId = Database.transaction { conn ->
-                        val sql = """
-                        INSERT INTO events (title, description, time, city, max_amount_of_people, sport_type, creator_id)
-                        VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
-                    """.trimIndent()
-                        conn.prepareStatement(sql).use { stmt ->
+
+                        val sqlEvent = """
+        INSERT INTO events (title, description, time, city, max_amount_of_people, sport_type, creator_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+    """.trimIndent()
+
+                        val id = conn.prepareStatement(sqlEvent).use { stmt ->
                             stmt.setString(1, request.title)
                             stmt.setString(2, request.description)
                             stmt.setTimestamp(3, java.sql.Timestamp.from(request.dateTime.toJavaInstant()))
@@ -452,10 +455,24 @@ GROUP BY u.id, u.user_name, u.user_surname
                             stmt.setInt(5, request.maxAmountOfPeople)
                             stmt.setString(6, request.sportType)
                             stmt.setInt(7, creatorId)
+
                             val rs = stmt.executeQuery()
                             rs.next()
                             rs.getInt(1)
                         }
+
+                        val sqlParticipant = """
+                            INSERT INTO event_participants (event_id, user_id, status)
+                            VALUES (?, ?, 'accepted')
+                        """.trimIndent()
+
+                        conn.prepareStatement(sqlParticipant).use { stmt ->
+                            stmt.setInt(1, id)
+                            stmt.setInt(2, creatorId)
+                            stmt.executeUpdate()
+                        }
+
+                        id
                     }
 
                     call.respond(HttpStatusCode.OK, CreateEventResponse(true, eventId = eventId))
