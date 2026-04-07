@@ -280,20 +280,40 @@ fun Application.configureRouting() {
                         stmt.setInt(1, eventId)
                         val rs = stmt.executeQuery()
                         if (rs.next()) {
-                            val participantIds = conn.prepareStatement(
-                                "SELECT user_id FROM event_participants WHERE event_id = ? AND status = 'accepted'"
+                            val participants = conn.prepareStatement(
+                                """SELECT u.id, 
+       u.user_name AS name, 
+       u.user_surname AS surname,
+       AVG(r.rating) AS rating
+FROM users u
+JOIN event_participants ep ON u.id = ep.user_id
+LEFT JOIN ratings r ON r.to_user_id = u.id
+WHERE ep.event_id = ? AND ep.status = 'accepted'
+GROUP BY u.id, u.user_name, u.user_surname
+    """
                             ).use { pstmt ->
                                 pstmt.setInt(1, eventId)
-                                val prs = pstmt.executeQuery()
-                                val ids = mutableListOf<Int>()
-                                while (prs.next()) ids.add(prs.getInt("user_id"))
-                                ids
+                                val rs = pstmt.executeQuery()
+                                val list = mutableListOf<Person>()
+
+                                while (rs.next()) {
+                                    val rating = rs.getDouble("rating")
+                                    list.add(
+                                        Person(
+                                            id = rs.getInt("id"),
+                                            name = rs.getString("name"),
+                                            surname = rs.getString("surname"),
+                                            rating = rs.getDouble("rating")
+                                        )
+                                    )
+                                }
+                                list
                             }
 
                             ViewEventResponse(
                                 success = true,
                                 creatorId = rs.getInt("creator_id"),
-                                participantIds = participantIds,
+                                participants = participants,
                                 title = rs.getString("title"),
                                 description = rs.getString("description"),
                                 dateTime = rs.getTimestamp("time")?.toInstant()?.toKotlinInstant(),
