@@ -21,19 +21,57 @@ import kotlin.time.toKotlinInstant
 fun Application.configureRouting() {
     routing {
         post("/refresh") {
-            val request = runCatching {call.receive<RefreshRequest>()}
-                .getOrElse { call.respond(
-                    HttpStatusCode.BadRequest,
-                    RefreshResponse(false, "Invalid format for refresh")
-                )
+            val request = try {
+                call.receive<RefreshRequest>()
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, RefreshResponse(false, "Invalid JSON: ${e.message}"))
+                return@post
+            }
+            val userId = getUserIdFromJWT(request.oldRefreshToken)
+            if(userId == null || !isRefreshToken(request.oldRefreshToken)) {
+                call.respond(HttpStatusCode.Unauthorized, RefreshResponse(false,"Invalid Refresh Token") )
+                return@post
+            }
+            try {
+                val databaseHash = Database.transaction { conn ->
+                    val sql = "SELECT refresh_token_hash FROM users WHERE id = ?"
+                    conn.prepareStatement(sql).use { stmt ->
+                        stmt.setInt(1, userId)
+                        val rs = stmt.executeQuery()
+                        if (rs.next()) {
+                            rs.getString("refresh_token_hash")
+                        } else null
+                    }
+                }
+                if (databaseHash == null || !verifyRefreshToken(request.oldRefreshToken, databaseHash)) {
+                    call.respond(
+                        HttpStatusCode.Unauthorized,
+                        RefreshResponse(false, "Refresh token not valid")
+                    )
                     return@post
                 }
-            //todo: realization
-            //тут достаем из бд userId и генерим на его основе access токен
-            //если его нет то выдаем success = false
-            val newAccessToken = generateAccessToken(1)
-            val newRefreshToken = generateRefreshToken()
-            call.respond(HttpStatusCode.OK, RefreshResponse(true, null,newRefreshToken, newAccessToken))
+                val newAccessToken = generateAccessToken(userId)
+                val newRefreshToken = generateRefreshToken(userId)
+                val newHash = hashRefreshToken(newRefreshToken)
+                Database.transaction { conn ->
+                    val sql = "UPDATE users SET refresh_token_hash = ? WHERE id = ?"
+
+                    conn.prepareStatement(sql).use { stmt ->
+                        stmt.setString(1, newHash)
+                        stmt.setInt(2, userId)
+                        stmt.executeUpdate()
+                    }
+                }
+                call.respond(
+                    HttpStatusCode.OK,
+                    RefreshResponse(true, null, newRefreshToken, newAccessToken)
+                )
+
+
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, RefreshResponse(false, "Database error: ${e.message}"))
+            }
+
         }
         post("/register") {
             val request = try {
@@ -100,9 +138,19 @@ fun Application.configureRouting() {
                         } else null
                     }
                 }
-                val refreshToken = generateRefreshToken()
 
                 if (user != null && Security.verifyPassword(request.password, user.second)) {
+                    val refreshToken = generateRefreshToken(user.first)
+                    val refreshHash = hashRefreshToken(refreshToken)
+                    Database.transaction { conn ->
+                        val sql = "UPDATE users SET refresh_token_hash = ? WHERE id = ?"
+
+                        conn.prepareStatement(sql).use { stmt ->
+                            stmt.setString(1, refreshHash)
+                            stmt.setInt(2, user.first)
+                            stmt.executeUpdate()
+                        }
+                    }
                     call.respond(HttpStatusCode.OK, LoginResponse(true, accessToken = generateAccessToken(user.first), refreshToken = refreshToken))
                 } else {
                     call.respond(HttpStatusCode.Unauthorized, LoginResponse(false, "Invalid credentials"))
