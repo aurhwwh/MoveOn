@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.client.jsonClasses.CreateEventRequest
+import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
@@ -79,21 +80,10 @@ fun AddEvent(navController : NavController) {
         Column(
             modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(modifier = Modifier.fillMaxWidth().background(MGreen).windowInsetsPadding(WindowInsets.statusBars),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { navController.navigate("main") }) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBackIosNew,
-                        contentDescription = "Main",
-                        tint = Color.White,
-                        modifier = Modifier.size(25.dp)
-                    )
-                }
-            }
+            MoveOnTopBar(navController, "main")
 
             Spacer(modifier = Modifier.height(16.dp))
+
             Text(
                 text = "Create Event",
                 color = Color.Black,

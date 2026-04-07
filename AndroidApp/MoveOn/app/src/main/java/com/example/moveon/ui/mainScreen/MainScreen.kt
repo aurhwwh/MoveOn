@@ -31,9 +31,8 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 
-import com.example.moveon.R
 import com.example.moveon.ui.common.BottomBar
-import com.example.moveon.ui.common.TopBar
+import com.example.moveon.ui.common.CityTopBar
 import com.example.moveon.ui.theme.MGreen
 import com.example.moveon.viewModel.EventsViewModel
 
@@ -42,7 +41,7 @@ fun MainScreen(navController : NavController) {
     Column(modifier = Modifier.fillMaxSize()) {
 
         Scaffold(
-            topBar = { TopBar(city = "Saint-Petersburg") },
+            topBar = { CityTopBar(city = "Saint-Petersburg") },
             bottomBar = { BottomBar(navController) },
             floatingActionButton = {
                 IconButton(onClick = { navController.navigate("addEvent") },

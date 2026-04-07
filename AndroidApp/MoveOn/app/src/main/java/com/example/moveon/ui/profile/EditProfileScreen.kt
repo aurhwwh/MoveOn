@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.moveon.R
+import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -78,28 +79,7 @@ fun EditProfileScreen(navController : NavController) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        Row(modifier = Modifier.fillMaxWidth().background(MGreen).windowInsetsPadding(WindowInsets.statusBars),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { navController.navigate("profile") }) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "Profile",
-                    tint = Color.White,
-                    modifier = Modifier.size(25.dp)
-                )
-            }
-
-            Text(
-                text = "MoveOn",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Italic,
-                fontFamily = FontFamily.SansSerif,
-                fontSize = 30.sp,
-            )
-        }
+        MoveOnTopBar(navController, "profile")
 
         Image(painter = painterResource(id = R.drawable.img),
             contentDescription = "image",

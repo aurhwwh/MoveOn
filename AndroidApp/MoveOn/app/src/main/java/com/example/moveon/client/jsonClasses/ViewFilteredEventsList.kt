@@ -10,7 +10,7 @@ data class ViewFilteredEventsListRequest(
     val title: String? = null,
     val city: String? = null,
     val sportType: String? = null,
-    val date: Instant? = null,
+    val dateTime: Instant? = null,
     val maxAmountOfPeople: Int? = null,
     val creatorRating: Double? = null
 )

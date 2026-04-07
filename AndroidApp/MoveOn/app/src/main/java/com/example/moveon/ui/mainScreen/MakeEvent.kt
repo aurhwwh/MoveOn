@@ -54,7 +54,7 @@ fun MakeEvent(data: EventData) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Bottom
                     ) {
-                        val localDateTime = data.date.toLocalDateTime(TimeZone.currentSystemDefault())
+                        val localDateTime = data.dateTime.toLocalDateTime(TimeZone.currentSystemDefault())
                         val formattedDate = remember(localDateTime) {
                             java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").format(
                                 localDateTime.toJavaLocalDateTime()

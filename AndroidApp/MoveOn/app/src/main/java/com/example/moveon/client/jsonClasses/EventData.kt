@@ -7,13 +7,13 @@ import kotlin.time.Instant
 @OptIn(kotlin.time.ExperimentalTime::class)
 data class EventData(
     val eventId: Int,
-    val photoId: Int?,
     val title: String,
-    val description: String,
     val city: String,
     val sportType: String,
-    val date: Instant,
+    val dateTime: Instant,
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int,
     val creatorRating: Double,
+    val photoId: Int,
+    val description: String
 )

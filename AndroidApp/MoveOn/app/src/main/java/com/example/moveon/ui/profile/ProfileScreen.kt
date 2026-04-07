@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,7 +36,7 @@ import androidx.navigation.NavController
 import com.example.moveon.client.handlers.ProfileHandler
 import com.example.moveon.data.ProfileData
 import com.example.moveon.ui.common.BottomBar
-import com.example.moveon.ui.common.TopBar
+import com.example.moveon.ui.common.CityTopBar
 
 
 @Composable
@@ -45,7 +44,7 @@ fun ProfileScreen(navController : NavController, profileHandler: ProfileHandler)
     Column(modifier = Modifier.fillMaxSize()) {
 
         Scaffold(
-            topBar = { TopBar(city = "Saint-Petersburg") },
+            topBar = { CityTopBar(city = "Saint-Petersburg") },
             bottomBar = { BottomBar(navController) }
         ) { padding ->
             var profile by remember { mutableStateOf<ProfileData?>(null) }

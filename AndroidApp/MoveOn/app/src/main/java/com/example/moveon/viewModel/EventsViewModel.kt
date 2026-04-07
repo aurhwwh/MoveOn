@@ -48,7 +48,7 @@ class EventsViewModel () : ViewModel() {
         title = null,
         city = null,
         sportType = null,
-        date = null,
+        dateTime = null,
         maxAmountOfPeople = null,
         creatorRating = null
     )

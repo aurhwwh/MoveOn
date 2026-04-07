@@ -28,7 +28,7 @@ class EventsApi(private val client: HttpClient) {
             request.title?.let{parameter("title", it)}
             request.city?.let { parameter("city", it)}
             request.sportType?.let{parameter("sportType", it)}
-            request.date?.let { parameter("date", it)}
+            request.dateTime?.let { parameter("dateTime", it)}
             request.maxAmountOfPeople?.let{parameter("maxAmountOfPeople", it)}
             request.creatorRating?.let { parameter("creatorRating", it)}
         }.body()
