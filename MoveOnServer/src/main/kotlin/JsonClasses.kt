@@ -119,7 +119,7 @@ data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(
     val success: Boolean,
     val errorMessage: String? = null,
     val creatorId: Int? = null,
-    val participantIds: List<Int>? = null,
+    val participants: List<Person>? = null,
     val title: String? = null,
     val description: String? = null,
     val dateTime: Instant? = null,
@@ -198,7 +198,8 @@ data class OpenApplicationListResponse(
 data class Person(
     val id: Int,
     val name: String,
-    val surname: String
+    val surname: String,
+    val rating: Double? = null
 )
 
 @Serializable
