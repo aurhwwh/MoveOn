@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.ui.mainScreen.AddEvent
+import com.example.moveon.ui.mainScreen.EventDetails
 import com.example.moveon.ui.mainScreen.MainScreen
 import com.example.moveon.ui.profile.EditProfileScreen
 import com.example.moveon.ui.profile.ProfileScreen
@@ -49,6 +50,10 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("addEvent") {
                     AddEvent(navController)
+                }
+                composable("eventDetails/{eventId}") { backStackEntry ->
+                    val eventId = backStackEntry.arguments?.getString("eventId")!!.toInt()
+                    EventDetails(navController, eventId = eventId)
                 }
             }
         }

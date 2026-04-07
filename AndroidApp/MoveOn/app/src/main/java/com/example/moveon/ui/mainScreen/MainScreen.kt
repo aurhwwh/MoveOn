@@ -113,7 +113,13 @@ fun MainScreen(navController : NavController) {
                     else -> {
                         LazyColumn(modifier = Modifier.weight(1f)) {
                             items(count = events.itemCount) { index ->
-                                events[index]?.let { MakeEvent(data = it) }
+                                events[index]?.let {
+                                    MakeEvent(
+                                        data = it,
+                                        onClick = { navController.navigate("eventDetails/${it.eventId}")
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

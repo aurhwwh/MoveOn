@@ -1,6 +1,7 @@
 package com.example.moveon.ui.mainScreen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,12 +35,12 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun MakeEvent(data: EventData) {
+fun MakeEvent(data: EventData, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().padding(4.dp).padding(top = 15.dp),
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
-        Box() {
+        Box(modifier = Modifier.clickable{ onClick() }) {
             Row() {
                 Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
                     contentDescription = "image",

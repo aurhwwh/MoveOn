@@ -2,6 +2,7 @@ package com.example.moveon.client.api
 
 import com.example.moveon.client.jsonClasses.CreateEventRequest
 import com.example.moveon.client.jsonClasses.CreateEventResponse
+import com.example.moveon.client.jsonClasses.ViewEventResponse
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListResponse
 import io.ktor.client.HttpClient
@@ -21,7 +22,6 @@ class EventsApi(private val client: HttpClient) {
     suspend fun getFilteredEventsList(
         request : ViewFilteredEventsListRequest, page: Int, limit: Int
     ): ViewFilteredEventsListResponse {
-
         return client.get("$baseUrl/view_filtered_events_list") {
             parameter("page", page)
             parameter("limit", limit)
@@ -38,6 +38,12 @@ class EventsApi(private val client: HttpClient) {
         return client.post("$baseUrl/create_event") {
             contentType(ContentType.Application.Json)
             setBody(request)
+        }.body()
+    }
+
+    suspend fun viewEvent(eventId: Int) : ViewEventResponse {
+        return client.get("$baseUrl/view_event") {
+            parameter("eventId", eventId)
         }.body()
     }
 }
