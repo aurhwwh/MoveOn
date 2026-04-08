@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.moveon.ui.entry.SignUpScreen
 import com.example.moveon.ui.events.AddEvent
 import com.example.moveon.ui.events.EventDetails
 import com.example.moveon.ui.events.MainScreen
@@ -53,6 +54,9 @@ class MainActivity : ComponentActivity() {
                 composable("eventDetails/{eventId}") { backStackEntry ->
                     val eventId = backStackEntry.arguments?.getString("eventId")!!.toInt()
                     EventDetails(navController, eventId = eventId)
+                }
+                composable("register") {
+                    SignUpScreen(navController)
                 }
             }
         }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,16 +40,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.moveon.client.handlers.Handlers
+import com.example.moveon.client.jsonClasses.CreateEventRequest
+import com.example.moveon.client.jsonClasses.RegisterRequest
 import com.example.moveon.ui.profile.BirthDatePicker
 import com.example.moveon.ui.theme.MGreen
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atTime
+import kotlinx.datetime.toInstant
 
 
-@Preview(name = "Sign Up Screen")
-@Composable
-fun SignUpScreenPreview() {
-    SignUpScreen(navController = rememberNavController())
-}
+//@Preview(name = "Sign Up Screen")
+//@Composable
+//fun SignUpScreenPreview() {
+//    SignUpScreen(navController = rememberNavController())
+//}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,8 +67,7 @@ fun SignUpScreen(navController: NavController) {
     var surname by remember { mutableStateOf("") }
     var birth by remember { mutableStateOf<LocalDate?>(null) }
     var gender by remember { mutableStateOf("") }
-    var city by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+    // var description by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var repeat_password by remember { mutableStateOf("") }
@@ -115,14 +123,14 @@ fun SignUpScreen(navController: NavController) {
             onGenderSelected = { gender = it }
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        /* Spacer(modifier = Modifier.height(16.dp))
 
         TextField(
             value = description,
             onValueChange = { description = it },
             label = { Text("description") },
             modifier = Modifier.fillMaxWidth(0.7f)
-        )
+        ) */
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -153,17 +161,46 @@ fun SignUpScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = {},
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MGreen
-            )
+        val scope = rememberCoroutineScope()
+        Button(modifier = Modifier.align(Alignment.CenterHorizontally),
+            onClick = {
+
+                val isValid = name.isNotBlank() &&
+                        surname.isNotBlank() &&
+                        birth != null &&
+                        gender.isNotBlank() &&
+                        email.isNotBlank() &&
+                        password.isNotBlank() &&
+                        repeat_password == password
+
+                if (!isValid) return@Button
+
+                val request = RegisterRequest(
+                    userName = name,
+                    userSurname = surname,
+                    dateOfBirth = birth!!,
+                    email = email,
+                    password = password,
+                    gender = gender
+                )
+
+                scope.launch {
+                    val response = Handlers.entryHandler.register(request)
+
+                    if (response.success) {
+                        navController.navigate("main")
+                    } else {
+                        println(response.errorMessage)
+                    }
+                }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = MGreen)
         ) {
-            Text(fontSize = 20.sp, text = "Sign up")
+            Text(fontSize = 25.sp, text = "Sign Up")
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

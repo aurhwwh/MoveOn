@@ -133,7 +133,7 @@ fun EventDetails(navController : NavController,
 
                     Row(modifier = Modifier.clickable {expanded = !expanded}.padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "Учасники: ${data.currentAmountOfPeople}/${data.maxAmountOfPeople}", fontSize = 20.sp)
+                        Text(text = "Участники: ${data.currentAmountOfPeople}/${data.maxAmountOfPeople}", fontSize = 20.sp)
 
                         Spacer(modifier = Modifier.width(4.dp))
 

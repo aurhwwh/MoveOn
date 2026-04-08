@@ -22,13 +22,7 @@ class EventsHandler(private val api : EventsApi) {
     }
 
     suspend fun createEvent(request: CreateEventRequest): CreateEventResponse {
-        val response = api.createEvent(request)
-
-        if (!response.success) {
-            throw Exception(response.errorMessage ?: "UnknownError");
-        }
-
-        return response
+        return api.createEvent(request)
     }
 
     suspend fun viewEvent(eventId : Int): ViewEventResponse {

@@ -95,7 +95,7 @@ fun SignInScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(80.dp))
 
-        Text(text = "Do nat have an account?", fontSize = 20.sp, fontStyle = FontStyle.Italic)
+        Text(text = "Do not have an account?", fontSize = 20.sp, fontStyle = FontStyle.Italic)
 
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),

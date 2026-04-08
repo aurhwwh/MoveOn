@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -165,6 +166,7 @@ fun AddEvent(navController : NavController) {
             Spacer(modifier = Modifier.height(16.dp))
         }
 
+        val scope = rememberCoroutineScope()
         Button(modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
             onClick = {
                 val maxPeople = maxAmountInput.toIntOrNull()?.coerceIn(2, 20)
@@ -185,16 +187,13 @@ fun AddEvent(navController : NavController) {
                     sportType = sportType
                 )
 
-                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                    try {
-                        val response = Handlers.eventsHandler.createEvent(request)
+                scope.launch {
+                    val response = Handlers.eventsHandler.createEvent(request)
 
-                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                            navController.navigate("main")
-                        }
-
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    if (response.success) {
+                        navController.navigate("main")
+                    } else {
+                        println(response.errorMessage)
                     }
                 }
             },

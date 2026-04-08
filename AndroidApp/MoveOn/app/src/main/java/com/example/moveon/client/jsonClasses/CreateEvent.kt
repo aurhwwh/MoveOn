@@ -1,12 +1,12 @@
 package com.example.moveon.client.jsonClasses
 
 import kotlinx.serialization.Serializable
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 
 @Serializable
-data class CreateEventRequest @OptIn(ExperimentalTime::class) constructor(
+@OptIn(kotlin.time.ExperimentalTime::class)
+data class CreateEventRequest (
     val title: String,
     val description: String,
     val time: Instant,
