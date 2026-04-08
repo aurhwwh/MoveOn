@@ -9,10 +9,9 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.moveon.client.handlers.Handlers
-import com.example.moveon.ui.mainScreen.AddEvent
-import com.example.moveon.ui.mainScreen.EventDetails
-import com.example.moveon.ui.mainScreen.MainScreen
+import com.example.moveon.ui.events.AddEvent
+import com.example.moveon.ui.events.EventDetails
+import com.example.moveon.ui.events.MainScreen
 import com.example.moveon.ui.profile.EditProfileScreen
 import com.example.moveon.ui.profile.ProfileScreen
 import com.example.moveon.ui.theme.MGreen

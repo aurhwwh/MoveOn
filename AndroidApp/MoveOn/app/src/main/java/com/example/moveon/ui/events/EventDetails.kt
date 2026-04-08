@@ -1,4 +1,4 @@
-package com.example.moveon.ui.mainScreen
+package com.example.moveon.ui.events
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically

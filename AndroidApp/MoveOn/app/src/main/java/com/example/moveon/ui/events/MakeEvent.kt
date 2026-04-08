@@ -1,4 +1,4 @@
-package com.example.moveon.ui.mainScreen
+package com.example.moveon.ui.events
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable

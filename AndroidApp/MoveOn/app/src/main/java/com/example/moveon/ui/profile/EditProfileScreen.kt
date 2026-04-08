@@ -109,7 +109,8 @@ fun EditProfileScreen(navController : NavController) {
 
         BirthDatePicker(
             selectedDate = birth,
-            onDateSelected = { birth = it }
+            onDateSelected = { birth = it },
+            width = 1f
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -146,7 +147,7 @@ fun EditProfileScreen(navController : NavController) {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Unit) {
+fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Unit, width: Float) {
     var showDialog by remember { mutableStateOf(false) }
 
     val formatter = remember { java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy") }
@@ -154,7 +155,8 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { showDialog = true }
+            .clickable { showDialog = true },
+        contentAlignment = Alignment.Center
     ) {
         TextField(
             value = selectedDate?.toJavaLocalDate()?.format(formatter) ?: "",
@@ -162,7 +164,7 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
             readOnly = true,
             enabled = false,
             label = { Text("Date of birth") },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(width),
 
             trailingIcon = {
                 Icon(
