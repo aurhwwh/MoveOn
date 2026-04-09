@@ -42,11 +42,13 @@ import com.example.moveon.viewModel.ProfileViewModel
 
 
 @Composable
-fun ProfileScreen(navController : NavController, viewModel: ProfileViewModel = viewModel()) {
+fun ProfileScreen(navController : NavController,
+                  viewModel: ProfileViewModel = viewModel(),
+                  profileId : Int) {
     Column(modifier = Modifier.fillMaxSize()) {
 
         LaunchedEffect(Unit) {
-            viewModel.loadProfile(1)
+            viewModel.loadProfile(profileId)
         }
 
         Scaffold(

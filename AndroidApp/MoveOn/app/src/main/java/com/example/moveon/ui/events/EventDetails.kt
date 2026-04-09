@@ -125,7 +125,10 @@ fun EventDetails(navController : NavController,
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Participant(data.participants!![0])
+                    Participant(
+                        data.participants!![0],
+                        onClick = { navController.navigate("profile/${data.participants[0].id}") }
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -155,7 +158,10 @@ fun EventDetails(navController : NavController,
                     ) {
                         Column {
                             data.participants.drop(1).forEach { participant ->
-                                Participant(participant = participant)
+                                Participant(
+                                    participant = participant,
+                                    onClick = { navController.navigate("profile/${participant.id}") }
+                                )
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
@@ -178,8 +184,8 @@ fun EventDetails(navController : NavController,
 }
 
 @Composable
-fun Participant(participant: Person) {
-    Row(modifier = Modifier.padding(8.dp)) {
+fun Participant(participant: Person, onClick: () -> Unit) {
+    Row(modifier = Modifier.padding(8.dp).clickable{ onClick() }) {
         Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
             contentDescription = "image",
             contentScale = ContentScale.Crop,

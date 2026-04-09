@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
                     MainScreen(navController)
                 }
                 composable("profile") {
-                    ProfileScreen(navController)
+                    ProfileScreen(navController, profileId = 1)
                 }
                 composable("editProfile") {
                     EditProfileScreen(navController)
@@ -67,6 +67,10 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("login"){
                     SignInScreen(navController)
+                }
+                composable("profile/{profileId}") { backStackEntry ->
+                    val profileId = backStackEntry.arguments?.getString("profileId")!!.toInt()
+                    ProfileScreen(navController, profileId = profileId)
                 }
             }
         }
