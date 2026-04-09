@@ -9,7 +9,7 @@ import kotlin.time.Instant
 data class CreateEventRequest (
     val title: String,
     val description: String,
-    val time: Instant,
+    val dateTime: Instant,
     //val position: Position, пока непонятно в каком формате, есть какие-то встроенные
     val maxAmountOfPeople: Int,
     val sportType: String

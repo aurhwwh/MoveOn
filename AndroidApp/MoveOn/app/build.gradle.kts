@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation("io.ktor:ktor-client-auth:2.3.7")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")

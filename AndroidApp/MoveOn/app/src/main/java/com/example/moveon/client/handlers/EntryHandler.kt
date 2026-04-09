@@ -18,7 +18,7 @@ class EntryHandler(private val api : EntryApi) {
         return api.login(request)
     }
 
-    suspend fun refresh(request: RefreshRequest): RefreshResponse {
+    /*suspend fun refresh(request: RefreshRequest): RefreshResponse {
         return api.refresh(request)
-    }
+    }*/
 }

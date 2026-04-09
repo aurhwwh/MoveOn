@@ -30,11 +30,11 @@ class EntryApi (val client: HttpClient) {
         }.body()
     }
 
-    suspend fun refresh(request : RefreshRequest) : RefreshResponse {
+    /*suspend fun refresh(request : RefreshRequest) : RefreshResponse {
         return client.post("$baseUrl/refresh") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
     }
-
+    */
 }

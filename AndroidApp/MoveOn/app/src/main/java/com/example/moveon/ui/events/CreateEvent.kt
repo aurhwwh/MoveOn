@@ -182,7 +182,7 @@ fun AddEvent(navController : NavController) {
                 val request = CreateEventRequest(
                     title = name,
                     description = description,
-                    time = dateTime,
+                    dateTime = dateTime,
                     maxAmountOfPeople = maxPeople,
                     sportType = sportType
                 )
