@@ -430,6 +430,56 @@ fun Application.configureRouting() {
 
 
         authenticate("auth-jwt") {
+            get("/view_my_profile") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal!!.payload.getClaim("userId").asInt()
+                if (userId == null) {
+                    call.respond(HttpStatusCode.BadRequest, ViewProfileResponse(false, "userId is required"))
+                    return@get
+                }
+
+                try {
+                    val profile = Database.useConnection { conn ->
+                        val sql = """
+                        SELECT u.id, u.user_name, u.user_surname, u.date_of_birth, u.description, u.photo_id,
+                               COALESCE(AVG(r.rating), 0.0) as avg_rating,
+                               (SELECT COUNT(*) FROM friends 
+                                WHERE (user_id = u.id OR friend_id = u.id) AND status = 'accepted') as friends_count
+                        FROM users u
+                        LEFT JOIN ratings r ON u.id = r.to_user_id
+                        WHERE u.id = ?
+                        GROUP BY u.id
+                    """.trimIndent()
+
+                        conn.prepareStatement(sql).use { stmt ->
+                            stmt.setInt(1, userId)
+                            val rs = stmt.executeQuery()
+                            if (rs.next()) {
+                                ViewProfileResponse(
+                                    success = true,
+                                    userName = rs.getString("user_name"),
+                                    userSurname = rs.getString("user_surname"),
+                                    dateOfBirth = rs.getDate("date_of_birth")?.toLocalDate()?.toKotlinLocalDate(),
+                                    description = rs.getString("description"),
+                                    rating = rs.getDouble("avg_rating"),
+                                    friendsAmount = rs.getInt("friends_count"),
+                                    photoId = rs.getInt("photo_id").takeIf { !rs.wasNull() }
+                                )
+                            } else null
+                        }
+                    }
+
+                    if (profile != null) {
+                        call.respond(HttpStatusCode.OK, profile)
+                    } else {
+                        call.respond(HttpStatusCode.NotFound, ViewProfileResponse(false, "User not found"))
+                    }
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, ViewProfileResponse(false, "Database error: ${e.message}"))
+                }
+            }
+
+
             post("/create_event") {
                 val request = try {
                     call.receive<CreateEventRequest>()
@@ -498,8 +548,9 @@ fun Application.configureRouting() {
                             val rs = stmt.executeQuery()
                             if (rs.next()) return@transaction false
                         }
-
-                        val insertSql = "INSERT INTO event_participants (event_id, user_id, status) VALUES (?, ?, 'pending')"
+                        //temporary for mvp
+                        //val insertSql = "INSERT INTO event_participants (event_id, user_id, status) VALUES (?, ?, 'pending')"
+                        val insertSql = "INSERT INTO event_participants (event_id, user_id, status) VALUES (?, ?, 'accepted')"
                         conn.prepareStatement(insertSql).use { stmt ->
                             stmt.setInt(1, request.eventId)
                             stmt.setInt(2, userId)
