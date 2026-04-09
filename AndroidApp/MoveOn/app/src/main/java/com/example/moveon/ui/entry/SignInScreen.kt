@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,8 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.moveon.client.handlers.Handlers
+import com.example.moveon.client.jsonClasses.LoginRequest
+import com.example.moveon.client.jsonClasses.RegisterRequest
+import com.example.moveon.data.TokenStorage.saveTokens
 import com.example.moveon.ui.theme.MGreen
-
+import kotlinx.coroutines.launch
 
 
 @Preview(name = "Sign In Screen")
@@ -83,9 +88,26 @@ fun SignInScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        val scope = rememberCoroutineScope()
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = {},
+            onClick = {
+                val request = LoginRequest(
+                    email = email,
+                    password = password
+                )
+
+                scope.launch {
+                    val response = Handlers.entryHandler.login(request)
+
+                    if (response.success && !response.accessToken.isNullOrBlank() && !response.refreshToken.isNullOrBlank()) {
+                        saveTokens(response.accessToken, response.refreshToken)
+                        navController.navigate("main")
+                    } else {
+                        println(response.errorMessage)
+                    }
+                }
+            },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MGreen
             )
@@ -99,7 +121,9 @@ fun SignInScreen(navController: NavController) {
 
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = {},
+            onClick = {
+                navController.navigate("register")
+            },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MGreen
             )

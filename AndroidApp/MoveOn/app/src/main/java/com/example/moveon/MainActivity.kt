@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.moveon.ui.entry.SignInScreen
 import com.example.moveon.ui.entry.SignUpScreen
 import com.example.moveon.ui.events.AddEvent
 import com.example.moveon.ui.events.EventDetails
@@ -37,7 +38,13 @@ class MainActivity : ComponentActivity() {
 
             NavHost(
                 navController = navController,
-                startDestination = "main"
+                startDestination = if (
+                    com.example.moveon.data.TokenStorage.getAccess().isNullOrEmpty()
+                ) {
+                    "login"
+                } else {
+                    "main"
+                }
             ) {
                 composable("main") {
                     MainScreen(navController)
@@ -57,6 +64,9 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("register") {
                     SignUpScreen(navController)
+                }
+                composable("login"){
+                    SignInScreen(navController)
                 }
             }
         }

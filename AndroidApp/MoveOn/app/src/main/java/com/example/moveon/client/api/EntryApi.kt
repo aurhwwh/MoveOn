@@ -1,5 +1,9 @@
 package com.example.moveon.client.api
 
+import com.example.moveon.client.jsonClasses.LoginRequest
+import com.example.moveon.client.jsonClasses.LoginResponse
+import com.example.moveon.client.jsonClasses.RefreshRequest
+import com.example.moveon.client.jsonClasses.RefreshResponse
 import com.example.moveon.client.jsonClasses.RegisterRequest
 import com.example.moveon.client.jsonClasses.RegisterResponse
 import io.ktor.client.HttpClient
@@ -18,4 +22,19 @@ class EntryApi (val client: HttpClient) {
             setBody(request)
         }.body()
     }
+
+    suspend fun login(request : LoginRequest) : LoginResponse {
+        return client.post("$baseUrl/login") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun refresh(request : RefreshRequest) : RefreshResponse {
+        return client.post("$baseUrl/refresh") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+
 }
