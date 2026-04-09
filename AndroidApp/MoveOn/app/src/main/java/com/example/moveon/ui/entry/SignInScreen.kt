@@ -102,7 +102,9 @@ fun SignInScreen(navController: NavController) {
 
                     if (response.success && !response.accessToken.isNullOrBlank() && !response.refreshToken.isNullOrBlank()) {
                         saveTokens(response.accessToken, response.refreshToken)
-                        navController.navigate("main")
+                        navController.navigate("main") {
+                            popUpTo(0) { inclusive = true }
+                        }
                     } else {
                         println(response.errorMessage)
                     }

@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.moveon.R
+import com.example.moveon.data.TokenStorage
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
 import kotlinx.datetime.DateTimeUnit
@@ -141,6 +142,24 @@ fun EditProfileScreen(navController : NavController) {
             )
         ) {
             Text(fontSize = 20.sp, text = "Save")
+        }
+
+        Spacer(modifier = Modifier.height(64.dp))
+
+        Button(
+            modifier = Modifier.align(Alignment.End).padding(8.dp),
+            onClick = {
+                TokenStorage.clear()
+
+                navController.navigate("login") {
+                    popUpTo(0) { inclusive = true }
+                }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Red
+            )
+        ) {
+            Text(fontSize = 20.sp, text = "Logout")
         }
     }
 }

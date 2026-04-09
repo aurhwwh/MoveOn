@@ -188,7 +188,9 @@ fun SignUpScreen(navController: NavController) {
                     val response = Handlers.entryHandler.register(request)
 
                     if (response.success) {
-                        navController.navigate("login")
+                        navController.navigate("main") {
+                            popUpTo(0) { inclusive = true }
+                        }
                     } else {
                         println(response.errorMessage)
                     }
