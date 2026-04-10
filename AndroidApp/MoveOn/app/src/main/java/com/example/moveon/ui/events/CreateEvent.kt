@@ -25,6 +25,7 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,11 +39,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.client.jsonClasses.CreateEventRequest
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.viewModel.EventsViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -59,7 +62,7 @@ import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun AddEvent(navController : NavController) {
+fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewModel()) {
     var name by remember { mutableStateOf("") }
     var sportType by remember { mutableStateOf("") }
     var maxAmountInput by remember { mutableStateOf("") }
@@ -70,10 +73,24 @@ fun AddEvent(navController : NavController) {
     var hours by remember { mutableStateOf<Int?>(null) }
     var mins by remember { mutableStateOf<Int?>(null) }
 
+    LaunchedEffect(viewModel.createSuccess) {
+        if (viewModel.createSuccess) {
+            navController.navigate("main")
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            viewModel.error?.let {
+                Text(
+                    text = it,
+                    color = Color.Red,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
             MoveOnTopBar(navController, "main")
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -166,8 +183,8 @@ fun AddEvent(navController : NavController) {
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        val scope = rememberCoroutineScope()
         Button(modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
+            enabled = !viewModel.isCreating,
             onClick = {
                 val maxPeople = maxAmountInput.toIntOrNull()?.coerceIn(2, 20)
 
@@ -187,19 +204,11 @@ fun AddEvent(navController : NavController) {
                     sportType = sportType
                 )
 
-                scope.launch {
-                    val response = Handlers.eventsHandler.createEvent(request)
-
-                    if (response.success) {
-                        navController.navigate("main")
-                    } else {
-                        println(response.errorMessage)
-                    }
-                }
+                viewModel.createEvent(request)
             },
             colors = ButtonDefaults.buttonColors(containerColor = MGreen)
         ) {
-            Text(fontSize = 25.sp, text = "Create")
+            Text(fontSize = 25.sp, text = if (viewModel.isCreating) "Creating..." else "Create")
         }
     }
 }

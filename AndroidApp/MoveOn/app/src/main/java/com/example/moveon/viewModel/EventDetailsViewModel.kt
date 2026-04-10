@@ -17,7 +17,7 @@ class EventDetailsViewModel : ViewModel() {
     var event by mutableStateOf<ViewEventResponse?>(null)
         private set
 
-    var isLoading by mutableStateOf(true)
+    var isLoadingEvent by mutableStateOf(true)
         private set
 
     var error by mutableStateOf<String?>(null)
@@ -25,7 +25,7 @@ class EventDetailsViewModel : ViewModel() {
 
     fun loadEvent(eventId: Int) {
         viewModelScope.launch {
-            isLoading = true
+            isLoadingEvent = true
             error = null
 
             try {
@@ -33,7 +33,31 @@ class EventDetailsViewModel : ViewModel() {
             } catch (e: Exception) {
                 error = e.message
             } finally {
-                isLoading = false
+                isLoadingEvent = false
+            }
+        }
+    }
+
+
+    var isJoining by mutableStateOf(false)
+        private set
+
+    var joinSuccess by mutableStateOf(false)
+        private set
+
+    fun joinEvent(eventId: Int) {
+        viewModelScope.launch {
+            isJoining = true
+            error = null
+            joinSuccess = false
+
+            try {
+                handler.joinApplication(eventId)
+                joinSuccess = true
+            } catch (e: Exception) {
+                error = e.message
+            } finally {
+                isLoadingEvent = false
             }
         }
     }

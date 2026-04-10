@@ -66,8 +66,16 @@ fun EventDetails(navController : NavController,
         viewModel.loadEvent(eventId)
     }
 
+    LaunchedEffect(viewModel.joinSuccess) {
+        if (viewModel.joinSuccess) {
+            navController.navigate("main") {
+                popUpTo("eventDetails/$eventId") { inclusive = true }
+            }
+        }
+    }
+
     when {
-        viewModel.isLoading -> Text("Loading")
+        viewModel.isLoadingEvent -> Text("Loading")
         viewModel.error != null -> Text("${viewModel.error}")
         else -> {
             val data = viewModel.event ?: run {
@@ -168,14 +176,26 @@ fun EventDetails(navController : NavController,
                     }
                 }
 
+                viewModel.error?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+
                 Button(
                     modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
-                    onClick = {},
+                    onClick = { viewModel.joinEvent(eventId) },
+                    enabled = !viewModel.isJoining,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MGreen
                     )
                 ) {
-                    Text(fontSize = 25.sp, text = "Join")
+                    Text(
+                        fontSize = 25.sp,
+                        text = if (viewModel.isJoining) "Joining..." else "Join"
+                    )
                 }
             }
 

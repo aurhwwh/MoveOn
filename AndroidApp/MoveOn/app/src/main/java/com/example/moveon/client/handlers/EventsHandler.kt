@@ -4,6 +4,8 @@ import com.example.moveon.client.api.EventsApi
 import com.example.moveon.client.jsonClasses.CreateEventRequest
 import com.example.moveon.client.jsonClasses.CreateEventResponse
 import com.example.moveon.client.jsonClasses.EventData
+import com.example.moveon.client.jsonClasses.JoinApplicationRequest
+import com.example.moveon.client.jsonClasses.JoinApplicationResponse
 import com.example.moveon.client.jsonClasses.ViewEventResponse
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
 
@@ -21,8 +23,12 @@ class EventsHandler(private val api : EventsApi) {
         return response.events ?: emptyList()
     }
 
-    suspend fun createEvent(request: CreateEventRequest): CreateEventResponse {
-        return api.createEvent(request)
+    suspend fun createEvent(request: CreateEventRequest) {
+        val response = api.createEvent(request)
+
+        if (!response.success) {
+            throw Exception(response.errorMessage ?: "Unknown error")
+        }
     }
 
     suspend fun viewEvent(eventId : Int): ViewEventResponse {
@@ -33,5 +39,13 @@ class EventsHandler(private val api : EventsApi) {
         }
 
         return response
+    }
+
+    suspend fun joinApplication(eventId: Int) {
+        val response = api.joinApplication(JoinApplicationRequest(eventId))
+
+        if (!response.success) {
+            throw Exception(response.errorMessage ?: "Unknown error")
+        }
     }
 }
