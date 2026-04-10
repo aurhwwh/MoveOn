@@ -22,13 +22,28 @@ class ProfileViewModel : ViewModel() {
     var error by mutableStateOf<String?>(null)
         private set
 
-    fun loadProfile(profileId: Int) {
+    fun loadMyProfile() {
         viewModelScope.launch {
             isLoading = true
             error = null
 
             try {
-                profile = handler.getProfile(profileId)
+                profile = handler.getMyProfile()
+            } catch (e: Exception) {
+                error = e.message
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun loadUserProfile(userId: Int) {
+        viewModelScope.launch {
+            isLoading = true
+            error = null
+
+            try {
+                profile = handler.getUserProfile(userId)
             } catch (e: Exception) {
                 error = e.message
             } finally {

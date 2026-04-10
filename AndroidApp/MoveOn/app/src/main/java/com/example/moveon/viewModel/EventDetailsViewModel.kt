@@ -57,7 +57,7 @@ class EventDetailsViewModel : ViewModel() {
             } catch (e: Exception) {
                 error = e.message
             } finally {
-                isLoadingEvent = false
+                isJoining  = false
             }
         }
     }

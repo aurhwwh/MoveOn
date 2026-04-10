@@ -15,7 +15,8 @@ import com.example.moveon.ui.events.AddEvent
 import com.example.moveon.ui.events.EventDetails
 import com.example.moveon.ui.events.MainScreen
 import com.example.moveon.ui.profile.EditProfileScreen
-import com.example.moveon.ui.profile.ProfileScreen
+import com.example.moveon.ui.profile.MyProfileScreen
+import com.example.moveon.ui.profile.UserProfileScreen
 import com.example.moveon.ui.theme.MGreen
 
 class MainActivity : ComponentActivity() {
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
                     MainScreen(navController)
                 }
                 composable("profile") {
-                    ProfileScreen(navController, profileId = 1)
+                    MyProfileScreen(navController)
                 }
                 composable("editProfile") {
                     EditProfileScreen(navController)
@@ -68,9 +69,9 @@ class MainActivity : ComponentActivity() {
                 composable("login"){
                     SignInScreen(navController)
                 }
-                composable("profile/{profileId}") { backStackEntry ->
-                    val profileId = backStackEntry.arguments?.getString("profileId")!!.toInt()
-                    ProfileScreen(navController, profileId = profileId)
+                composable("profile/{userId}") { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getString("userId")!!.toInt()
+                    UserProfileScreen(navController, userId = userId)
                 }
             }
         }
