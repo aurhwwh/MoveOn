@@ -231,7 +231,7 @@ fun Application.configureRouting() {
             try {
                 val events = Database.useConnection { conn ->
                     val sqlBuilder = StringBuilder("""
-                        SELECT e.id, e.title, e.city, e.sport_type, e.time, e.max_amount_of_people,  
+                        SELECT e.id, e.title, e.description, e.city, e.sport_type, e.time, e.max_amount_of_people,  
                                (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount,
                                COALESCE((SELECT AVG(rating) FROM ratings WHERE to_user_id = e.creator_id), 0.0) as creator_rating
                         FROM events e
@@ -295,7 +295,7 @@ fun Application.configureRouting() {
                                     currentAmountOfPeople = rs.getInt("current_amount"),
                                     creatorRating = creatorRating1,
                                     photoId = 1, //todo: add params to db
-                                    description = "description"
+                                    description = rs.getString("description") ?: ""
                                 )
                             )
                         }
