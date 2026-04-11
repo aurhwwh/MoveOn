@@ -9,11 +9,14 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.moveon.client.handlers.Handlers
-import com.example.moveon.ui.mainScreen.AddEvent
-import com.example.moveon.ui.mainScreen.MainScreen
+import com.example.moveon.ui.entry.SignInScreen
+import com.example.moveon.ui.entry.SignUpScreen
+import com.example.moveon.ui.events.AddEvent
+import com.example.moveon.ui.events.EventDetails
+import com.example.moveon.ui.events.MainScreen
 import com.example.moveon.ui.profile.EditProfileScreen
-import com.example.moveon.ui.profile.ProfileScreen
+import com.example.moveon.ui.profile.MyProfileScreen
+import com.example.moveon.ui.profile.UserProfileScreen
 import com.example.moveon.ui.theme.MGreen
 
 class MainActivity : ComponentActivity() {
@@ -36,19 +39,39 @@ class MainActivity : ComponentActivity() {
 
             NavHost(
                 navController = navController,
-                startDestination = "main"
+                startDestination = if (
+                    com.example.moveon.data.TokenStorage.getAccess().isNullOrEmpty()
+                ) {
+                    "login"
+                } else {
+                    "main"
+                }
             ) {
                 composable("main") {
                     MainScreen(navController)
                 }
                 composable("profile") {
-                    ProfileScreen(navController, Handlers.profileHandler)
+                    MyProfileScreen(navController)
                 }
                 composable("editProfile") {
                     EditProfileScreen(navController)
                 }
                 composable("addEvent") {
                     AddEvent(navController)
+                }
+                composable("eventDetails/{eventId}") { backStackEntry ->
+                    val eventId = backStackEntry.arguments?.getString("eventId")!!.toInt()
+                    EventDetails(navController, eventId = eventId)
+                }
+                composable("register") {
+                    SignUpScreen(navController)
+                }
+                composable("login"){
+                    SignInScreen(navController)
+                }
+                composable("profile/{userId}") { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getString("userId")!!.toInt()
+                    UserProfileScreen(navController, userId = userId)
                 }
             }
         }

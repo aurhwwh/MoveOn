@@ -56,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.moveon.R
+import com.example.moveon.data.TokenStorage
+import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -78,28 +80,7 @@ fun EditProfileScreen(navController : NavController) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        Row(modifier = Modifier.fillMaxWidth().background(MGreen).windowInsetsPadding(WindowInsets.statusBars),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { navController.navigate("profile") }) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "Profile",
-                    tint = Color.White,
-                    modifier = Modifier.size(25.dp)
-                )
-            }
-
-            Text(
-                text = "MoveOn",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Italic,
-                fontFamily = FontFamily.SansSerif,
-                fontSize = 30.sp,
-            )
-        }
+        MoveOnTopBar(navController, "profile")
 
         Image(painter = painterResource(id = R.drawable.img),
             contentDescription = "image",
@@ -129,7 +110,8 @@ fun EditProfileScreen(navController : NavController) {
 
         BirthDatePicker(
             selectedDate = birth,
-            onDateSelected = { birth = it }
+            onDateSelected = { birth = it },
+            width = 1f
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -161,12 +143,30 @@ fun EditProfileScreen(navController : NavController) {
         ) {
             Text(fontSize = 20.sp, text = "Save")
         }
+
+        Spacer(modifier = Modifier.height(64.dp))
+
+        Button(
+            modifier = Modifier.align(Alignment.End).padding(8.dp),
+            onClick = {
+                TokenStorage.clear()
+
+                navController.navigate("login") {
+                    popUpTo(0) { inclusive = true }
+                }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Red
+            )
+        ) {
+            Text(fontSize = 20.sp, text = "Logout")
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Unit) {
+fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Unit, width: Float) {
     var showDialog by remember { mutableStateOf(false) }
 
     val formatter = remember { java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy") }
@@ -174,7 +174,8 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { showDialog = true }
+            .clickable { showDialog = true },
+        contentAlignment = Alignment.Center
     ) {
         TextField(
             value = selectedDate?.toJavaLocalDate()?.format(formatter) ?: "",
@@ -182,7 +183,7 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
             readOnly = true,
             enabled = false,
             label = { Text("Date of birth") },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(width),
 
             trailingIcon = {
                 Icon(

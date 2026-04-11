@@ -1,5 +1,8 @@
 package com.example.moveon.viewModel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -9,8 +12,10 @@ import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import com.example.moveon.client.handlers.EventsHandler
 import com.example.moveon.client.handlers.Handlers
+import com.example.moveon.client.jsonClasses.CreateEventRequest
 import com.example.moveon.client.jsonClasses.EventData
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
+import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
 
@@ -43,12 +48,13 @@ class EventsPagingSource(
 
 class EventsViewModel () : ViewModel() {
     private val handler = Handlers.eventsHandler
+
     @OptIn(ExperimentalTime::class)
     private val defaultFilters = ViewFilteredEventsListRequest (
         title = null,
         city = null,
         sportType = null,
-        date = null,
+        dateTime = null,
         maxAmountOfPeople = null,
         creatorRating = null
     )
@@ -59,4 +65,31 @@ class EventsViewModel () : ViewModel() {
             enablePlaceholders = false),
         pagingSourceFactory = {EventsPagingSource(handler, defaultFilters)}
     ).flow.cachedIn(viewModelScope)
+
+
+    var isCreating by mutableStateOf(false)
+        private set
+
+    var createSuccess by mutableStateOf(false)
+        private set
+
+    var error by mutableStateOf<String?>(null)
+        private set
+
+    fun createEvent(request: CreateEventRequest) {
+        viewModelScope.launch {
+            isCreating = true
+            error = null
+            createSuccess = false
+
+            try {
+                handler.createEvent(request)
+                createSuccess = true
+            } catch (e: Exception) {
+                error = e.message
+            } finally {
+                isCreating = false
+            }
+        }
+    }
 }

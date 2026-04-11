@@ -1,15 +1,15 @@
 package com.example.moveon.client.jsonClasses
 
 import kotlinx.serialization.Serializable
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 
 @Serializable
-data class CreateEventRequest @OptIn(ExperimentalTime::class) constructor(
+@OptIn(kotlin.time.ExperimentalTime::class)
+data class CreateEventRequest (
     val title: String,
     val description: String,
-    val time: Instant,
+    val dateTime: Instant,
     //val position: Position, пока непонятно в каком формате, есть какие-то встроенные
     val maxAmountOfPeople: Int,
     val sportType: String

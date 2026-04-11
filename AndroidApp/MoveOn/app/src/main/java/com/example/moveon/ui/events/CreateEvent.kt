@@ -1,22 +1,16 @@
-package com.example.moveon.ui.mainScreen
+package com.example.moveon.ui.events
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -24,7 +18,6 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -32,9 +25,11 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,10 +39,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.client.jsonClasses.CreateEventRequest
+import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.viewModel.EventsViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -64,7 +62,7 @@ import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun AddEvent(navController : NavController) {
+fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewModel()) {
     var name by remember { mutableStateOf("") }
     var sportType by remember { mutableStateOf("") }
     var maxAmountInput by remember { mutableStateOf("") }
@@ -75,25 +73,28 @@ fun AddEvent(navController : NavController) {
     var hours by remember { mutableStateOf<Int?>(null) }
     var mins by remember { mutableStateOf<Int?>(null) }
 
+    LaunchedEffect(viewModel.createSuccess) {
+        if (viewModel.createSuccess) {
+            navController.navigate("main")
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(modifier = Modifier.fillMaxWidth().background(MGreen).windowInsetsPadding(WindowInsets.statusBars),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { navController.navigate("main") }) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBackIosNew,
-                        contentDescription = "Main",
-                        tint = Color.White,
-                        modifier = Modifier.size(25.dp)
-                    )
-                }
+            viewModel.error?.let {
+                Text(
+                    text = it,
+                    color = Color.Red,
+                    modifier = Modifier.padding(8.dp)
+                )
             }
 
+            MoveOnTopBar(navController, "main")
+
             Spacer(modifier = Modifier.height(16.dp))
+
             Text(
                 text = "Create Event",
                 color = Color.Black,
@@ -183,6 +184,7 @@ fun AddEvent(navController : NavController) {
         }
 
         Button(modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
+            enabled = !viewModel.isCreating,
             onClick = {
                 val maxPeople = maxAmountInput.toIntOrNull()?.coerceIn(2, 20)
 
@@ -197,27 +199,16 @@ fun AddEvent(navController : NavController) {
                 val request = CreateEventRequest(
                     title = name,
                     description = description,
-                    time = dateTime,
+                    dateTime = dateTime,
                     maxAmountOfPeople = maxPeople,
                     sportType = sportType
                 )
 
-                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                    try {
-                        val response = Handlers.eventsHandler.createEvent(request)
-
-                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                            navController.navigate("main")
-                        }
-
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
+                viewModel.createEvent(request)
             },
             colors = ButtonDefaults.buttonColors(containerColor = MGreen)
         ) {
-            Text(fontSize = 25.sp, text = "Create")
+            Text(fontSize = 25.sp, text = if (viewModel.isCreating) "Creating..." else "Create")
         }
     }
 }

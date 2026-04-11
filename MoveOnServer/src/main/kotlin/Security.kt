@@ -43,7 +43,7 @@ fun generateAccessToken(userId: Int): String {
         .withIssuer(issuer)
         .withClaim("userId", userId)
         .withClaim("type", "access")
-        .withExpiresAt(Date(System.currentTimeMillis() + 24*3600000))
+        .withExpiresAt(Date(System.currentTimeMillis() + 3600000))
         .sign(Algorithm.HMAC256(secret))
 }
 

@@ -1,7 +1,6 @@
 package com.example.moveon.ui.common
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -15,9 +14,9 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
@@ -36,7 +35,7 @@ import androidx.navigation.NavController
 import com.example.moveon.ui.theme.MGreen
 
 @Composable
-fun TopBar(
+fun CityTopBar(
     city: String
 ) {
     Box(modifier = Modifier
@@ -121,5 +120,32 @@ fun BottomBar(
                 )
             }
         }
+    }
+}
+
+
+@Composable
+fun MoveOnTopBar(navController : NavController, prevScreen : String) {
+    Row(modifier = Modifier.fillMaxWidth().background(MGreen).windowInsetsPadding(WindowInsets.statusBars),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = {navController.navigate(prevScreen) }) {
+            Icon(
+                imageVector = Icons.Filled.ArrowBackIosNew,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(25.dp)
+            )
+        }
+
+        Text(
+            text = "MoveOn",
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            fontStyle = FontStyle.Italic,
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 30.sp,
+        )
     }
 }
