@@ -309,80 +309,7 @@ fun Application.configureRouting() {
             }
         }
 
-        get("/view_event") {
-            val eventId = call.request.queryParameters["eventId"]?.toIntOrNull()
-            if (eventId == null) {
-                call.respond(HttpStatusCode.BadRequest, ViewEventResponse(false, "eventId is required"))
-                return@get
-            }
 
-            try {
-                val eventData = Database.useConnection { conn ->
-                    val sql = """
-                        SELECT e.id, e.title, e.description, e.time, e.max_amount_of_people, e.sport_type, e.creator_id,
-                               (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount
-                        FROM events e
-                        WHERE e.id = ?
-                    """.trimIndent()
-                    conn.prepareStatement(sql).use { stmt ->
-                        stmt.setInt(1, eventId)
-                        val rs = stmt.executeQuery()
-                        if (rs.next()) {
-                            val participants = conn.prepareStatement(
-                                """SELECT u.id, u.user_name AS name, u.user_surname AS surname,
-                                    AVG(r.rating) AS rating,
-                                    CASE WHEN u.id = ? THEN 1 ELSE 0 END AS is_creator
-                                    FROM users u
-                                    JOIN event_participants ep ON u.id = ep.user_id
-                                    LEFT JOIN ratings r ON r.to_user_id = u.id
-                                    WHERE ep.event_id = ? AND ep.status = 'accepted'
-                                    GROUP BY u.id, u.user_name, u.user_surname
-                                    ORDER BY is_creator DESC, u.id
-                                    """
-                            ).use { pstmt ->
-                                pstmt.setInt(1, rs.getInt("creator_id"))
-                                pstmt.setInt(2, eventId)
-                                val rs = pstmt.executeQuery()
-                                val list = mutableListOf<Person>()
-
-                                while (rs.next()) {
-                                    val rating = rs.getDouble("rating")
-                                    list.add(
-                                        Person(
-                                            id = rs.getInt("id"),
-                                            name = rs.getString("name"),
-                                            surname = rs.getString("surname"),
-                                            rating = rs.getDouble("rating")
-                                        )
-                                    )
-                                }
-                                list
-                            }
-
-                            ViewEventResponse(
-                                success = true,
-                                creatorId = rs.getInt("creator_id"),
-                                participants = participants,
-                                title = rs.getString("title"),
-                                description = rs.getString("description"),
-                                dateTime = rs.getTimestamp("time")?.toInstant()?.toKotlinInstant(),
-                                currentAmountOfPeople = rs.getInt("current_amount"),
-                                maxAmountOfPeople = rs.getInt("max_amount_of_people"),
-                                sportType = rs.getString("sport_type")
-                            )
-                        } else null
-                    }
-                }
-
-                if (eventData != null) {
-                    call.respond(HttpStatusCode.OK, eventData)
-                } else {
-                    call.respond(HttpStatusCode.NotFound, ViewEventResponse(false, "Event not found"))
-                }
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, ViewEventResponse(false, "Database error: ${e.message}"))
-            }
-        }
 
 
 
@@ -426,10 +353,90 @@ fun Application.configureRouting() {
             }
         }
 
-
-
-
         authenticate("auth-jwt") {
+            get("/view_event") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal!!.payload.getClaim("userId").asInt()
+                val eventId = call.request.queryParameters["eventId"]?.toIntOrNull()
+                if (eventId == null) {
+                    call.respond(HttpStatusCode.BadRequest, ViewEventResponse(false, "eventId is required"))
+                    return@get
+                }
+
+                try {
+                    val eventData = Database.useConnection { conn ->
+                        val sql = """
+                        SELECT e.id, e.title, e.description, e.time, e.max_amount_of_people, e.sport_type, e.creator_id,
+                               (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount
+                        FROM events e
+                        WHERE e.id = ?
+                    """.trimIndent()
+                        conn.prepareStatement(sql).use { stmt ->
+                            stmt.setInt(1, eventId)
+                            val rs = stmt.executeQuery()
+                            if (rs.next()) {
+                                val participants = conn.prepareStatement(
+                                    """SELECT u.id, u.user_name AS name, u.user_surname AS surname,
+                                    AVG(r.rating) AS rating,
+                                    CASE WHEN u.id = ? THEN 1 ELSE 0 END AS is_creator
+                                    FROM users u
+                                    JOIN event_participants ep ON u.id = ep.user_id
+                                    LEFT JOIN ratings r ON r.to_user_id = u.id
+                                    WHERE ep.event_id = ? AND ep.status = 'accepted'
+                                    GROUP BY u.id, u.user_name, u.user_surname
+                                    ORDER BY is_creator DESC, u.id
+                                    """
+                                ).use { pstmt ->
+                                    pstmt.setInt(1, rs.getInt("creator_id"))
+                                    pstmt.setInt(2, eventId)
+                                    val rs = pstmt.executeQuery()
+                                    val list = mutableListOf<Person>()
+                                    var isUserParticipant = false
+
+                                    while (rs.next()) {
+                                        val participantId = rs.getInt("id")
+                                        if (participantId == userId) {
+                                            isUserParticipant = true
+                                        }
+                                        list.add(
+                                            Person(
+                                                id = rs.getInt("id"),
+                                                name = rs.getString("name"),
+                                                surname = rs.getString("surname"),
+                                                rating = rs.getDouble("rating")
+                                            )
+                                        )
+                                    }
+                                    Pair(list, isUserParticipant)
+                                }
+
+                                ViewEventResponse(
+                                    success = true,
+                                    creatorId = rs.getInt("creator_id"),
+                                    participants = participants.first,
+                                    title = rs.getString("title"),
+                                    description = rs.getString("description"),
+                                    dateTime = rs.getTimestamp("time")?.toInstant()?.toKotlinInstant(),
+                                    currentAmountOfPeople = rs.getInt("current_amount"),
+                                    maxAmountOfPeople = rs.getInt("max_amount_of_people"),
+                                    sportType = rs.getString("sport_type"),
+                                    isUserCreator = (userId==rs.getInt("creator_id")),
+                                    isUserParticipant = participants.second
+                                )
+                            } else null
+                        }
+                    }
+
+                    if (eventData != null) {
+                        call.respond(HttpStatusCode.OK, eventData)
+                    } else {
+                        call.respond(HttpStatusCode.NotFound, ViewEventResponse(false, "Event not found"))
+                    }
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, ViewEventResponse(false, "Database error: ${e.message}"))
+                }
+            }
+
             get("/view_my_profile") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal!!.payload.getClaim("userId").asInt()
@@ -501,7 +508,7 @@ fun Application.configureRouting() {
                             stmt.setString(1, request.title)
                             stmt.setString(2, request.description)
                             stmt.setTimestamp(3, java.sql.Timestamp.from(request.dateTime.toJavaInstant()))
-                            stmt.setString(4, "Unknown")
+                            stmt.setString(4, request.city)
                             stmt.setInt(5, request.maxAmountOfPeople)
                             stmt.setString(6, request.sportType)
                             stmt.setInt(7, creatorId)

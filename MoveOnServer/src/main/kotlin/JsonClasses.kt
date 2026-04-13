@@ -80,7 +80,8 @@ data class CreateEventRequest @OptIn(ExperimentalTime::class) constructor(
     val dateTime: Instant,
     //val position: Position, пока непонятно в каком формате, есть какие-то встроенные
     val maxAmountOfPeople: Int,
-    val sportType: String
+    val sportType: String,
+    val city: String = "Unknown",
 )
 
 @Serializable
@@ -126,7 +127,10 @@ data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(
     val currentAmountOfPeople: Int? = null,
     val maxAmountOfPeople: Int? = null,
     val sportType: String? = null,
+    val isUserParticipant: Boolean? = null,
+    val isUserCreator: Boolean? = null,
     val photoId: Int? = null
+
 )
 
 //@Serializable
