@@ -28,6 +28,7 @@ import com.example.moveon.data.ProfileData
 import kotlinx.datetime.toJavaLocalDate
 
 
+
 @Composable
 fun MakeProfile(data: ProfileData) {
     Box(modifier = Modifier.padding(8.dp)) {
