@@ -12,7 +12,8 @@ data class CreateEventRequest (
     val dateTime: Instant,
     //val position: Position, пока непонятно в каком формате, есть какие-то встроенные
     val maxAmountOfPeople: Int,
-    val sportType: String
+    val sportType: String,
+    val city: String = "Unknown"
 )
 
 
