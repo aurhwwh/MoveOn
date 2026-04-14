@@ -69,6 +69,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
+
 @Composable
 fun EditProfileScreen(navController : NavController) {
     var name by remember { mutableStateOf("") }
@@ -163,10 +164,14 @@ fun EditProfileScreen(navController : NavController) {
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Unit, width: Float) {
+fun BirthDatePicker(
+    selectedDate: LocalDate?,
+    onDateSelected: (LocalDate) -> Unit,
+    width: Float,
+    isError: Boolean = false
+) {
     var showDialog by remember { mutableStateOf(false) }
 
     val formatter = remember { java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy") }
@@ -184,7 +189,7 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
             enabled = false,
             label = { Text("Date of birth") },
             modifier = Modifier.fillMaxWidth(width),
-
+            isError = isError,
             trailingIcon = {
                 Icon(
                     imageVector = Icons.Default.DateRange,
@@ -194,27 +199,25 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
         )
     }
 
-    val today = Instant.fromEpochMilliseconds(System.currentTimeMillis()).toLocalDateTime(TimeZone.currentSystemDefault()).date
-
+    val today = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+        .toLocalDateTime(TimeZone.currentSystemDefault()).date
     val minDate = today.minus(100, DateTimeUnit.YEAR)
     val maxDate = today.minus(16, DateTimeUnit.YEAR)
 
     if (showDialog) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis =
-                maxDate.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
-
+            initialSelectedDateMillis = maxDate
+                .atStartOfDayIn(TimeZone.currentSystemDefault())
+                .toEpochMilliseconds(),
             selectableDates = object : SelectableDates {
                 override fun isSelectableYear(year: Int): Boolean {
                     return year in minDate.year..maxDate.year
                 }
-
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                     val date = Instant
                         .fromEpochMilliseconds(utcTimeMillis)
                         .toLocalDateTime(TimeZone.currentSystemDefault())
                         .date
-
                     return date in minDate..maxDate
                 }
             }
@@ -228,20 +231,17 @@ fun BirthDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
                     if (millis != null) {
                         val date = Instant
                             .fromEpochMilliseconds(millis)
-                            .toLocalDateTime(TimeZone.currentSystemDefault()).date
-
+                            .toLocalDateTime(TimeZone.currentSystemDefault())
+                            .date
                         onDateSelected(date)
                     }
                     showDialog = false
-                }
-                ) {
+                }) {
                     Text("OK")
                 }
             }
         ) {
-            DatePicker(
-                state = datePickerState
-            )
+            DatePicker(state = datePickerState)
         }
     }
 }

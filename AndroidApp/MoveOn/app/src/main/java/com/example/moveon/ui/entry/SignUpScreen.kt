@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -21,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -31,46 +33,100 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.moveon.client.handlers.Handlers
-import com.example.moveon.client.jsonClasses.CreateEventRequest
 import com.example.moveon.client.jsonClasses.RegisterRequest
 import com.example.moveon.ui.profile.BirthDatePicker
 import com.example.moveon.ui.theme.MGreen
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atTime
-import kotlinx.datetime.toInstant
 
+private fun isValidName(name: String): Boolean {
+    val regex = Regex("^[a-zA-Z0-9]+$")
+    return name.isNotBlank() && regex.matches(name)
+}
 
-//@Preview(name = "Sign Up Screen")
-//@Composable
-//fun SignUpScreenPreview() {
-//    SignUpScreen(navController = rememberNavController())
-//}
+private fun isValidEmail(email: String): Boolean {
+    val regex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+    return regex.matches(email)
+}
 
+private fun isValidPassword(password: String): Boolean {
+    val regex = Regex("^[a-zA-Z0-9]+$")
+    return password.isNotBlank() && regex.matches(password)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(navController: NavController) {
-
     var name by remember { mutableStateOf("") }
     var surname by remember { mutableStateOf("") }
     var birth by remember { mutableStateOf<LocalDate?>(null) }
     var gender by remember { mutableStateOf("") }
-    // var description by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var repeat_password by remember { mutableStateOf("") }
+    var repeatPassword by remember { mutableStateOf("") }
+
+    var passwordVisible by remember { mutableStateOf(false) }
+    var repeatPasswordVisible by remember { mutableStateOf(false) }
+
+    var isNameError by remember { mutableStateOf(false) }
+    var isSurnameError by remember { mutableStateOf(false) }
+    var isBirthError by remember { mutableStateOf(false) }
+    var isGenderError by remember { mutableStateOf(false) }
+    var isEmailError by remember { mutableStateOf(false) }
+    var isPasswordError by remember { mutableStateOf(false) }
+    var isRepeatPasswordError by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
+
+    fun validateAndRegister() {
+        val nameValid = isValidName(name)
+        val surnameValid = isValidName(surname)
+        val birthValid = birth != null
+        val genderValid = gender.isNotBlank()
+        val emailValid = isValidEmail(email)
+        val passwordValid = isValidPassword(password)
+        val repeatValid = password == repeatPassword && passwordValid
+
+        isNameError = !nameValid
+        isSurnameError = !surnameValid
+        isBirthError = !birthValid
+        isGenderError = !genderValid
+        isEmailError = !emailValid
+        isPasswordError = !passwordValid
+        isRepeatPasswordError = !repeatValid
+
+        if (nameValid && surnameValid && birthValid && genderValid && emailValid && passwordValid && repeatValid) {
+            val request = RegisterRequest(
+                userName = name,
+                userSurname = surname,
+                dateOfBirth = birth!!,
+                email = email,
+                password = password,
+                gender = gender
+            )
+            scope.launch {
+                val response = Handlers.entryHandler.register(request)
+                if (response.success) {
+                    navController.navigate("main") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                } else {
+                    println(response.errorMessage)
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -79,9 +135,6 @@ fun SignUpScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
-        //Spacer(modifier = Modifier.height(48.dp))
-
         Text(
             text = "Welcome to MoveOn!",
             fontWeight = FontWeight.Bold,
@@ -94,8 +147,12 @@ fun SignUpScreen(navController: NavController) {
 
         TextField(
             value = name,
-            onValueChange = { name = it },
+            onValueChange = {
+                name = it
+                isNameError = false
+            },
             label = { Text("name") },
+            isError = isNameError,
             modifier = Modifier.fillMaxWidth(0.7f)
         )
 
@@ -103,8 +160,12 @@ fun SignUpScreen(navController: NavController) {
 
         TextField(
             value = surname,
-            onValueChange = { surname = it },
+            onValueChange = {
+                surname = it
+                isSurnameError = false
+            },
             label = { Text("surname") },
+            isError = isSurnameError,
             modifier = Modifier.fillMaxWidth(0.7f)
         )
 
@@ -112,32 +173,35 @@ fun SignUpScreen(navController: NavController) {
 
         BirthDatePicker(
             selectedDate = birth,
-            onDateSelected = { birth = it },
-            width = 0.7f
+            onDateSelected = {
+                birth = it
+                isBirthError = false
+            },
+            width = 0.7f,
+            isError = isBirthError
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         PickGender(
             selectedGender = gender,
-            onGenderSelected = { gender = it }
+            onGenderSelected = {
+                gender = it
+                isGenderError = false
+            },
+            isError = isGenderError
         )
-
-        /* Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("description") },
-            modifier = Modifier.fillMaxWidth(0.7f)
-        ) */
 
         Spacer(modifier = Modifier.height(16.dp))
 
         TextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                isEmailError = false
+            },
             label = { Text("email") },
+            isError = isEmailError,
             modifier = Modifier.fillMaxWidth(0.7f)
         )
 
@@ -145,57 +209,52 @@ fun SignUpScreen(navController: NavController) {
 
         TextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                isPasswordError = false
+                isRepeatPasswordError = false
+            },
             label = { Text("password") },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        contentDescription = null
+                    )
+                }
+            },
+            isError = isPasswordError,
             modifier = Modifier.fillMaxWidth(0.7f)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         TextField(
-            value = repeat_password,
-            onValueChange = { repeat_password = it },
+            value = repeatPassword,
+            onValueChange = {
+                repeatPassword = it
+                isRepeatPasswordError = false
+            },
             label = { Text("repeat password") },
+            visualTransformation = if (repeatPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { repeatPasswordVisible = !repeatPasswordVisible }) {
+                    Icon(
+                        imageVector = if (repeatPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        contentDescription = null
+                    )
+                }
+            },
+            isError = isRepeatPasswordError,
             modifier = Modifier.fillMaxWidth(0.7f)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        val scope = rememberCoroutineScope()
-        Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = {
-
-                val isValid = name.isNotBlank() &&
-                        surname.isNotBlank() &&
-                        birth != null &&
-                        gender.isNotBlank() &&
-                        email.isNotBlank() &&
-                        password.isNotBlank() &&
-                        repeat_password == password
-
-                if (!isValid) return@Button
-
-                val request = RegisterRequest(
-                    userName = name,
-                    userSurname = surname,
-                    dateOfBirth = birth!!,
-                    email = email,
-                    password = password,
-                    gender = gender
-                )
-
-                scope.launch {
-                    val response = Handlers.entryHandler.register(request)
-
-                    if (response.success) {
-                        navController.navigate("main") {
-                            popUpTo(0) { inclusive = true }
-                        }
-                    } else {
-                        println(response.errorMessage)
-                    }
-                }
-            },
+        Button(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            onClick = { validateAndRegister() },
             colors = ButtonDefaults.buttonColors(containerColor = MGreen)
         ) {
             Text(fontSize = 25.sp, text = "Sign Up")
@@ -203,15 +262,14 @@ fun SignUpScreen(navController: NavController) {
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PickGender(
     selectedGender: String,
-    onGenderSelected: (String) -> Unit
+    onGenderSelected: (String) -> Unit,
+    isError: Boolean = false
 ) {
     var expanded by remember { mutableStateOf(false) }
-
     val genders = listOf("Male", "Female")
 
     ExposedDropdownMenuBox(
@@ -219,12 +277,12 @@ fun PickGender(
         onExpandedChange = { expanded = !expanded },
         modifier = Modifier.fillMaxWidth(0.7f)
     ) {
-
         TextField(
             value = selectedGender,
             onValueChange = {},
             readOnly = true,
             label = { Text("Gender") },
+            isError = isError,
             trailingIcon = {
                 Icon(
                     imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
@@ -236,7 +294,6 @@ fun PickGender(
                 .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
                 .fillMaxWidth()
         )
-
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
@@ -253,4 +310,3 @@ fun PickGender(
         }
     }
 }
-
