@@ -1,0 +1,49 @@
+package com.example.moveon.ui.profile
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.moveon.ui.common.BottomBar
+import com.example.moveon.ui.common.CityTopBar
+import com.example.moveon.viewModel.CityViewModel
+import com.example.moveon.viewModel.ProfileViewModel
+
+@Composable
+fun UserProfileScreen(
+    navController: NavController,
+    cityViewModel: CityViewModel,
+    viewModel: ProfileViewModel = viewModel(),
+    userId: Int
+) {
+    LaunchedEffect(userId) {
+        viewModel.loadUserProfile(userId)
+    }
+
+    Scaffold(
+        topBar = { CityTopBar(cityViewModel) },
+        bottomBar = { BottomBar(navController) }
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            when {
+                viewModel.isLoading -> Text("Loading")
+                viewModel.error != null -> Text(text = viewModel.error ?: "Unknown error")
+                viewModel.profile != null -> {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            MakeProfile(viewModel.profile!!)
+                        }
+                        ProfileBottomIcons()
+                    }
+                }
+            }
+        }
+    }
+}
