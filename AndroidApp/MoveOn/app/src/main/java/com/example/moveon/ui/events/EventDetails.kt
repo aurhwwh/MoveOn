@@ -184,21 +184,22 @@ fun EventDetails(navController : NavController,
                     )
                 }
 
-                Button(
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
-                    onClick = { viewModel.joinEvent(eventId) },
-                    enabled = !viewModel.isJoining,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MGreen
-                    )
-                ) {
-                    Text(
-                        fontSize = 25.sp,
-                        text = if (viewModel.isJoining) "Joining..." else "Join"
-                    )
+                if (data.isUserParticipant != true) {
+                    Button(
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
+                        onClick = { viewModel.joinEvent(eventId) },
+                        enabled = !viewModel.isJoining,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MGreen
+                        )
+                    ) {
+                        Text(
+                            fontSize = 25.sp,
+                            text = if (viewModel.isJoining) "Joining..." else "Join"
+                        )
+                    }
                 }
             }
-
         }
     }
 }

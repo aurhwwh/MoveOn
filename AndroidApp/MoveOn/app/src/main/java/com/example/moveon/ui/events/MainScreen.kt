@@ -20,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -34,14 +36,23 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.moveon.ui.common.BottomBar
 import com.example.moveon.ui.common.CityTopBar
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.viewModel.CityViewModel
 import com.example.moveon.viewModel.EventsViewModel
 
 @Composable
-fun MainScreen(navController : NavController) {
+fun MainScreen(navController : NavController, cityViewModel: CityViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
 
+        val eventsViewModel: EventsViewModel = viewModel()
+
+        LaunchedEffect(cityViewModel) {
+            cityViewModel.selectedCity.collect { city ->
+                eventsViewModel.setCity(city)
+            }
+        }
+
         Scaffold(
-            topBar = { CityTopBar(city = "Saint-Petersburg") },
+            topBar = { CityTopBar(cityViewModel) },
             bottomBar = { BottomBar(navController) },
             floatingActionButton = {
                 IconButton(onClick = { navController.navigate("addEvent") },
@@ -88,7 +99,7 @@ fun MainScreen(navController : NavController) {
                             )
                             Icon(
                                 imageVector = Icons.Filled.Search,
-                                contentDescription = "City",
+                                contentDescription = "Search",
                                 tint = Color.Black,
                                 modifier = Modifier.size(30.dp)
                             )
@@ -96,8 +107,7 @@ fun MainScreen(navController : NavController) {
                     }
                 }
 
-                val viewModel: EventsViewModel = viewModel()
-                val events = viewModel.eventsFlow.collectAsLazyPagingItems()
+                val events = eventsViewModel.eventsFlow.collectAsLazyPagingItems()
 
                 when (val state = events.loadState.refresh) {
                     is LoadState.Loading -> {Text("Loading")}

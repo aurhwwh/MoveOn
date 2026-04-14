@@ -32,20 +32,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.ui.common.BottomBar
 import com.example.moveon.ui.common.CityTopBar
+import com.example.moveon.viewModel.CityViewModel
 import com.example.moveon.viewModel.ProfileViewModel
 
 
 @Composable
 fun UserProfileScreen(navController : NavController,
-                    viewModel: ProfileViewModel = viewModel(),
-                    userId: Int) {
+                      cityViewModel: CityViewModel,
+                      viewModel: ProfileViewModel = viewModel(),
+                      userId: Int) {
 
     LaunchedEffect(userId) {
         viewModel.loadUserProfile(userId)
     }
 
     Scaffold(
-        topBar = { CityTopBar(city = "Saint-Petersburg") },
+        topBar = { CityTopBar(cityViewModel) },
         bottomBar = { BottomBar(navController) }
     ) { padding ->
 

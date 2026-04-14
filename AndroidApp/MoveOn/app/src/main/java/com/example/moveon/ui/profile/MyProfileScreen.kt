@@ -32,11 +32,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.ui.common.BottomBar
 import com.example.moveon.ui.common.CityTopBar
+import com.example.moveon.viewModel.CityViewModel
 import com.example.moveon.viewModel.ProfileViewModel
 
 
 @Composable
 fun MyProfileScreen(navController : NavController,
+                    cityViewModel: CityViewModel,
                     viewModel: ProfileViewModel = viewModel()) {
 
     LaunchedEffect("profile") {
@@ -44,7 +46,7 @@ fun MyProfileScreen(navController : NavController,
     }
 
     Scaffold(
-        topBar = { CityTopBar(city = "Saint-Petersburg") },
+        topBar = { CityTopBar(cityViewModel) },
         bottomBar = { BottomBar(navController) }
     ) { padding ->
 

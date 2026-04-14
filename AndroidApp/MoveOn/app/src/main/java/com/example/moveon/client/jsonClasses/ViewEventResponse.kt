@@ -17,6 +17,8 @@ data class ViewEventResponse(
     val currentAmountOfPeople: Int? = null,
     val maxAmountOfPeople: Int? = null,
     val sportType: String? = null,
+    val isUserParticipant: Boolean? = null,
+    val isUserCreator: Boolean? = null,
     val photoId: Int? = null
 )
 

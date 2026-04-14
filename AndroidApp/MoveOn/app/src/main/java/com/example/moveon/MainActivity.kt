@@ -6,6 +6,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.graphics.toArgb
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -18,6 +19,7 @@ import com.example.moveon.ui.profile.EditProfileScreen
 import com.example.moveon.ui.profile.MyProfileScreen
 import com.example.moveon.ui.profile.UserProfileScreen
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.viewModel.CityViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +38,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
+            val cityViewModel: CityViewModel = viewModel()
 
             NavHost(
                 navController = navController,
@@ -48,10 +51,10 @@ class MainActivity : ComponentActivity() {
                 }
             ) {
                 composable("main") {
-                    MainScreen(navController)
+                    MainScreen(navController, cityViewModel)
                 }
                 composable("profile") {
-                    MyProfileScreen(navController)
+                    MyProfileScreen(navController, cityViewModel)
                 }
                 composable("editProfile") {
                     EditProfileScreen(navController)
@@ -71,7 +74,7 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("profile/{userId}") { backStackEntry ->
                     val userId = backStackEntry.arguments?.getString("userId")!!.toInt()
-                    UserProfileScreen(navController, userId = userId)
+                    UserProfileScreen(navController, cityViewModel, userId = userId)
                 }
             }
         }

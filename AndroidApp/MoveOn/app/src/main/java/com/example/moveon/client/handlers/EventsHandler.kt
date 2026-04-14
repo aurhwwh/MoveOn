@@ -2,17 +2,16 @@ package com.example.moveon.client.handlers
 
 import com.example.moveon.client.api.EventsApi
 import com.example.moveon.client.jsonClasses.CreateEventRequest
-import com.example.moveon.client.jsonClasses.CreateEventResponse
-import com.example.moveon.client.jsonClasses.EventData
+import com.example.moveon.client.jsonClasses.EventListElement
 import com.example.moveon.client.jsonClasses.JoinApplicationRequest
-import com.example.moveon.client.jsonClasses.JoinApplicationResponse
 import com.example.moveon.client.jsonClasses.ViewEventResponse
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
+
 
 class EventsHandler(private val api : EventsApi) {
 
     suspend fun getEvents (
-        request : ViewFilteredEventsListRequest, page: Int, limit: Int): List<EventData> {
+        request : ViewFilteredEventsListRequest, page: Int, limit: Int): List<EventListElement> {
 
         val response = api.getFilteredEventsList(request, page, limit);
 

@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,13 +32,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.viewModel.CityViewModel
+import com.example.moveon.viewModel.EventsViewModel
 
 @Composable
-fun CityTopBar(
-    city: String
-) {
+fun CityTopBar(viewModel: CityViewModel) {
     Box(modifier = Modifier
         .fillMaxWidth()
         .background(MGreen)
@@ -56,7 +58,10 @@ fun CityTopBar(
                 fontSize = 30.sp,
             )
 
-            SelectCity()
+            SelectCity(
+                selectedCity = viewModel.selectedCity.collectAsState().value,
+                onSelectedCity = { viewModel.updateCity(it) }
+            )
         }
     }
 }

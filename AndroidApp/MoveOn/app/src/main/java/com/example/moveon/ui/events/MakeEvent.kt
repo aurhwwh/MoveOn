@@ -26,7 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moveon.R
-import com.example.moveon.client.jsonClasses.EventData
+import com.example.moveon.client.jsonClasses.EventListElement
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDateTime
@@ -35,7 +35,7 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun MakeEvent(data: EventData, onClick: () -> Unit) {
+fun MakeEvent(data: EventListElement, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().padding(4.dp).padding(top = 15.dp),
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)

@@ -3,6 +3,7 @@ package com.example.moveon.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -13,8 +14,10 @@ import androidx.paging.cachedIn
 import com.example.moveon.client.handlers.EventsHandler
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.client.jsonClasses.CreateEventRequest
-import com.example.moveon.client.jsonClasses.EventData
+import com.example.moveon.client.jsonClasses.EventListElement
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
@@ -22,9 +25,9 @@ import kotlin.time.ExperimentalTime
 class EventsPagingSource(
     private val handler: EventsHandler,
     private val filters: ViewFilteredEventsListRequest
-) : PagingSource<Int, EventData>() {
+) : PagingSource<Int, EventListElement>() {
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, EventData> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, EventListElement> {
         val page = params.key ?: 0
 
         try {
@@ -40,31 +43,42 @@ class EventsPagingSource(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, EventData>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, EventListElement>): Int? {
         return null
     }
 }
 
 
-class EventsViewModel () : ViewModel() {
+class EventsViewModel : ViewModel() {
     private val handler = Handlers.eventsHandler
 
     @OptIn(ExperimentalTime::class)
-    private val defaultFilters = ViewFilteredEventsListRequest (
-        title = null,
-        city = null,
-        sportType = null,
-        dateTime = null,
-        maxAmountOfPeople = null,
-        creatorRating = null
+    var filters by mutableStateOf(
+        ViewFilteredEventsListRequest (
+            title = null,
+            city = "Saint-Petersburg",
+            sportType = null,
+            dateTime = null,
+            maxAmountOfPeople = null,
+            creatorRating = null
+        )
     )
+        private set
 
-    val eventsFlow = Pager(
-        config = PagingConfig(pageSize = 20,
-            /* initialLoadSize = pageSize * 3 по дефолту (вроде),*/
-            enablePlaceholders = false),
-        pagingSourceFactory = {EventsPagingSource(handler, defaultFilters)}
-    ).flow.cachedIn(viewModelScope)
+    @OptIn(ExperimentalTime::class)
+    fun setCity(city: String) {
+        filters = filters.copy(city = city)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val eventsFlow = snapshotFlow { filters }.flatMapLatest { newfilters ->
+        Pager(
+            config = PagingConfig(pageSize = 20,
+                /* initialLoadSize = pageSize * 3 по дефолту (вроде),*/
+                enablePlaceholders = false),
+            pagingSourceFactory = {EventsPagingSource(handler, newfilters)}
+        ).flow
+    }.cachedIn(viewModelScope)
 
 
     var isCreating by mutableStateOf(false)
