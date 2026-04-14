@@ -41,6 +41,7 @@ import com.example.moveon.ui.common.CityTopBar
 import com.example.moveon.viewModel.ProfileViewModel
 
 
+
 @Composable
 fun ProfileScreen(navController : NavController,
                   viewModel: ProfileViewModel = viewModel(),
