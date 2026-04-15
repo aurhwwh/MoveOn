@@ -55,10 +55,10 @@ fun ProfileBottomIcons() {
 }
 
 @Composable
-fun MyEventsRow(onClick: () -> Unit) {
+fun MyEventsRow(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
-            .weight(1f)
+        modifier = modifier
+            .fillMaxWidth()
             .padding(start = 12.dp, top = 24.dp)
             .clickable { onClick() }
     ) {
