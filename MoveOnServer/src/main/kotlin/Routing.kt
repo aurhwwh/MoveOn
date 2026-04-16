@@ -20,6 +20,9 @@ import kotlin.time.toKotlinInstant
 @OptIn(ExperimentalTime::class)
 fun Application.configureRouting() {
     routing {
+        get("/"){
+            call.respondText("Server running")
+        }
         post("/refresh") {
             val request = try {
                 call.receive<RefreshRequest>()

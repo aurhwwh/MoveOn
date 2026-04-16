@@ -9,9 +9,16 @@ import java.sql.ResultSet
 object Database {
     private val dataSource: HikariDataSource by lazy {
         val config = HikariConfig().apply {
-            jdbcUrl = "jdbc:postgresql://localhost:5432/movedb"
-            username = "postgres"
-            password = "seva1234"
+            val host = System.getenv("DB_HOST") ?: "localhost"
+            val port = System.getenv("DB_PORT") ?: "5432"
+            val db = System.getenv("DB_NAME") ?: "movedb"
+            val user = System.getenv("DB_USER") ?: "postgres"
+            val password = System.getenv("DB_PASSWORD") ?: "seva1234"
+
+            jdbcUrl = "jdbc:postgresql://$host:$port/$db"
+            username = user
+            this.password = password
+
             driverClassName = "org.postgresql.Driver"
             maximumPoolSize = 10
             isAutoCommit = false
