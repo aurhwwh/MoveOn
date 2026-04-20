@@ -154,7 +154,12 @@ fun EditProfileScreen(navController : NavController) {
                 TokenStorage.clear()
 
                 navController.navigate("login") {
-                    popUpTo(0) { inclusive = true }
+                    popUpTo(0) {
+                        inclusive = true
+                        saveState = false
+                    }
+                    launchSingleTop = true
+                    restoreState = false
                 }
             },
             colors = ButtonDefaults.buttonColors(
