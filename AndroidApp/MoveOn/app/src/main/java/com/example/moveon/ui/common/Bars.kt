@@ -80,7 +80,17 @@ fun BottomBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = { navController.navigate("main") }) {
+            IconButton(
+                onClick = {
+                    navController.navigate("main") {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                    }
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Filled.Home,
                     contentDescription = "Main",
@@ -89,7 +99,17 @@ fun BottomBar(
                 )
             }
 
-            IconButton(onClick = { navController.navigate("map") }) {
+            IconButton(
+                onClick = {
+                    navController.navigate("map") {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                    }
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Default.Map,
                     contentDescription = "Map",
@@ -98,7 +118,17 @@ fun BottomBar(
                 )
             }
 
-            IconButton(onClick = { navController.navigate("messages") }) {
+            IconButton(
+                onClick = {
+                    navController.navigate("messages") {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                    }
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Filled.ChatBubble,
                     contentDescription = "Messages",
@@ -107,7 +137,17 @@ fun BottomBar(
                 )
             }
 
-            IconButton(onClick = { navController.navigate("notifications") }) {
+            IconButton(
+                onClick = {
+                    navController.navigate("notifications") {
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                    }
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Filled.Notifications,
                     contentDescription = "Notifications",
@@ -116,7 +156,17 @@ fun BottomBar(
                 )
             }
 
-            IconButton(onClick = { navController.navigate("profile") }) {
+            IconButton(
+                onClick = {
+                    navController.navigate("profile"){
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                    }
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Filled.AccountCircle,
                     contentDescription = "Profile",

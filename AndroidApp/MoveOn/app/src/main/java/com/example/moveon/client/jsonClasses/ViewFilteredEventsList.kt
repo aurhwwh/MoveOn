@@ -36,5 +36,6 @@ data class EventListElement(
     val currentAmountOfPeople: Int,
     val creatorRating: Double,
     val photoId: Int,
-    val description: String
+    val description: String,
+    val isCreator: Boolean = false
 )

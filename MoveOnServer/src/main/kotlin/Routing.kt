@@ -314,10 +314,6 @@ fun Application.configureRouting() {
 
 
 
-
-
-
-
         get("/get_persons_list") {
             val eventId = call.request.queryParameters["eventId"]?.toIntOrNull()
             if (eventId == null) {
@@ -767,6 +763,68 @@ fun Application.configureRouting() {
                     }
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, AcceptOrDeclineEventApplicationResponse(false, "Database error: ${e.message}"))
+                }
+            }
+
+
+            get("/view_my_events_list") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal!!.payload.getClaim("userId").asInt()
+                if (userId == null) {
+                    call.respond(HttpStatusCode.BadRequest, ViewMyEventsListResponse(false, "userId is required"))
+                    return@get
+                }
+
+                try {
+                    val events = Database.useConnection { conn ->
+                        val sqlBuilder = StringBuilder("""
+                        SELECT e.id, e.title, e.description, e.city, e.sport_type, e.time, e.max_amount_of_people,  
+                               (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount,
+                               COALESCE((SELECT AVG(rating) FROM ratings WHERE to_user_id = e.creator_id), 0.0) as creator_rating,
+                               (e.creator_id = ?) as is_creator
+                        FROM events e
+                        WHERE 1=1
+                        AND EXISTS (
+                            SELECT 1 FROM event_participants ep WHERE ep.event_id = e.id AND ep.user_id = ?
+                        )
+                         AND e.time > CURRENT_TIMESTAMP
+                    """.trimIndent())
+
+                        sqlBuilder.append(" ORDER BY e.time ASC")
+
+                        val sql = sqlBuilder.toString()
+                        conn.prepareStatement(sql).use { stmt ->
+                            stmt.setInt(1, userId)
+                            stmt.setInt(2, userId)
+
+                            val rs = stmt.executeQuery()
+                            val result = mutableListOf<EventListElement>()
+                            while (rs.next()) {
+                                val creatorRating1 = rs.getDouble("creator_rating")
+
+                                result.add(
+                                    EventListElement(
+                                        eventId = rs.getInt("id"),
+                                        title = rs.getString("title"),
+                                        city = rs.getString("city"),
+                                        sportType = rs.getString("sport_type"),
+                                        dateTime = rs.getTimestamp("time")?.toInstant()?.toKotlinInstant(),
+                                        maxAmountOfPeople = rs.getInt("max_amount_of_people"),
+                                        currentAmountOfPeople = rs.getInt("current_amount"),
+                                        creatorRating = creatorRating1,
+                                        photoId = 1, //todo: add params to db
+                                        description = rs.getString("description") ?: "",
+                                        isCreator = rs.getBoolean("is_creator")
+                                    )
+                                )
+                            }
+                            result
+                        }
+                    }
+
+                    call.respond(HttpStatusCode.OK, ViewMyEventsListResponse(true, events = events))
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, ViewMyEventsListResponse(false, "Database error: ${e.message}"))
                 }
             }
         }

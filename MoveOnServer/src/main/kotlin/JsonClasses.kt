@@ -95,7 +95,8 @@ data class EventListElement @OptIn(ExperimentalTime::class) constructor(
     val currentAmountOfPeople: Int,
     val creatorRating: Double,
     val photoId: Int,
-    val description: String
+    val description: String,
+    val isCreator: Boolean = false
 )
 
 @Serializable
@@ -114,6 +115,15 @@ data class ViewFilteredEventsListRequest(
     val maxAmountOfPeople: Int,
     val creatorRating: Double
 )*/
+
+
+@Serializable
+data class ViewMyEventsListResponse(
+    val success: Boolean,
+    val errorMessage: String? = null,
+    val events: List<EventListElement>? = null
+)
+
 
 @Serializable
 data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(

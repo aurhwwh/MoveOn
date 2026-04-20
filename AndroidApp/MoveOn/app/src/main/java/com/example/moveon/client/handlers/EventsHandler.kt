@@ -47,4 +47,15 @@ class EventsHandler(private val api : EventsApi) {
             throw Exception(response.errorMessage ?: "Unknown error")
         }
     }
+
+    suspend fun getMyEvents (): List<EventListElement> {
+
+        val response = api.getMyEventsList()
+
+        if (!response.success) {
+            throw Exception(response.errorMessage ?: "UnknownError");
+        }
+
+        return response.events ?: emptyList()
+    }
 }

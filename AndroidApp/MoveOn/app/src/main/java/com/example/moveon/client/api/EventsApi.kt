@@ -7,6 +7,7 @@ import com.example.moveon.client.jsonClasses.JoinApplicationResponse
 import com.example.moveon.client.jsonClasses.ViewEventResponse
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListResponse
+import com.example.moveon.client.jsonClasses.ViewMyEventsListResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -55,5 +56,10 @@ class EventsApi(private val client: HttpClient) {
             contentType(ContentType.Application.Json)
             setBody(eventId)
         }.body()
+    }
+
+    @OptIn(ExperimentalTime::class)
+    suspend fun getMyEventsList(): ViewMyEventsListResponse {
+        return client.get("$baseUrl/view_my_events_list").body()
     }
 }
