@@ -86,7 +86,8 @@ fun EventDetails(navController : NavController,
                 Column(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState(),)
                 ) {
-                    MoveOnTopBar(navController, "main")
+                    val previousRoute = navController.previousBackStackEntry?.destination?.route
+                    MoveOnTopBar(navController, previousRoute ?: "main")
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -135,7 +136,7 @@ fun EventDetails(navController : NavController,
 
                     Participant(
                         data.participants!![0],
-                        onClick = { navController.navigate("profile/${data.participants[0].id}") }
+                        onClick = { navController.navigate("profile") }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -165,7 +166,7 @@ fun EventDetails(navController : NavController,
                         exit = shrinkVertically() + fadeOut()
                     ) {
                         Column {
-                            data.participants.drop(1).forEach { participant ->
+                            data.participants.drop(0).forEach { participant ->
                                 Participant(
                                     participant = participant,
                                     onClick = { navController.navigate("profile/${participant.id}") }
