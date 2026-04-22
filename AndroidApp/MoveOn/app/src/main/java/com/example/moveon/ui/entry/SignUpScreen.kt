@@ -44,12 +44,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.moveon.client.handlers.Handlers
+import com.example.moveon.client.jsonClasses.LoginRequest
 import com.example.moveon.client.jsonClasses.RegisterRequest
+import com.example.moveon.data.TokenStorage.saveTokens
 import com.example.moveon.ui.profile.BirthDatePicker
 import com.example.moveon.ui.theme.MGreen
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
-
+import kotlin.math.log
 
 
 private fun isValidName(name: String): Boolean {
@@ -120,12 +122,20 @@ fun SignUpScreen(navController: NavController) {
             scope.launch {
                 val response = Handlers.entryHandler.register(request)
                 if (response.success) {
-                    navController.navigate("main") {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
+                    val loginRequest = LoginRequest(request.email, request.password)
+                    val loginResponse = Handlers.entryHandler.login(loginRequest);
+                    if (loginResponse.success && !loginResponse.accessToken.isNullOrBlank() && !loginResponse.refreshToken.isNullOrBlank()) {
+                        saveTokens(loginResponse.accessToken, loginResponse.refreshToken)
+                        navController.navigate("main") {
+                            popUpTo(navController.graph.id) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                            restoreState = false
                         }
-                        launchSingleTop = true
-                        restoreState = false
+                    }
+                    else{
+                        println(loginResponse.errorMessage)
                     }
                 } else {
                     println(response.errorMessage)
