@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -41,6 +43,10 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material3.Icon
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 
 private fun isValidEmail(email: String): Boolean {
     val regex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
@@ -60,6 +66,8 @@ fun SignInScreenPreview() {
 
 @Composable
 fun SignInScreen(navController: NavController) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -123,7 +131,16 @@ fun SignInScreen(navController: NavController) {
             },
             label = { Text("email") },
             isError = isEmailError,
-            modifier = Modifier.fillMaxWidth(0.7f)
+            modifier = Modifier.fillMaxWidth(0.7f),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -145,7 +162,17 @@ fun SignInScreen(navController: NavController) {
                 }
             },
             isError = isPasswordError,
-            modifier = Modifier.fillMaxWidth(0.7f)
+            modifier = Modifier.fillMaxWidth(0.7f),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                }
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))

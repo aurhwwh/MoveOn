@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -41,9 +43,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -68,6 +73,9 @@ import kotlin.time.Instant
 @OptIn(ExperimentalTime::class)
 @Composable
 fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewModel()) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
     var name by remember { mutableStateOf("") }
     var sportType by remember { mutableStateOf("") }
     var maxAmountInput by remember { mutableStateOf("") }
@@ -77,6 +85,13 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
     var date by remember { mutableStateOf<LocalDate?>(null) }
     var hours by remember { mutableStateOf<Int?>(null) }
     var mins by remember { mutableStateOf<Int?>(null) }
+
+    var isNameError by remember { mutableStateOf(false) }
+    var isSportTypeError by remember { mutableStateOf(false) }
+    var isDateError by remember { mutableStateOf(false) }
+    var isTimeError by remember { mutableStateOf(false) }
+    var isMaxPeopleError by remember { mutableStateOf(false) }
+    var isCityError by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel.createSuccess) {
         if (viewModel.createSuccess) {
@@ -114,18 +129,44 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
 
             TextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = {
+                    name = it
+                    isNameError = false
+                },
+                isError = isNameError,
                 label = { Text("Event name") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down)
+                    }
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             TextField(
                 value = sportType,
-                onValueChange = { sportType = it },
+                onValueChange = {
+                    sportType = it
+                    isSportTypeError = false
+                },
+                isError = isSportTypeError,
                 label = { Text("Sport type") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down)
+                    }
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -137,7 +178,11 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
                 Box(modifier = Modifier.weight(1f)) {
                     EventDatePicker(
                         selectedDate = date,
-                        onDateSelected = { date = it }
+                        onDateSelected = {
+                            date = it
+                            isDateError = false
+                        },
+                        isError = isDateError
                     )
                 }
 
@@ -149,7 +194,9 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
                         onTimeSelected = { h, m ->
                             hours = h
                             mins = m
-                        }
+                            isTimeError = false
+                        },
+                        isError = isTimeError
                     )
                 }
             }
@@ -161,17 +208,32 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
                 onValueChange = { input ->
                     if (input.all { it.isDigit() }) {
                         maxAmountInput = input
+                        isMaxPeopleError = false
                     }
                 },
+                isError = isMaxPeopleError,
                 label = { Text("Amount of people (2–20)") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down)
+                    }
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             CityPicker(
                 selectedCity = city,
-                onCitySelected = {city = it}
+                onCitySelected = {
+                    city = it
+                    isCityError = false
+                },
+                isError = isCityError
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -180,7 +242,16 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    }
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -195,19 +266,29 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
                     date!!.atTime(hours!!, mins!!).toInstant(TimeZone.currentSystemDefault())
                 } else null
 
-                val isValid = name.isNotBlank() &&
-                        sportType.isNotBlank() &&
-                        maxPeople != null &&
-                        dateTime != null &&
-                        city.isNotBlank()
+                isNameError = name.isBlank()
+                isSportTypeError = sportType.isBlank()
+                isDateError = date == null
+                isTimeError = hours == null || mins == null
+                isMaxPeopleError = maxPeople == null
+                isCityError = city.isBlank()
 
-                if (!isValid) return@Button
+                if (
+                    isNameError ||
+                    isSportTypeError ||
+                    isDateError ||
+                    isTimeError ||
+                    isMaxPeopleError ||
+                    isCityError
+                ) {
+                    return@Button
+                }
 
                 val request = CreateEventRequest(
                     title = name,
                     description = description,
-                    dateTime = dateTime,
-                    maxAmountOfPeople = maxPeople,
+                    dateTime = dateTime!!,
+                    maxAmountOfPeople = maxPeople!!,
                     sportType = sportType,
                     city = city
                 )
@@ -221,9 +302,15 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
     }
 }
 
+
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun EventDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Unit) {
+fun EventDatePicker(
+    selectedDate: LocalDate?,
+    onDateSelected: (LocalDate) -> Unit,
+    isError: Boolean = false
+) {
     var showDialog by remember { mutableStateOf(false) }
 
     val formatter = remember { java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy") }
@@ -240,6 +327,7 @@ fun EventDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
             enabled = false,
             label = { Text("Event date") },
             modifier = Modifier.fillMaxWidth(),
+            isError = isError,
 
             trailingIcon = {
                 Icon(
@@ -256,6 +344,7 @@ fun EventDatePicker(selectedDate: LocalDate?, onDateSelected: (LocalDate) -> Uni
     if (showDialog) {
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis =
+                selectedDate?.atStartOfDayIn(TimeZone.currentSystemDefault())?.toEpochMilliseconds() ?:
                 today.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
 
             selectableDates = object : SelectableDates {
@@ -307,7 +396,8 @@ fun TimePickerField(
     selectedDate: LocalDate?,
     hour: Int?,
     minute: Int?,
-    onTimeSelected: (Int, Int) -> Unit
+    onTimeSelected: (Int, Int) -> Unit,
+    isError: Boolean = false
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -329,7 +419,8 @@ fun TimePickerField(
             readOnly = true,
             enabled = false,
             label = { Text("Time") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = isError
         )
     }
 
@@ -370,7 +461,8 @@ fun TimePickerField(
 @Composable
 fun CityPicker(
     selectedCity: String,
-    onCitySelected: (String) -> Unit
+    onCitySelected: (String) -> Unit,
+    isError: Boolean = false
 ) {
     var expanded by remember { mutableStateOf(false) }
     val cities = listOf("Saint-Petersburg", "Moscow")
@@ -382,6 +474,7 @@ fun CityPicker(
             onValueChange = {},
             readOnly = true,
             label = { Text("City") },
+            isError = isError,
             trailingIcon = {
                 Icon(
                     imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
