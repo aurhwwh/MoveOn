@@ -15,6 +15,7 @@ import com.example.moveon.ui.entry.SignUpScreen
 import com.example.moveon.ui.events.AddEvent
 import com.example.moveon.ui.events.EventDetails
 import com.example.moveon.ui.events.MainScreen
+import com.example.moveon.ui.map.MapScreen
 import com.example.moveon.ui.profile.EditProfileScreen
 import com.example.moveon.ui.profile.MyProfileScreen
 import com.example.moveon.ui.profile.UserProfileScreen
@@ -75,6 +76,9 @@ class MainActivity : ComponentActivity() {
                 composable("profile/{userId}") { backStackEntry ->
                     val userId = backStackEntry.arguments?.getString("userId")!!.toInt()
                     UserProfileScreen(navController, cityViewModel, userId = userId)
+                }
+                composable("map") {
+                    MapScreen(navController)
                 }
             }
         }
