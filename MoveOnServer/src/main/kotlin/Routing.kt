@@ -7,12 +7,15 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import MoveOn.database.Database
 import MoveOn.security.Security
+import com.graphhopper.GHRequest
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toKotlinLocalDate
 import java.sql.Date
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
@@ -22,6 +25,102 @@ fun Application.configureRouting() {
     routing {
         get("/"){
             call.respondText("Server running")
+        }
+        get("/route_options"){
+            val lat = call.request.queryParameters["lat"]?.toDoubleOrNull()
+            val lon = call.request.queryParameters["lon"]?.toDoubleOrNull()
+            val radius = call.request.queryParameters["radius"]?.toIntOrNull()
+            if (lat == null || lon == null || radius == null) {
+                call.respond(RouteOptionsResponse(false,"Incorrect request format"))
+                return@get
+            }
+            val hopper = GraphHopperProvider.hopper
+            val graph = hopper.baseGraph
+            val nodeAccess = graph.nodeAccess
+            val snap = hopper.locationIndex.findClosest(
+                lat,
+                lon,
+                com.graphhopper.routing.util.EdgeFilter.ALL_EDGES
+            )
+            if (snap == null || !snap.isValid) {
+                call.respond(RouteOptionsResponse(false,"Unable to find nearest point"))
+                return@get
+            }
+            val node = snap.closestNode
+            val centralLat = nodeAccess.getLat(node)
+            val centralLon = nodeAccess.getLon(node)
+            val earthRadius = 6371000.0
+            val circlePoints = mutableListOf<Point>()
+            val circleNodes = mutableListOf<Int>()
+            val count = 6
+            for (i in 0 until count) {
+                val angle = 2 * Math.PI * i / count
+
+                val dx = radius * cos(angle)
+                val dy = radius * sin(angle)
+
+                val newLat = centralLat + (dy / earthRadius) * (180 / Math.PI)
+                val newLon = centralLon + (dx / earthRadius) * (180 / Math.PI) /
+                        cos(centralLat * Math.PI / 180)
+
+                val snap = hopper.locationIndex.findClosest(
+                    newLat,
+                    newLon,
+                    com.graphhopper.routing.util.EdgeFilter.ALL_EDGES
+                )
+                if (!snap.isValid) {
+                    continue
+                }
+                val node = snap.closestNode
+                circleNodes.add(node)
+                circlePoints.add(Point(nodeAccess.getLat(node), nodeAccess.getLon(node)))
+            }
+            val responsePoints = mutableListOf<Point>()
+            val responsePaths = mutableListOf<Route>()
+            for (point in circlePoints) {
+                val req = GHRequest(
+                    centralLat,
+                    centralLon,
+                    point.lat,
+                    point.lon
+                ).setProfile("foot")
+
+                val response = hopper.route(req)
+
+                if (response.hasErrors()) {
+                    continue
+                }
+                responsePoints.add(point)
+                val path = response.best
+                val pathPoints = mutableListOf<Point>()
+
+                val pts = path.points
+
+                for (i in 0 until pts.size()) {
+                    pathPoints.add(
+                        Point(
+                            pts.getLat(i),
+                            pts.getLon(i)
+                        )
+                    )
+                }
+                responsePaths.add(
+                    Route(
+                        points = pathPoints,
+                        distance = path.distance,
+                        time = path.time
+                    )
+                )
+            }
+            call.respond(toGeoJson(
+                RouteOptionsResponse(
+                    success = true,
+                    centralPoint = Point(centralLat, centralLon),
+                    points = responsePoints,
+                    routes = responsePaths
+                ))
+            )
+
         }
         post("/refresh") {
             val request = try {
