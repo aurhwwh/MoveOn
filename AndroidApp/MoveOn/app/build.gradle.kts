@@ -58,6 +58,8 @@ dependencies {
 
     implementation("androidx.paging:paging-compose:3.3.0")
 
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
 
     implementation(libs.androidx.core.ktx)
