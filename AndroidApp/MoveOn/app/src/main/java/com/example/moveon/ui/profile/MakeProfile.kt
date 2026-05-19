@@ -23,7 +23,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moveon.R
 import com.example.moveon.data.ProfileData
+import kotlinx.datetime.toJavaLocalDate
+
 
 
 @Composable
@@ -31,16 +34,18 @@ fun MakeProfile(data: ProfileData) {
     Box(modifier = Modifier.padding(8.dp)) {
         Column() {
             Row() {
-                Image(painter = painterResource(id = data.photoId),
+                Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
                     contentDescription = "image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.padding(5.dp).size(100.dp).clip(CircleShape))
 
-                Column(modifier = Modifier.padding(start = 10.dp).padding(top = 8.dp)) {
+                Column(modifier = Modifier.padding(start = 10.dp, top = 8.dp)) {
                     Text(text = data.name + " " + data.surname,
                         fontSize = 28.sp,
                         modifier = Modifier.padding(2.dp))
-                    Text(text = data.birth,
+
+                    val birth = data.birth.toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                    Text(text = birth,
                         color = Color.Gray,
                         fontStyle = FontStyle.Italic,
                         fontSize = 18.sp,
@@ -68,7 +73,7 @@ fun MakeProfile(data: ProfileData) {
 @Composable
 fun DrawStars(rating: Double) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        val full = rating.toInt();
+        val full = rating.toInt()
         val progress = (rating - full).coerceIn(0.0, 1.0)
 
         for (i in 1 .. 5) {
@@ -100,10 +105,14 @@ fun DrawStars(rating: Double) {
                         )
                     )
                 }
-//                Icon(
-//                    imageVector = Icons.Filled.StarOutline,
-//                    contentDescription = null
-//                )
+
+                if (i > full + 1 || (i == full + 1 && progress == 0.0)) {
+                    Icon(
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = null,
+                        tint = Color.Gray
+                    )
+                }
             }
         }
     }

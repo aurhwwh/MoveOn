@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -40,6 +41,11 @@ android {
 }
 
 dependencies {
+    implementation("io.ktor:ktor-client-auth:2.3.7")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+
     implementation("androidx.navigation:navigation-compose:2.9.7")
     implementation("androidx.compose.material:material-icons-extended-android:1.7.8")
 
@@ -52,6 +58,10 @@ dependencies {
 
     implementation("androidx.paging:paging-compose:3.3.0")
 
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -63,6 +73,7 @@ dependencies {
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.androidx.paging.common)
     implementation(libs.paging.compose)
+    implementation(libs.androidx.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -70,4 +81,6 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+        implementation("androidx.compose.material:material-icons-extended:1.7.8")
 }
+

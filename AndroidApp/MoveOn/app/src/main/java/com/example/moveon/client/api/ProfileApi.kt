@@ -8,9 +8,13 @@ import io.ktor.client.request.*
 class ProfileApi(private val client: HttpClient) {
     private val baseUrl = "http://10.0.2.2:8080"
 
-    suspend fun getProfile(userId: Int): ViewProfile {
+    suspend fun getUserProfile(userId: Int): ViewProfile {
         return client.get("$baseUrl/view_user_profile") {
             parameter("userId", userId)
         }.body()
+    }
+
+    suspend fun getMyProfile() : ViewProfile {
+        return client.get("$baseUrl/view_my_profile").body()
     }
 }

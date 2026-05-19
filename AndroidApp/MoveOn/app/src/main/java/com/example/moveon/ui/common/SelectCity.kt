@@ -23,11 +23,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun SelectCity() {
+fun SelectCity(
+    selectedCity: String,
+    onSelectedCity: (String) -> Unit
+) {
     val cities = listOf("Saint-Petersburg", "Moscow")
 
     var expanded by remember { mutableStateOf(false) }
-    var selectedCity by remember {mutableStateOf(cities[0])}
 
     Box {
         Row(verticalAlignment = Alignment.CenterVertically,
@@ -53,7 +55,7 @@ fun SelectCity() {
                                 fontFamily = FontFamily.SansSerif,
                                 fontSize = 22.sp) },
                     onClick = {
-                        selectedCity = city
+                        onSelectedCity(city)
                         expanded = false}
                     )
                 }
