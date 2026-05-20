@@ -78,10 +78,12 @@ data class CreateEventRequest @OptIn(ExperimentalTime::class) constructor(
     val title: String,
     val description: String,
     val dateTime: Instant,
-    //val position: Position, пока непонятно в каком формате, есть какие-то встроенные
     val maxAmountOfPeople: Int,
     val sportType: String,
     val city: String = "Unknown",
+    val place: String,
+    val lat: Double,
+    val lon: Double
 )
 
 @Serializable

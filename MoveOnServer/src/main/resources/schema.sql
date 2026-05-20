@@ -19,6 +19,9 @@ CREATE TABLE events (
 --                         date DATE NOT NULL,
                         time TIMESTAMP WITH TIME ZONE,
                         city VARCHAR(100) NOT NULL,
+                        place TEXT NOT NULL,
+                        lat DOUBLE PRECISION NOT NULL,
+                        lon DOUBLE PRECISION NOT NULL,
                         max_amount_of_people INTEGER NOT NULL,
                         sport_type VARCHAR(50) NOT NULL,
                         creator_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE

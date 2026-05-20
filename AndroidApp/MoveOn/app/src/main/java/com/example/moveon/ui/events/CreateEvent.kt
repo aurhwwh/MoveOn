@@ -1,7 +1,6 @@
 package com.example.moveon.ui.events
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +24,9 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
@@ -51,12 +53,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.moveon.client.handlers.Place
 import com.example.moveon.client.jsonClasses.CreateEventRequest
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
 import com.example.moveon.viewModel.EventsViewModel
+import com.example.moveon.viewModel.GeocodingViewModel
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -79,19 +84,23 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
     var name by remember { mutableStateOf("") }
     var sportType by remember { mutableStateOf("") }
     var maxAmountInput by remember { mutableStateOf("") }
-    var city by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
     var date by remember { mutableStateOf<LocalDate?>(null) }
     var hours by remember { mutableStateOf<Int?>(null) }
     var mins by remember { mutableStateOf<Int?>(null) }
 
+    val geoViewModel: GeocodingViewModel = viewModel()
+    val suggestions = geoViewModel.suggestion
+    var locationQuery by remember { mutableStateOf("") }
+    var selectedPlace by remember { mutableStateOf<Place?>(null) }
+
     var isNameError by remember { mutableStateOf(false) }
     var isSportTypeError by remember { mutableStateOf(false) }
     var isDateError by remember { mutableStateOf(false) }
     var isTimeError by remember { mutableStateOf(false) }
     var isMaxPeopleError by remember { mutableStateOf(false) }
-    var isCityError by remember { mutableStateOf(false) }
+    var isPlaceError by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel.createSuccess) {
         if (viewModel.createSuccess) {
@@ -227,13 +236,19 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            CityPicker(
-                selectedCity = city,
-                onCitySelected = {
-                    city = it
-                    isCityError = false
+            LocationSearchField(
+                query = locationQuery,
+                onQueryChange = {
+                    locationQuery = it
+                    selectedPlace = null
+                    geoViewModel.onQueryChanged(it)
                 },
-                isError = isCityError
+                suggestions = suggestions,
+                onPlaceSelected = { place ->
+                    selectedPlace = place
+                    locationQuery = place.name
+                },
+                isError = isPlaceError
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -271,7 +286,7 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
                 isDateError = date == null
                 isTimeError = hours == null || mins == null
                 isMaxPeopleError = maxPeople == null
-                isCityError = city.isBlank()
+                isPlaceError = selectedPlace == null
 
                 if (
                     isNameError ||
@@ -279,7 +294,7 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
                     isDateError ||
                     isTimeError ||
                     isMaxPeopleError ||
-                    isCityError
+                    isPlaceError
                 ) {
                     return@Button
                 }
@@ -290,7 +305,10 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
                     dateTime = dateTime!!,
                     maxAmountOfPeople = maxPeople!!,
                     sportType = sportType,
-                    city = city
+                    city = selectedPlace!!.city,
+                    place = selectedPlace!!.name,
+                    lat = selectedPlace!!.lat,
+                    lon = selectedPlace!!.lon
                 )
 
                 viewModel.createEvent(request)
@@ -438,7 +456,7 @@ fun TimePickerField(
 
                     val isValid = if (isToday) {
                         (h > now.hour + 1) || (h == now.hour + 1 && m >= now.minute)
-                    } else {
+                    } else   {
                         true
                     }
 
@@ -459,48 +477,75 @@ fun TimePickerField(
 
 
 @Composable
-fun CityPicker(
-    selectedCity: String,
-    onCitySelected: (String) -> Unit,
+fun LocationSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    suggestions: List<Place>,
+    onPlaceSelected: (Place) -> Unit,
     isError: Boolean = false
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val cities = listOf("Saint-Petersburg", "Moscow")
     var textFieldWidth by remember { mutableStateOf(0) }
 
-    Box() {
+    Box {
+
         TextField(
-            value = selectedCity,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("City") },
-            isError = isError,
-            trailingIcon = {
-                Icon(
-                    imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                    contentDescription = null,
-                    modifier = Modifier.clickable { expanded = true }
-                )
+            value = query,
+            onValueChange = {
+                onQueryChange(it)
+                expanded = it.isNotBlank()
             },
-            modifier = Modifier.fillMaxWidth().clickable { expanded = true }.
-            onGloballyPositioned { coordinates ->
-                textFieldWidth = coordinates.size.width
-            }
+            label = { Text("Location") },
+            isError = isError,
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned {
+                    textFieldWidth = it.size.width
+                }
         )
 
         DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.width(with(LocalDensity.current) {textFieldWidth.toDp()})
+            expanded = expanded && suggestions.isNotEmpty(),
+            onDismissRequest = {
+                expanded = false
+            },
+            properties = PopupProperties(
+                focusable = false
+            ),
+            modifier = Modifier.width(
+                with(LocalDensity.current) {
+                    textFieldWidth.toDp()
+                }
+            )
         ) {
-            cities.forEach { city ->
+
+            suggestions.forEachIndexed { index, place ->
+
                 DropdownMenuItem(
-                    text = { Text(city) },
+                    text = {
+                        Column {
+                            Text(place.name)
+
+                            Text(
+                                text = place.city,
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    },
                     onClick = {
-                        onCitySelected(city)
+                        onPlaceSelected(place)
                         expanded = false
                     }
                 )
+
+                if (index != suggestions.lastIndex) {
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = Color.LightGray
+                    )
+                }
             }
         }
     }

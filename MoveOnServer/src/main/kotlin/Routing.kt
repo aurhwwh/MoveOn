@@ -598,18 +598,33 @@ fun Application.configureRouting() {
                     val eventId = Database.transaction { conn ->
 
                         val sqlEvent = """
-        INSERT INTO events (title, description, time, city, max_amount_of_people, sport_type, creator_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
-    """.trimIndent()
+                            INSERT INTO events (
+                                title,
+                                description,
+                                time,
+                                city,
+                                place,
+                                lat,
+                                lon,
+                                max_amount_of_people,
+                                sport_type,
+                                creator_id
+                            )
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            RETURNING id
+                        """.trimIndent()
 
                         val id = conn.prepareStatement(sqlEvent).use { stmt ->
                             stmt.setString(1, request.title)
                             stmt.setString(2, request.description)
                             stmt.setTimestamp(3, java.sql.Timestamp.from(request.dateTime.toJavaInstant()))
                             stmt.setString(4, request.city)
-                            stmt.setInt(5, request.maxAmountOfPeople)
-                            stmt.setString(6, request.sportType)
-                            stmt.setInt(7, creatorId)
+                            stmt.setString(5, request.place)
+                            stmt.setDouble(6, request.lat)
+                            stmt.setDouble(7, request.lon)
+                            stmt.setInt(8, request.maxAmountOfPeople)
+                            stmt.setString(9, request.sportType)
+                            stmt.setInt(10, creatorId)
 
                             val rs = stmt.executeQuery()
                             rs.next()
@@ -635,6 +650,8 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, CreateEventResponse(false, "Database error: ${e.message}"))
                 }
             }
+
+
             post("/join_application") {
                 val request = try {
                     call.receive<JoinApplicationRequest>()
