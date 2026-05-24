@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moveon.App
+import com.example.moveon.client.handlers.Handlers
+import com.example.moveon.client.jsonClasses.Route
 import com.example.moveon.ui.map.UserLocation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +17,12 @@ data class MapUiState(
     val currentLocation: GeoPoint = GeoPoint(59.9386, 30.2144),
     val permissionGranted: Boolean = false,
     val isLoading: Boolean = false,
-    val zoom: Double = 19.0
+    val zoom: Double = 19.0,
+    val selectedPoint: GeoPoint? = null,
+    val showStartButton: Boolean = false,
+    val routes: List<Route> = emptyList(),
+    val selectedRouteIndex: Int? = null,
+    val builtRoute: List<Route> = emptyList()
 )
 
 
@@ -24,6 +31,53 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _state = MutableStateFlow(MapUiState())
     val state = _state.asStateFlow()
+
+    fun startNewRoute(lat: Double, lon: Double, radius: Int) {
+
+        _state.update {
+            it.copy(
+                builtRoute = emptyList(),
+                routes = emptyList(),
+                selectedRouteIndex = null
+            )
+        }
+
+        loadRouteOptions(lat, lon, radius)
+
+    }
+
+    fun loadRouteOptions(lat: Double, lon: Double, radius : Int) {
+        viewModelScope.launch {
+
+            val response = Handlers.mapRoutesHandler
+                .getRouteOptions(lat, lon, radius)
+
+            _state.update {
+                it.copy(
+                    routes = response.routes ?: emptyList(),
+                    selectedRouteIndex = null,
+                    selectedPoint = GeoPoint(response.centralPoint?.lat ?: lat,response.centralPoint?.lon ?: lon)
+                )
+            }
+        }
+    }
+
+    fun selectRoute(index: Int,radius: Int) {
+
+        val route = state.value.routes[index]
+        val lastPoint = route.points.last()
+
+        _state.update {
+            it.copy(
+                selectedRouteIndex = index,
+                builtRoute = it.builtRoute + route,
+
+                routes = emptyList()
+            )
+        }
+
+        loadRouteOptions(lastPoint.lat, lastPoint.lon,radius)
+    }
 
 
     private fun loadLocation() {
@@ -44,6 +98,15 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
                     it.copy(isLoading = false)
                 }
             }
+        }
+    }
+
+    fun onMapClick(point: GeoPoint) {
+        _state.update {
+            it.copy(
+                selectedPoint = point,
+                showStartButton = true
+            )
         }
     }
 
