@@ -1,6 +1,9 @@
 package MoveOn
 
 import kotlinx.serialization.Serializable
+import kotlinx.datetime.LocalDate
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 
 @Serializable
@@ -25,7 +28,7 @@ data class RegisterResponse(
 data class RegisterRequest(
     val userName: String,
     val userSurname: String,
-    val dateOfBirth: String,
+    val dateOfBirth: LocalDate,
     val email: String,
     val password: String,
     val gender: String
@@ -52,7 +55,7 @@ data class ViewProfileResponse(
     val photoId: Int? = null, //temporary
     val userName: String? = null,
     val userSurname: String? = null,
-    val dateOfBirth: String? = null,
+    val dateOfBirth: LocalDate? = null,
     val description: String? = null,
     val rating: Double? = null,
     val friendsAmount: Int? = null
@@ -71,28 +74,29 @@ data class CreateEventResponse(
 )
 
 @Serializable
-data class CreateEventRequest(
+data class CreateEventRequest @OptIn(ExperimentalTime::class) constructor(
     val title: String,
     val description: String,
-    val time: String,
-    val date: String,
+    val dateTime: Instant,
     //val position: Position, пока непонятно в каком формате, есть какие-то встроенные
     val maxAmountOfPeople: Int,
-    val sportType: String
+    val sportType: String,
+    val city: String = "Unknown",
 )
 
 @Serializable
-data class EventListElement(
+data class EventListElement @OptIn(ExperimentalTime::class) constructor(
     val eventId: Int,
     val title: String,
     val city: String,
     val sportType: String,
-    val date: String,
+    val dateTime: Instant?,
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int,
     val creatorRating: Double,
     val photoId: Int,
-    val description: String
+    val description: String,
+    val isCreator: Boolean = false
 )
 
 @Serializable
@@ -112,19 +116,31 @@ data class ViewFilteredEventsListRequest(
     val creatorRating: Double
 )*/
 
+
 @Serializable
-data class ViewEventResponse(
+data class ViewMyEventsListResponse(
+    val success: Boolean,
+    val errorMessage: String? = null,
+    val events: List<EventListElement>? = null
+)
+
+
+@Serializable
+data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(
     val success: Boolean,
     val errorMessage: String? = null,
     val creatorId: Int? = null,
-    val participantIds: List<Int>? = null,
+    val participants: List<Person>? = null,
     val title: String? = null,
     val description: String? = null,
-    val time: String? = null,
-    val date: String? = null,
+    val dateTime: Instant? = null,
     val currentAmountOfPeople: Int? = null,
     val maxAmountOfPeople: Int? = null,
-    val sportType: String? = null
+    val sportType: String? = null,
+    val isUserParticipant: Boolean? = null,
+    val isUserCreator: Boolean? = null,
+    val photoId: Int? = null
+
 )
 
 //@Serializable
@@ -172,10 +188,10 @@ data class OpenNotificationsResponse(
 )
 
 @Serializable
-data class EventApplication(
+data class EventApplication @OptIn(ExperimentalTime::class) constructor(
     val eventId: Int,
     val title: String,
-    val date: String,
+    val dateTime: Instant?,
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int
 )
@@ -197,7 +213,9 @@ data class OpenApplicationListResponse(
 data class Person(
     val id: Int,
     val name: String,
-    val surname: String
+    val surname: String,
+    val rating: Double? = null,
+    val photoId: Int? = null
 )
 
 @Serializable
@@ -237,4 +255,26 @@ data class AcceptOrDeclineEventApplicationRequest(
     val eventId: Int,
     val userId: Int,
     val isAccepted: Boolean
+)
+
+@Serializable
+data class Point(
+    val lat: Double,
+    val lon: Double
+)
+
+@Serializable
+data class Route(
+    val points: List<Point>,
+    val distance: Double,
+    val time: Long
+)
+
+@Serializable
+data class RouteOptionsResponse(
+    val success: Boolean,
+    val errorMessage: String? = null,
+    val centralPoint: Point? = null,
+    val points: List<Point>? = null,
+    val routes: List<Route>? = null,
 )
