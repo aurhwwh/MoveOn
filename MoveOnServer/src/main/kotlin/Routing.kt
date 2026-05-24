@@ -112,13 +112,13 @@ fun Application.configureRouting() {
                     )
                 )
             }
-            call.respond(toGeoJson(
+            call.respond(
                 RouteOptionsResponse(
                     success = true,
                     centralPoint = Point(centralLat, centralLon),
                     points = responsePoints,
                     routes = responsePaths
-                ))
+                )
             )
 
         }
