@@ -324,7 +324,7 @@ fun Application.configureRouting() {
             if (page==null || limit == null){
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    ViewProfileResponse(false,
+                    ViewFilteredEventsListResponse(false,
                         "Limit and page are required")
                 )
                 return@get
@@ -941,6 +941,76 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.OK, ViewMyEventsListResponse(true, events = events))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ViewMyEventsListResponse(false, "Database error: ${e.message}"))
+                }
+            }
+
+
+            get("/view_events_markers") {
+                val minLat = call.request.queryParameters["minLat"]?.toDoubleOrNull()
+                val maxLat = call.request.queryParameters["maxLat"]?.toDoubleOrNull()
+                val minLon = call.request.queryParameters["minLon"]?.toDoubleOrNull()
+                val maxLon = call.request.queryParameters["maxLon"]?.toDoubleOrNull()
+
+                if (
+                    minLat == null || maxLat == null || minLon == null || maxLon == null
+                ) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        ViewEventsMarkersResponse(
+                            success = false,
+                            errorMessage = "Bounds are required"
+                        )
+                    )
+                    return@get
+                }
+
+                try {
+                    val events = Database.useConnection { conn ->
+                        val sql = """ SELECT id, title, lat, lon FROM events 
+                            WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?
+                            """.trimIndent()
+
+                        conn.prepareStatement(sql).use { stmt ->
+
+                            stmt.setDouble(1, minLat)
+                            stmt.setDouble(2, maxLat)
+                            stmt.setDouble(3, minLon)
+                            stmt.setDouble(4, maxLon)
+
+                            val rs = stmt.executeQuery()
+
+                            val result = mutableListOf<EventsMarker>()
+
+                            while (rs.next()) {
+                                result.add(
+                                    EventsMarker(
+                                        eventId = rs.getInt("id"),
+                                        title = rs.getString("title"),
+                                        lat = rs.getDouble("lat"),
+                                        lon = rs.getDouble("lon")
+                                    )
+                                )
+                            }
+
+                            result
+                        }
+                    }
+
+                    call.respond(
+                        HttpStatusCode.OK,
+                        ViewEventsMarkersResponse(
+                            success = true,
+                            events = events
+                        )
+                    )
+                } catch (e: Exception) {
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        ViewEventsMarkersResponse(
+                            success = false,
+                            errorMessage = "Database error: ${e.message}"
+                        )
+                    )
                 }
             }
         }

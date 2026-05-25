@@ -1,10 +1,11 @@
 package com.example.moveon.viewModel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moveon.App
 import com.example.moveon.client.handlers.Handlers
+import com.example.moveon.client.jsonClasses.EventsMarker
 import com.example.moveon.client.jsonClasses.Route
 import com.example.moveon.ui.map.UserLocation
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,8 @@ import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
 
 data class MapUiState(
-    val currentLocation: GeoPoint = GeoPoint(59.9386, 30.2144),
+    val userLocation: GeoPoint? = null,
+    val mapCenter: GeoPoint = GeoPoint(59.9386, 30.2144),
     val permissionGranted: Boolean = false,
     val isLoading: Boolean = false,
     val zoom: Double = 19.0,
@@ -22,7 +24,8 @@ data class MapUiState(
     val showStartButton: Boolean = false,
     val routes: List<Route> = emptyList(),
     val selectedRouteIndex: Int? = null,
-    val builtRoute: List<Route> = emptyList()
+    val builtRoute: List<Route> = emptyList(),
+    val markers: List<EventsMarker> = emptyList()
 )
 
 
@@ -31,6 +34,25 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _state = MutableStateFlow(MapUiState())
     val state = _state.asStateFlow()
+
+
+    fun loadMarkers(
+        minLat: Double,
+        maxLat: Double,
+        minLon: Double,
+        maxLon: Double
+    ) {
+        viewModelScope.launch {
+            try {
+                val markers = Handlers.eventsHandler.getMarkers(minLat, maxLat, minLon, maxLon)
+
+                _state.update { it.copy(markers = markers) }
+
+            } catch (e: Exception) {
+                Log.e("MapViewModel", "Failed to load markers", e)
+            }
+        }
+    }
 
     fun startNewRoute(lat: Double, lon: Double, radius: Int) {
 
@@ -90,7 +112,11 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
             if(currentLocation != null) {
                 _state.update {
-                    it.copy(currentLocation = currentLocation, isLoading = false)
+                    it.copy(
+                        userLocation = currentLocation,
+                        mapCenter = currentLocation,
+                        isLoading = false
+                    )
                 }
             }
             else {
@@ -124,7 +150,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateCenter(center: GeoPoint) {
         _state.update {
-            it.copy(currentLocation = center)
+            it.copy(mapCenter = center)
         }
     }
 }

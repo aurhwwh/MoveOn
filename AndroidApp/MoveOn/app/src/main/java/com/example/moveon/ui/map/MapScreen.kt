@@ -1,6 +1,7 @@
 package com.example.moveon.ui.map
 
 import android.Manifest
+import com.example.moveon.R
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,9 +22,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.ui.common.BottomBar
-import com.example.moveon.ui.common.CityTopBar
 import com.example.moveon.viewModel.MapViewModel
-import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
@@ -36,6 +35,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import kotlinx.coroutines.delay
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.views.overlay.MapEventsOverlay
 
@@ -71,7 +72,7 @@ fun MapScreen(navController : NavController,
             )
             setMultiTouchControls(true)
             controller.setZoom(state.zoom)
-            controller.setCenter(state.currentLocation)
+            controller.setCenter(state.mapCenter)
 
             setUseDataConnection(true)
 
@@ -132,6 +133,7 @@ fun MapScreen(navController : NavController,
 
     val selectedMarker = remember { mutableStateOf<org.osmdroid.views.overlay.Marker?>(null) }
     val routeOverlays = remember { mutableListOf<org.osmdroid.views.overlay.Polyline>() }
+    val markerOverlays = remember { mutableListOf<org.osmdroid.views.overlay.Marker>() }
 
     LaunchedEffect(state.selectedPoint) {
         selectedMarker.value?.let {
@@ -228,6 +230,58 @@ fun MapScreen(navController : NavController,
         //mapView.invalidate()
     }
 
+
+    LaunchedEffect(state.mapCenter, state.zoom) {
+
+        delay(400)
+
+        val projection = mapView.projection
+
+        val topLeft = projection.fromPixels(0, 0) as GeoPoint
+        val bottomRight = projection.fromPixels(mapView.width, mapView.height) as GeoPoint
+
+        val minLat = bottomRight.latitude
+        val maxLat = topLeft.latitude
+
+        val minLon = topLeft.longitude
+        val maxLon = bottomRight.longitude
+
+        viewModel.loadMarkers(minLat, maxLat, minLon, maxLon)
+    }
+
+    LaunchedEffect(state.markers) {
+
+        markerOverlays.forEach { mapView.overlays.remove(it)    }
+        markerOverlays.clear()
+
+        state.markers.forEach { event ->
+            val marker =
+                org.osmdroid.views.overlay.Marker(mapView).apply {
+
+                    position = GeoPoint(
+                        event.lat,
+                        event.lon
+                    )
+
+                    title = event.title
+
+                    icon = ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_marker
+                    )
+
+                    setAnchor(
+                        org.osmdroid.views.overlay.Marker.ANCHOR_CENTER,
+                        org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM
+                    )
+                }
+
+            mapView.overlays.add(marker)
+            markerOverlays.add(marker)
+        }
+
+        mapView.invalidate()
+    }
 
     Scaffold(
         bottomBar = { BottomBar(navController) }

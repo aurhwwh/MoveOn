@@ -27,6 +27,9 @@ CREATE TABLE events (
                         creator_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE INDEX idx_events_lat_lon
+    ON events(lat, lon);
+
 CREATE TABLE event_participants (
                                     event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
                                     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,

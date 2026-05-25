@@ -3,6 +3,7 @@ package com.example.moveon.client.handlers
 import com.example.moveon.client.api.EventsApi
 import com.example.moveon.client.jsonClasses.CreateEventRequest
 import com.example.moveon.client.jsonClasses.EventListElement
+import com.example.moveon.client.jsonClasses.EventsMarker
 import com.example.moveon.client.jsonClasses.JoinApplicationRequest
 import com.example.moveon.client.jsonClasses.ViewEventResponse
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
@@ -51,6 +52,18 @@ class EventsHandler(private val api : EventsApi) {
     suspend fun getMyEvents (): List<EventListElement> {
 
         val response = api.getMyEventsList()
+
+        if (!response.success) {
+            throw Exception(response.errorMessage ?: "UnknownError");
+        }
+
+        return response.events ?: emptyList()
+    }
+
+    suspend fun getMarkers (
+        minLat: Double, maxLat: Double, minLon: Double, maxLon: Double): List<EventsMarker> {
+
+        val response = api.getEventsMarkers(minLat, maxLat, minLon, maxLon);
 
         if (!response.success) {
             throw Exception(response.errorMessage ?: "UnknownError");

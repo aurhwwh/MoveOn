@@ -5,6 +5,7 @@ import com.example.moveon.client.jsonClasses.CreateEventResponse
 import com.example.moveon.client.jsonClasses.JoinApplicationRequest
 import com.example.moveon.client.jsonClasses.JoinApplicationResponse
 import com.example.moveon.client.jsonClasses.ViewEventResponse
+import com.example.moveon.client.jsonClasses.ViewEventsMarkersResponse
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListResponse
 import com.example.moveon.client.jsonClasses.ViewMyEventsListResponse
@@ -61,5 +62,17 @@ class EventsApi(private val client: HttpClient) {
     @OptIn(ExperimentalTime::class)
     suspend fun getMyEventsList(): ViewMyEventsListResponse {
         return client.get("$baseUrl/view_my_events_list").body()
+    }
+
+    suspend fun getEventsMarkers(
+        minLat: Double, maxLat: Double, minLon: Double, maxLon: Double
+    ): ViewEventsMarkersResponse {
+
+        return client.get("$baseUrl/view_events_markers") {
+            parameter("minLat", minLat)
+            parameter("maxLat", maxLat)
+            parameter("minLon", minLon)
+            parameter("maxLon", maxLon)
+        }.body()
     }
 }

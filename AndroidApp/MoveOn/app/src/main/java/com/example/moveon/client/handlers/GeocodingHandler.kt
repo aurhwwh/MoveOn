@@ -11,7 +11,7 @@ class GeocodingHandler(private val api : GeocodingApi) {
         return response
             .map { it.toPlace() }
             .filter {
-                it.city == "Москва" || it.city == "Санкт-Петербург"
+                it.city == "Москва" || it.city == "Санкт-Петербург" || it.city == "Moscow" || it.city == "Saint Petersburg"
             }
     }
 }
