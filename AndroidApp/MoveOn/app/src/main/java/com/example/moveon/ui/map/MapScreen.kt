@@ -107,10 +107,7 @@ fun MapScreen(navController : NavController,
 
             overlays.add(MapEventsOverlay(events))
         }
-    }
 
-    LaunchedEffect(state.currentLocation) {
-        mapView.controller.animateTo(state.currentLocation)
     }
 
 
@@ -134,6 +131,8 @@ fun MapScreen(navController : NavController,
     }
 
     val selectedMarker = remember { mutableStateOf<org.osmdroid.views.overlay.Marker?>(null) }
+    val routeOverlays = remember { mutableListOf<org.osmdroid.views.overlay.Polyline>() }
+
     LaunchedEffect(state.selectedPoint) {
         selectedMarker.value?.let {
             mapView.overlays.remove(it)
@@ -157,9 +156,11 @@ fun MapScreen(navController : NavController,
 
     LaunchedEffect(state.routes, state.builtRoute) {
 
-        mapView.overlays.removeAll {
-            it is org.osmdroid.views.overlay.Polyline
+        routeOverlays.forEach {
+            mapView.overlays.remove(it)
         }
+
+        routeOverlays.clear()
 
         state.builtRoute.forEach { route ->
 
@@ -172,11 +173,12 @@ fun MapScreen(navController : NavController,
                 outlinePaint.color =
                     android.graphics.Color.rgb(10, 40, 120)
 
-                outlinePaint.strokeWidth = 6f
+                outlinePaint.strokeWidth = 8f
                 outlinePaint.alpha = 255
             }
 
             mapView.overlays.add(line)
+            routeOverlays.add(line)
         }
 
         state.routes.forEachIndexed { index, route ->
@@ -188,13 +190,15 @@ fun MapScreen(navController : NavController,
                 })
 
                 outlinePaint.color =
-                    android.graphics.Color.BLUE
+                    android.graphics.Color.rgb(138, 43, 226)
+
+                outlinePaint.color = android.graphics.Color.rgb(138, 43, 226)
 
                 outlinePaint.strokeWidth =
                     if (index == state.selectedRouteIndex) 18f else 14f
 
                 outlinePaint.alpha =
-                    if (index == state.selectedRouteIndex) 220 else 90
+                    if (index == state.selectedRouteIndex) 120 else 90
 
                 setOnClickListener { _, _, _ ->
                     val projection = mapView.projection
@@ -218,9 +222,10 @@ fun MapScreen(navController : NavController,
             }
 
             mapView.overlays.add(line)
+            routeOverlays.add(line)
         }
 
-        mapView.invalidate()
+        //mapView.invalidate()
     }
 
 

@@ -62,7 +62,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun selectRoute(index: Int,radius: Int) {
+    fun selectRoute(index: Int, radius: Int) {
 
         val route = state.value.routes[index]
         val lastPoint = route.points.last()
@@ -76,7 +76,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             )
         }
 
-        loadRouteOptions(lastPoint.lat, lastPoint.lon,radius)
+        loadRouteOptions(lastPoint.lat, lastPoint.lon, radius)
     }
 
 
