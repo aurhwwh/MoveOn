@@ -1,6 +1,5 @@
 package com.example.moveon.ui.profile
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,34 +22,51 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.moveon.R
 import com.example.moveon.data.ProfileData
+import com.example.moveon.data.TokenStorage
 import kotlinx.datetime.toJavaLocalDate
-
-
 
 @Composable
 fun MakeProfile(data: ProfileData) {
+    val userId = TokenStorage.getUserIdFromToken() ?: 0
+    val baseUrl = "http://10.0.2.2:8080" // Замените на реальный адрес сервера
+    val avatarUrl = "$baseUrl/avatars/$userId.jpg"
+
     Box(modifier = Modifier.padding(8.dp)) {
-        Column() {
-            Row() {
-                Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
-                    contentDescription = "image",
+        Column {
+            Row {
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "Avatar",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.padding(5.dp).size(100.dp).clip(CircleShape))
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .size(100.dp)
+                        .clip(CircleShape),
+                    error = painterResource(R.drawable.img),
+                    placeholder = painterResource(R.drawable.img)
+                )
 
                 Column(modifier = Modifier.padding(start = 10.dp, top = 8.dp)) {
-                    Text(text = data.name + " " + data.surname,
+                    Text(
+                        text = data.name + " " + data.surname,
                         fontSize = 28.sp,
-                        modifier = Modifier.padding(2.dp))
+                        modifier = Modifier.padding(2.dp)
+                    )
 
-                    val birth = data.birth.toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-                    Text(text = birth,
+                    val birth = data.birth.toJavaLocalDate()
+                        .format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                    Text(
+                        text = birth,
                         color = Color.Gray,
                         fontStyle = FontStyle.Italic,
                         fontSize = 18.sp,
-                        modifier = Modifier.padding(2.dp))
-                    Text(text = data.city,
+                        modifier = Modifier.padding(2.dp)
+                    )
+                    Text(
+                        text = data.city,
                         fontSize = 18.sp,
                         color = Color.Gray,
                         fontStyle = FontStyle.Italic,
@@ -59,8 +75,9 @@ fun MakeProfile(data: ProfileData) {
                     DrawStars(data.rating)
                 }
             }
-            Box() {
-                Text(text = data.description,
+            Box {
+                Text(
+                    text = data.description,
                     fontSize = 18.sp,
                     modifier = Modifier.padding(8.dp)
                 )
@@ -69,15 +86,14 @@ fun MakeProfile(data: ProfileData) {
     }
 }
 
-
 @Composable
 fun DrawStars(rating: Double) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         val full = rating.toInt()
         val progress = (rating - full).coerceIn(0.0, 1.0)
 
-        for (i in 1 .. 5) {
-            Box() {
+        for (i in 1..5) {
+            Box {
                 if (i <= full) {
                     Icon(
                         imageVector = Icons.Filled.Star,

@@ -1,94 +1,146 @@
 package com.example.moveon.ui.profile
 
-import android.text.Layout
-import android.widget.DatePicker
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SelectableDates
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.moveon.R
+import com.example.moveon.client.api.AvatarApi
 import com.example.moveon.data.TokenStorage
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
-import kotlinx.datetime.minus
-import kotlinx.datetime.toJavaLocalDate
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.coroutines.launch
+import kotlinx.datetime.*
+import java.io.File
+import java.io.InputStream
 import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
-
-
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun EditProfileScreen(navController : NavController) {
+fun EditProfileScreen(navController: NavController) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     var name by remember { mutableStateOf("") }
     var surname by remember { mutableStateOf("") }
     var birth by remember { mutableStateOf<LocalDate?>(null) }
     var city by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
+    // Avatar related
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isUploading by remember { mutableStateOf(false) }
+    var uploadError by remember { mutableStateOf<String?>(null) }
+
+    val userId = TokenStorage.getUserIdFromToken() ?: 0
+    val baseUrl = "http://10.0.2.2:8080"
+    val currentAvatarUrl = "$baseUrl/avatars/$userId.jpg"
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+        uploadError = null
+    }
+
+    fun uploadAvatar(uri: Uri) {
+        scope.launch {
+            isUploading = true
+            uploadError = null
+            try {
+                val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+                val tempFile = File(context.cacheDir, "temp_avatar_${System.currentTimeMillis()}.jpg")
+                inputStream?.use { input ->
+                    tempFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                val success = AvatarApi.uploadAvatar(tempFile)
+                if (success) {
+                    selectedImageUri = null
+                    Toast.makeText(context, "Avatar updated", Toast.LENGTH_SHORT).show()
+                } else {
+                    uploadError = "Upload failed"
+                }
+            } catch (e: Exception) {
+                uploadError = e.message ?: "Unknown error"
+            } finally {
+                isUploading = false
+            }
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         MoveOnTopBar(navController, "profile")
 
-        Image(painter = painterResource(id = R.drawable.img),
-            contentDescription = "image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).size(100.dp).clip(CircleShape),
+        // Avatar with click handling
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 10.dp)
+                .size(100.dp)
+                .clip(CircleShape)
+                .clickable { imagePickerLauncher.launch("image/*") },
+            contentAlignment = Alignment.Center
+        ) {
+            if (selectedImageUri != null) {
+                AsyncImage(
+                    model = selectedImageUri,
+                    contentDescription = "Selected avatar",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                AsyncImage(
+                    model = currentAvatarUrl,
+                    contentDescription = "Current avatar",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    error = painterResource(R.drawable.img),
+                    placeholder = painterResource(R.drawable.img)
+                )
+            }
+            if (isUploading) {
+                CircularProgressIndicator(modifier = Modifier.size(40.dp), color = Color.White)
+            }
+        }
+
+        Text(
+            text = "Tap to change photo",
+            fontSize = 12.sp,
+            color = Color.Gray,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+
+        if (uploadError != null) {
+            Text(
+                text = uploadError!!,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -136,12 +188,22 @@ fun EditProfileScreen(navController : NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        if (selectedImageUri != null && !isUploading) {
+            Button(
+                onClick = { uploadAvatar(selectedImageUri!!) },
+                colors = ButtonDefaults.buttonColors(containerColor = MGreen),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Upload new avatar")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = {},
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MGreen
-            )
+            onClick = { /* Save profile data */ },
+            colors = ButtonDefaults.buttonColors(containerColor = MGreen)
         ) {
             Text(fontSize = 20.sp, text = "Save")
         }
@@ -152,7 +214,6 @@ fun EditProfileScreen(navController : NavController) {
             modifier = Modifier.align(Alignment.End).padding(8.dp),
             onClick = {
                 TokenStorage.clear()
-
                 navController.navigate("login") {
                     popUpTo(0) {
                         inclusive = true
@@ -162,14 +223,13 @@ fun EditProfileScreen(navController : NavController) {
                     restoreState = false
                 }
             },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Red
-            )
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
         ) {
             Text(fontSize = 20.sp, text = "Logout")
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun BirthDatePicker(
@@ -204,7 +264,6 @@ fun BirthDatePicker(
             }
         )
     }
-
 
     val today = Instant.fromEpochMilliseconds(System.currentTimeMillis())
         .toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -252,5 +311,3 @@ fun BirthDatePicker(
         }
     }
 }
-
-

@@ -55,11 +55,13 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.4.1")
     implementation("io.ktor:ktor-client-logging:3.4.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
-
     implementation("androidx.paging:paging-compose:3.3.0")
 
     implementation("org.osmdroid:osmdroid-android:6.1.20")
     implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
 
 
     implementation(libs.androidx.core.ktx)

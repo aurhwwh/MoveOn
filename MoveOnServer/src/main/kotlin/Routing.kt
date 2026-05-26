@@ -2,36 +2,47 @@ package MoveOn
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
-import io.ktor.server.request.receive
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.http.content.staticFiles
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import MoveOn.database.Database
 import MoveOn.security.Security
 import com.graphhopper.GHRequest
-import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.principal
+import io.ktor.http.content.PartData
+import io.ktor.http.content.forEachPart
+import io.ktor.http.content.streamProvider
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toKotlinLocalDate
+import java.io.File
 import java.sql.Date
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
+import io.ktor.server.request.receiveMultipart
+import kotlin.io.readBytes
+import kotlin.io.writeBytes
+
 
 @OptIn(ExperimentalTime::class)
 fun Application.configureRouting() {
     routing {
-        get("/"){
+        staticFiles("/avatars", File(System.getProperty("user.dir"), "avatars"))
+
+        get("/") {
             call.respondText("Server running")
         }
-        get("/route_options"){
+
+        get("/route_options") {
             val lat = call.request.queryParameters["lat"]?.toDoubleOrNull()
             val lon = call.request.queryParameters["lon"]?.toDoubleOrNull()
             val radius = call.request.queryParameters["radius"]?.toIntOrNull()
             if (lat == null || lon == null || radius == null) {
-                call.respond(RouteOptionsResponse(false,"Incorrect request format"))
+                call.respond(RouteOptionsResponse(false, "Incorrect request format"))
                 return@get
             }
             val hopper = GraphHopperProvider.hopper
@@ -43,7 +54,7 @@ fun Application.configureRouting() {
                 com.graphhopper.routing.util.EdgeFilter.ALL_EDGES
             )
             if (snap == null || !snap.isValid) {
-                call.respond(RouteOptionsResponse(false,"Unable to find nearest point"))
+                call.respond(RouteOptionsResponse(false, "Unable to find nearest point"))
                 return@get
             }
             val node = snap.closestNode
@@ -120,8 +131,8 @@ fun Application.configureRouting() {
                     routes = responsePaths
                 ))
             )
-
         }
+
         post("/refresh") {
             val request = try {
                 call.receive<RefreshRequest>()
@@ -130,8 +141,8 @@ fun Application.configureRouting() {
                 return@post
             }
             val userId = getUserIdFromJWT(request.oldRefreshToken)
-            if(userId == null || !isRefreshToken(request.oldRefreshToken)) {
-                call.respond(HttpStatusCode.Unauthorized, RefreshResponse(false,"Invalid Refresh Token") )
+            if (userId == null || !isRefreshToken(request.oldRefreshToken)) {
+                call.respond(HttpStatusCode.Unauthorized, RefreshResponse(false, "Invalid Refresh Token"))
                 return@post
             }
             try {
@@ -168,13 +179,11 @@ fun Application.configureRouting() {
                     HttpStatusCode.OK,
                     RefreshResponse(true, null, newRefreshToken, newAccessToken)
                 )
-
-
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, RefreshResponse(false, "Database error: ${e.message}"))
             }
-
         }
+
         post("/register") {
             val request = try {
                 call.receive<RegisterRequest>()
@@ -310,8 +319,6 @@ fun Application.configureRouting() {
             }
         }
 
-
-
         get("/view_filtered_events_list") {
             val title = call.request.queryParameters["title"]
             val city = call.request.queryParameters["city"]
@@ -321,11 +328,10 @@ fun Application.configureRouting() {
             val creatorRating = call.request.queryParameters["creatorRating"]?.toDouble()
             val page = call.request.queryParameters["page"]?.toInt()
             val limit = call.request.queryParameters["limit"]?.toInt()
-            if (page==null || limit == null){
+            if (page == null || limit == null) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    ViewProfileResponse(false,
-                        "Limit and page are required")
+                    ViewProfileResponse(false, "Limit and page are required")
                 )
                 return@get
             }
@@ -347,18 +353,14 @@ fun Application.configureRouting() {
                         conditions.add("e.title ILIKE ?")
                         params.add("%${title}%")
                     }
-                    if (city!= null) {
+                    if (city != null) {
                         conditions.add("e.city ILIKE ?")
                         params.add("%${city}%")
                     }
-                    if (sportType!= null) {
+                    if (sportType != null) {
                         conditions.add("e.sport_type = ?")
                         params.add(sportType)
                     }
-                    /*if (datetime != null) {
-                        conditions.add("e.date = ?")
-                        params.add(Date.valueOf(.date))
-                    }*/
                     if (maxAmountOfPeople != null) {
                         conditions.add("e.max_amount_of_people <= ?")
                         params.add(maxAmountOfPeople)
@@ -391,12 +393,11 @@ fun Application.configureRouting() {
                                     title = rs.getString("title"),
                                     city = rs.getString("city"),
                                     sportType = rs.getString("sport_type"),
-                                    //date = rs.getDate("date").toString(),
                                     dateTime = rs.getTimestamp("time")?.toInstant()?.toKotlinInstant(),
                                     maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                     currentAmountOfPeople = rs.getInt("current_amount"),
                                     creatorRating = creatorRating1,
-                                    photoId = 1, //todo: add params to db
+                                    photoId = 1,
                                     description = rs.getString("description") ?: ""
                                 )
                             )
@@ -410,8 +411,6 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.InternalServerError, ViewFilteredEventsListResponse(false, "Database error: ${e.message}"))
             }
         }
-
-
 
         get("/get_persons_list") {
             val eventId = call.request.queryParameters["eventId"]?.toIntOrNull()
@@ -452,6 +451,38 @@ fun Application.configureRouting() {
         }
 
         authenticate("auth-jwt") {
+            post("/api/user/avatar") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.getClaim("userId")?.asInt()
+                    ?: return@post call.respond(HttpStatusCode.Unauthorized)
+
+                val multipart = call.receiveMultipart()
+                var saved = false
+                var errorMessage: String? = null
+
+                multipart.forEachPart { part ->
+                    if (part is PartData.FileItem) {
+                        val bytes = part.streamProvider().readBytes()
+                        if (bytes.size > 5 * 1024 * 1024) {
+                            errorMessage = "File too large (max 5 MB)"
+                            part.dispose()
+                            return@forEachPart
+                        }
+                        val avatarDir = File(System.getProperty("user.dir"), "avatars")
+                        if (!avatarDir.exists()) avatarDir.mkdirs()
+                        File(avatarDir, "$userId.jpg").writeBytes(bytes)
+                        saved = true
+                    }
+                    part.dispose()
+                }
+
+                when {
+                    errorMessage != null -> call.respond(HttpStatusCode.BadRequest, errorMessage)
+                    !saved -> call.respond(HttpStatusCode.BadRequest, "No file uploaded")
+                    else -> call.respond(mapOf("avatarUrl" to "/avatars/$userId.jpg"))
+                }
+            }
+
             get("/view_event") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal!!.payload.getClaim("userId").asInt()
@@ -518,7 +549,7 @@ fun Application.configureRouting() {
                                     currentAmountOfPeople = rs.getInt("current_amount"),
                                     maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                     sportType = rs.getString("sport_type"),
-                                    isUserCreator = (userId==rs.getInt("creator_id")),
+                                    isUserCreator = (userId == rs.getInt("creator_id")),
                                     isUserParticipant = participants.second
                                 )
                             } else null
@@ -584,7 +615,6 @@ fun Application.configureRouting() {
                 }
             }
 
-
             post("/create_event") {
                 val request = try {
                     call.receive<CreateEventRequest>()
@@ -596,7 +626,6 @@ fun Application.configureRouting() {
                 val creatorId = principal!!.payload.getClaim("userId").asInt()
                 try {
                     val eventId = Database.transaction { conn ->
-
                         val sqlEvent = """
         INSERT INTO events (title, description, time, city, max_amount_of_people, sport_type, creator_id)
         VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
@@ -635,6 +664,7 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, CreateEventResponse(false, "Database error: ${e.message}"))
                 }
             }
+
             post("/join_application") {
                 val request = try {
                     call.receive<JoinApplicationRequest>()
@@ -653,8 +683,6 @@ fun Application.configureRouting() {
                             val rs = stmt.executeQuery()
                             if (rs.next()) return@transaction false
                         }
-                        //temporary for mvp
-                        //val insertSql = "INSERT INTO event_participants (event_id, user_id, status) VALUES (?, ?, 'pending')"
                         val insertSql = "INSERT INTO event_participants (event_id, user_id, status) VALUES (?, ?, 'accepted')"
                         conn.prepareStatement(insertSql).use { stmt ->
                             stmt.setInt(1, request.eventId)
@@ -693,7 +721,6 @@ fun Application.configureRouting() {
                 }
             }
 
-            // Уведомления
             get("/open_notifications") {
                 val userId = call.request.queryParameters["userId"]?.toIntOrNull()
                 if (userId == null) {
@@ -730,6 +757,7 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, OpenNotificationsResponse(false, "Database error: ${e.message}"))
                 }
             }
+
             get("/open_application_list") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal!!.payload.getClaim("userId").asInt()
@@ -787,6 +815,7 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, OpenApplicationListResponse(false, "Database error: ${e.message}"))
                 }
             }
+
             post("/rate") {
                 val request = try {
                     call.receive<RateRequest>()
@@ -818,6 +847,7 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, RateResponse(false, "Database error: ${e.message}"))
                 }
             }
+
             post("/accept_or_decline_event_application") {
                 val request = try {
                     call.receive<AcceptOrDeclineEventApplicationRequest>()
@@ -826,7 +856,7 @@ fun Application.configureRouting() {
                     return@post
                 }
                 val principal = call.principal<JWTPrincipal>()
-                val creatorId = principal!!.payload.getClaim("userId").asInt()//todo add check for creating this event
+                val creatorId = principal!!.payload.getClaim("userId").asInt()
 
                 try {
                     val success = Database.transaction { conn ->
@@ -864,7 +894,6 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, AcceptOrDeclineEventApplicationResponse(false, "Database error: ${e.message}"))
                 }
             }
-
 
             get("/view_my_events_list") {
                 val principal = call.principal<JWTPrincipal>()
@@ -911,7 +940,7 @@ fun Application.configureRouting() {
                                         maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                         currentAmountOfPeople = rs.getInt("current_amount"),
                                         creatorRating = creatorRating1,
-                                        photoId = 1, //todo: add params to db
+                                        photoId = 1,
                                         description = rs.getString("description") ?: "",
                                         isCreator = rs.getBoolean("is_creator")
                                     )

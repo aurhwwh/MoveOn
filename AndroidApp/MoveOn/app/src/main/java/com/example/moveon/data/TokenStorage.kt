@@ -5,6 +5,9 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import androidx.core.content.edit
+import org.json.JSONObject
+import android.util.Base64
+
 
 object TokenStorage {
 
@@ -41,5 +44,18 @@ object TokenStorage {
 
     fun clear() {
         prefs.edit { clear() }
+    }
+
+
+    fun getUserIdFromToken(): Int? {
+        val token = getAccess() ?: return null
+        return try {
+            val parts = token.split(".")
+            val payload = String(Base64.decode(parts[1], Base64.DEFAULT))
+            val json = JSONObject(payload)
+            json.getInt("userId")
+        } catch (e: Exception) {
+            null
+        }
     }
 }
