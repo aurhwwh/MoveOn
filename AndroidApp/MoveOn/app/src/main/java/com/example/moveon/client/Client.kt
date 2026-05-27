@@ -1,4 +1,5 @@
 package com.example.moveon.client
+
 import com.example.moveon.client.jsonClasses.RefreshRequest
 import com.example.moveon.client.jsonClasses.RefreshResponse
 import com.example.moveon.data.TokenStorage
@@ -12,6 +13,7 @@ import io.ktor.client.plugins.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import com.example.moveon.client.api.RefreshApi
+import io.ktor.client.request.*
 
 object Client {
     val client = HttpClient(OkHttp) {
@@ -32,6 +34,11 @@ object Client {
             connectTimeoutMillis = 15000
             socketTimeoutMillis = 15000
         }
+
+        defaultRequest {
+            url("http://10.0.2.2:8080/")
+        }
+
         install(Auth) {
             bearer {
                 loadTokens {

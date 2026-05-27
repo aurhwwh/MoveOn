@@ -1,6 +1,5 @@
 package com.example.moveon.ui.events
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,7 +31,6 @@ import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 
-
 @OptIn(ExperimentalTime::class)
 @Composable
 fun MakeEvent(data: EventListElement, onClick: () -> Unit) {
@@ -41,11 +39,13 @@ fun MakeEvent(data: EventListElement, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Box(modifier = Modifier.clickable{ onClick() }) {
-            Row() {
-                Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
+            Row {
+                androidx.compose.foundation.Image(
+                    painter = painterResource(R.drawable.img),
                     contentDescription = "image",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.padding(5.dp).size(68.dp).clip(CircleShape))
+                    modifier = Modifier.padding(5.dp).size(68.dp).clip(CircleShape)
+                )
 
                 Column(modifier = Modifier.padding(start = 10.dp).padding(top = 8.dp)) {
                     Text(text = data.title, fontWeight = FontWeight.Bold, fontSize = 22.sp)
@@ -66,7 +66,6 @@ fun MakeEvent(data: EventListElement, onClick: () -> Unit) {
                     }
                 }
             }
-
         }
     }
 }

@@ -24,8 +24,9 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaInstant
 import kotlin.time.toKotlinInstant
 import io.ktor.server.request.receiveMultipart
-import kotlin.io.readBytes
+import io.ktor.utils.io.readRemaining
 import kotlin.io.writeBytes
+import kotlinx.io.readByteArray
 
 
 @OptIn(ExperimentalTime::class)
@@ -452,35 +453,65 @@ fun Application.configureRouting() {
 
         authenticate("auth-jwt") {
             post("/api/user/avatar") {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.payload?.getClaim("userId")?.asInt()
-                    ?: return@post call.respond(HttpStatusCode.Unauthorized)
-
-                val multipart = call.receiveMultipart()
-                var saved = false
-                var errorMessage: String? = null
-
-                multipart.forEachPart { part ->
-                    if (part is PartData.FileItem) {
-                        val bytes = part.streamProvider().readBytes()
-                        if (bytes.size > 5 * 1024 * 1024) {
-                            errorMessage = "File too large (max 5 MB)"
-                            part.dispose()
-                            return@forEachPart
-                        }
-                        val avatarDir = File(System.getProperty("user.dir"), "avatars")
-                        if (!avatarDir.exists()) avatarDir.mkdirs()
-                        File(avatarDir, "$userId.jpg").writeBytes(bytes)
-                        saved = true
+                println("=== AVATAR UPLOAD START ===")
+                try {
+                    val principal = call.principal<JWTPrincipal>()
+                    val userId = principal?.payload?.getClaim("userId")?.asInt()
+                    println("User ID from token: $userId")
+                    if (userId == null) {
+                        println("Unauthorized - no userId")
+                        return@post call.respond(HttpStatusCode.Unauthorized)
                     }
-                    part.dispose()
-                }
 
-                when {
-                    errorMessage != null -> call.respond(HttpStatusCode.BadRequest, errorMessage)
-                    !saved -> call.respond(HttpStatusCode.BadRequest, "No file uploaded")
-                    else -> call.respond(mapOf("avatarUrl" to "/avatars/$userId.jpg"))
+                    val multipart = call.receiveMultipart()
+                    var saved = false
+                    var errorMessage: String? = null
+
+                    multipart.forEachPart { part ->
+                        if (part is PartData.FileItem) {
+                            println("Received file part, original filename: ${part.originalFileName}")
+                            val channel = part.provider()
+                            val bytes = channel.readRemaining().readByteArray()
+                            println("Bytes read: ${bytes.size}")
+                            if (bytes.size > 5 * 1024 * 1024) {
+                                errorMessage = "File too large (max 5 MB)"
+                                println("File too large: ${bytes.size}")
+                                part.dispose()
+                                return@forEachPart
+                            }
+                            val avatarDir = File(System.getProperty("user.dir"), "avatars")
+                            if (!avatarDir.exists()) {
+                                avatarDir.mkdirs()
+                                println("Created avatars dir: ${avatarDir.absolutePath}")
+                            }
+                            val targetFile = File(avatarDir, "$userId.jpg")
+                            targetFile.writeBytes(bytes)
+                            println("Avatar saved to ${targetFile.absolutePath}")
+                            saved = true
+                        }
+                        part.dispose()
+                    }
+
+                    when {
+                        errorMessage != null -> {
+                            println("Error: $errorMessage")
+                            call.respond(HttpStatusCode.BadRequest, errorMessage)
+                        }
+                        !saved -> {
+                            println("No file saved")
+                            call.respond(HttpStatusCode.BadRequest, "No file uploaded")
+                        }
+                        else -> {
+                            println("Success, responding with avatar URL")
+                            call.respond(mapOf("avatarUrl" to "/avatars/$userId.jpg"))
+                        }
+                    }
+                } catch (e: Exception) {
+                    println("Exception in avatar upload: ${e.message}")
+                    e.printStackTrace()
+                    call.respond(HttpStatusCode.InternalServerError, "Server error: ${e.message}")
                 }
+                println("=== AVATAR UPLOAD END ===")
             }
 
             get("/view_event") {

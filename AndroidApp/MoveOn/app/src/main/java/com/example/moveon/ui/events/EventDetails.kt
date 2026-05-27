@@ -5,7 +5,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -34,10 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -45,11 +40,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.moveon.R
 import com.example.moveon.client.jsonClasses.Person
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.profile.DrawStars
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.utils.AvatarImage
 import com.example.moveon.viewModel.EventDetailsViewModel
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
@@ -100,7 +95,6 @@ fun EventDetails(navController : NavController,
                         fontSize = 25.sp,
                         modifier = Modifier.padding(8.dp)
                     )
-
 
                     val localDateTime = data.dateTime!!.toLocalDateTime(TimeZone.currentSystemDefault())
                     val formattedDate = remember(localDateTime) {
@@ -157,7 +151,6 @@ fun EventDetails(navController : NavController,
                         )
                     }
 
-
                     Spacer(modifier = Modifier.height(12.dp))
 
                     AnimatedVisibility(
@@ -208,10 +201,10 @@ fun EventDetails(navController : NavController,
 @Composable
 fun Participant(participant: Person, onClick: () -> Unit) {
     Row(modifier = Modifier.padding(8.dp).clickable{ onClick() }) {
-        Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
-            contentDescription = "image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.padding(5.dp).size(50.dp).clip(CircleShape))
+        AvatarImage(
+            userId = participant.id,
+            modifier = Modifier.padding(5.dp).size(50.dp)
+        )
 
         Column(modifier = Modifier.padding(start = 10.dp, top = 8.dp)) {
             Text(text = participant.name + " " + participant.surname,
