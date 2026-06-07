@@ -7,12 +7,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.moveon.ui.entry.SignInScreen
 import com.example.moveon.ui.entry.SignUpScreen
-import com.example.moveon.ui.events.AddEvent
+import com.example.moveon.ui.events.CreateEvent
 import com.example.moveon.ui.events.EventDetails
 import com.example.moveon.ui.events.MainScreen
 import com.example.moveon.ui.map.MapScreen
@@ -60,8 +62,23 @@ class MainActivity : ComponentActivity() {
                 composable("editProfile") {
                     EditProfileScreen(navController)
                 }
-                composable("addEvent") {
-                    AddEvent(navController)
+                composable("addEvent?lat={lat}&lon={lon}",
+                    arguments = listOf(
+                        navArgument("lat") {
+                            nullable = true
+                            defaultValue = null
+                        },
+                        navArgument("lon") {
+                            nullable = true
+                            defaultValue = null
+                        }
+                    )) { backStackEntry ->
+
+                    CreateEvent(
+                        navController = navController,
+                        lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull(),
+                        lon = backStackEntry.arguments?.getString("lon")?.toDoubleOrNull()
+                    )
                 }
                 composable("eventDetails/{eventId}") { backStackEntry ->
                     val eventId = backStackEntry.arguments?.getString("eventId")!!.toInt()

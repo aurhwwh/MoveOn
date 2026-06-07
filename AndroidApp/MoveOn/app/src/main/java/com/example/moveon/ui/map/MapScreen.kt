@@ -300,7 +300,7 @@ fun MapScreen(navController : NavController,
 
             if (state.showStartButton && state.selectedPoint != null) {
 
-                Button(
+                /* Button(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(16.dp),
@@ -328,6 +328,20 @@ fun MapScreen(navController : NavController,
                     }
                 ) {
                     Text("Начать маршрут")
+                } */
+
+
+                Button(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
+                    onClick = {
+                        val point = state.selectedPoint!!
+
+                        navController.navigate("addEvent?lat=${point.latitude}&lon=${point.longitude}")
+                    }
+                ) {
+                    Text("Create event")
                 }
             }
         }

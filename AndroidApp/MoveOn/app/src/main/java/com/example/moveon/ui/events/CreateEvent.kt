@@ -1,6 +1,6 @@
 package com.example.moveon.ui.events
 
-import androidx.compose.foundation.clickable
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,27 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,22 +48,21 @@ import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
 import com.example.moveon.viewModel.EventsViewModel
 import com.example.moveon.viewModel.GeocodingViewModel
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.atTime
-import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
-import kotlinx.datetime.toJavaLocalDate
-import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewModel()) {
+fun CreateEvent(navController : NavController,
+                lat: Double? = null,
+                lon: Double? = null,
+                viewModel: EventsViewModel = viewModel()
+) {
+
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
@@ -92,6 +77,7 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
 
     val geoViewModel: GeocodingViewModel = viewModel()
     val suggestions = geoViewModel.suggestion
+    val reversePlace = geoViewModel.reverseResult
     var locationQuery by remember { mutableStateOf("") }
     var selectedPlace by remember { mutableStateOf<Place?>(null) }
 
@@ -101,6 +87,20 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
     var isTimeError by remember { mutableStateOf(false) }
     var isMaxPeopleError by remember { mutableStateOf(false) }
     var isPlaceError by remember { mutableStateOf(false) }
+
+
+    LaunchedEffect(lat, lon) {
+        if (lat != null && lon != null) {
+            geoViewModel.reverseGeocode(lat, lon)
+        }
+    }
+
+    LaunchedEffect(reversePlace) {
+        reversePlace?.let {
+            selectedPlace = it
+            locationQuery = it.name
+        }
+    }
 
     LaunchedEffect(viewModel.createSuccess) {
         if (viewModel.createSuccess) {
@@ -248,7 +248,8 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
                     selectedPlace = place
                     locationQuery = place.name
                 },
-                isError = isPlaceError
+                isError = isPlaceError,
+                readOnly = lat != null && lon != null
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -322,167 +323,14 @@ fun AddEvent(navController : NavController, viewModel: EventsViewModel = viewMod
 
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
-@Composable
-fun EventDatePicker(
-    selectedDate: LocalDate?,
-    onDateSelected: (LocalDate) -> Unit,
-    isError: Boolean = false
-) {
-    var showDialog by remember { mutableStateOf(false) }
-
-    val formatter = remember { java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy") }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { showDialog = true }
-    ) {
-        TextField(
-            value = selectedDate?.toJavaLocalDate()?.format(formatter) ?: "",
-            onValueChange = {},
-            readOnly = true,
-            enabled = false,
-            label = { Text("Event date") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = isError,
-
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.DateRange,
-                    contentDescription = null
-                )
-            }
-        )
-    }
-
-    val today = Instant.fromEpochMilliseconds(System.currentTimeMillis()).toLocalDateTime(TimeZone.currentSystemDefault()).date
-    val maxDate = today.plus(2, DateTimeUnit.MONTH)
-
-    if (showDialog) {
-        val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis =
-                selectedDate?.atStartOfDayIn(TimeZone.currentSystemDefault())?.toEpochMilliseconds() ?:
-                today.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
-
-            selectableDates = object : SelectableDates {
-                override fun isSelectableYear(year: Int): Boolean {
-                    return year in today.year..maxDate.year
-                }
-
-                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                    val date = Instant
-                        .fromEpochMilliseconds(utcTimeMillis)
-                        .toLocalDateTime(TimeZone.currentSystemDefault())
-                        .date
-
-                    return date in today..maxDate
-                }
-            }
-        )
-
-        DatePickerDialog(
-            onDismissRequest = { showDialog = false },
-            confirmButton = {
-                Button(onClick = {
-                    val millis = datePickerState.selectedDateMillis
-                    if (millis != null) {
-                        val date = Instant
-                            .fromEpochMilliseconds(millis)
-                            .toLocalDateTime(TimeZone.currentSystemDefault()).date
-
-                        onDateSelected(date)
-                    }
-                    showDialog = false
-                }
-                ) {
-                    Text("OK")
-                }
-            }
-        ) {
-            DatePicker(
-                state = datePickerState
-            )
-        }
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
-@Composable
-fun TimePickerField(
-    selectedDate: LocalDate?,
-    hour: Int?,
-    minute: Int?,
-    onTimeSelected: (Int, Int) -> Unit,
-    isError: Boolean = false
-) {
-    var showDialog by remember { mutableStateOf(false) }
-
-    val now = remember {
-        Instant.fromEpochMilliseconds(System.currentTimeMillis())
-            .toLocalDateTime(TimeZone.currentSystemDefault())
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { showDialog = true }
-    ) {
-        TextField(
-            value = if (hour != null && minute != null) {
-                "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
-            } else "",
-            onValueChange = {},
-            readOnly = true,
-            enabled = false,
-            label = { Text("Time") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = isError
-        )
-    }
-
-    if (showDialog) {
-        val timeState = rememberTimePickerState()
-
-        val isToday = (selectedDate == now.date)
-
-        androidx.compose.material3.AlertDialog(
-            onDismissRequest = { showDialog = false },
-            confirmButton = {
-                Button(onClick = {
-                    val h = timeState.hour
-                    val m = timeState.minute
-
-                    val isValid = if (isToday) {
-                        (h > now.hour + 1) || (h == now.hour + 1 && m >= now.minute)
-                    } else   {
-                        true
-                    }
-
-                    if (isValid) {
-                        onTimeSelected(h, m)
-                        showDialog = false
-                    }
-                }) {
-                    Text("OK")
-                }
-            },
-            text = {
-                TimePicker(state = timeState)
-            }
-        )
-    }
-}
-
-
 @Composable
 fun LocationSearchField(
     query: String,
     onQueryChange: (String) -> Unit,
     suggestions: List<Place>,
     onPlaceSelected: (Place) -> Unit,
-    isError: Boolean = false
+    isError: Boolean = false,
+    readOnly: Boolean = false
 ) {
     var expanded by remember { mutableStateOf(false) }
     var textFieldWidth by remember { mutableStateOf(0) }
@@ -502,7 +350,8 @@ fun LocationSearchField(
                 .fillMaxWidth()
                 .onGloballyPositioned {
                     textFieldWidth = it.size.width
-                }
+                },
+            readOnly = readOnly
         )
 
         DropdownMenu(

@@ -38,4 +38,17 @@ class GeocodingViewModel : ViewModel() {
             }
         }
     }
+
+
+    var reverseResult by mutableStateOf<Place?>(null)
+        private set
+
+    fun reverseGeocode(
+        lat: Double,
+        lon: Double
+    ) {
+        viewModelScope.launch {
+            reverseResult = handler.reverseGeocode(lat, lon)
+        }
+    }
 }

@@ -1,7 +1,9 @@
 package com.example.moveon.client.handlers
 
 import com.example.moveon.client.api.GeocodingApi
+import com.example.moveon.client.api.ReverseResponse
 import com.example.moveon.client.api.SearchResponse
+
 
 class GeocodingHandler(private val api : GeocodingApi) {
 
@@ -14,6 +16,20 @@ class GeocodingHandler(private val api : GeocodingApi) {
                 it.city == "Москва" || it.city == "Санкт-Петербург" || it.city == "Moscow" || it.city == "Saint Petersburg"
             }
     }
+
+    suspend fun reverseGeocode(lat : Double, lon : Double) : Place {
+        return try {
+            val response = api.reverseGeocode(lat, lon)
+            response.toPlace()
+        } catch (e : Exception) {
+            Place (
+                name = "%.6f, %.6f".format(lat, lon),
+                city = "",
+                lat = lat,
+                lon = lon
+            )
+        }
+    }
 }
 
 
@@ -25,7 +41,12 @@ data class Place (
 )
 
 
-fun SearchResponse.toPlace() : Place {
+private fun buildPlace(
+    address: com.example.moveon.client.api.Address?,
+    lat: String,
+    lon: String
+): Place {
+
     val city = address?.city ?: address?.town ?: address?.village ?: "Unknown"
 
     val street = listOfNotNull(
@@ -46,3 +67,8 @@ fun SearchResponse.toPlace() : Place {
         lon = lon.toDouble()
     )
 }
+
+
+fun SearchResponse.toPlace() : Place = buildPlace(address, lat, lon)
+
+fun ReverseResponse.toPlace() : Place = buildPlace(address, lat, lon)

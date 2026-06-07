@@ -1,13 +1,13 @@
 package com.example.moveon.client.api
 
-import android.R
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.parameter
 import io.ktor.client.request.headers
+import io.ktor.client.request.parameter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
 
 class GeocodingApi(private val client : HttpClient) {
 
@@ -19,6 +19,23 @@ class GeocodingApi(private val client : HttpClient) {
             parameter("limit", 5)            // 10 by default
             parameter("countrycodes", "ru")
             parameter("bounded", 1)
+
+            headers {
+                append(
+                    "User-Agent",
+                    "MoveOnApp"
+                )
+            }
+        }.body()
+    }
+
+
+    suspend fun reverseGeocode(lat : Double, lon : Double) : ReverseResponse {
+        return client.get("https://nominatim.openstreetmap.org/reverse") {
+            parameter("lat", lat)
+            parameter("lon", lon)
+            parameter("format", "json")
+            parameter("addresdetails", 1)
 
             headers {
                 append(
@@ -50,5 +67,14 @@ data class SearchResponse(
     val address: Address? = null
 )
 
+
+@Serializable
+data class ReverseResponse(
+    @SerialName("display_name")
+    val displayName: String,
+    val lat: String,
+    val lon: String,
+    val address: Address? = null
+)
 
 
