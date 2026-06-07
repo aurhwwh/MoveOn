@@ -103,7 +103,12 @@ fun MapScreen(navController : NavController,
                     return true
                 }
 
-                override fun longPressHelper(p: GeoPoint?) = false
+                override fun longPressHelper(p: GeoPoint?): Boolean {
+                    if (p != null) {
+                        viewModel.startNewRoute(p.latitude,p.longitude,this@apply.visibleRadius(p))
+                    }
+                    return true
+                }
             }
 
             overlays.add(MapEventsOverlay(events))
@@ -203,22 +208,10 @@ fun MapScreen(navController : NavController,
                     if (index == state.selectedRouteIndex) 120 else 90
 
                 setOnClickListener { _, _, _ ->
-                    val projection = mapView.projection
-                    val topLeft = projection.fromPixels(0, 0) as GeoPoint
-                    val topRight = projection.fromPixels(mapView.width, 0) as GeoPoint
-                    val bottomLeft = projection.fromPixels(0, mapView.height) as GeoPoint
-                    val bottomRight = projection.fromPixels(mapView.width, mapView.height) as GeoPoint
-                    val center = state.selectedPoint!!
-
-                    val distances = listOf(
-                        center.distanceToAsDouble(topLeft),
-                        center.distanceToAsDouble(topRight),
-                        center.distanceToAsDouble(bottomLeft),
-                        center.distanceToAsDouble(bottomRight)
+                    viewModel.selectRoute(
+                        index,
+                        mapView.visibleRadius(state.selectedPoint!!)
                     )
-
-                    val radiusMeters = (distances.minOrNull()) ?: 100.0
-                    viewModel.selectRoute(index,radiusMeters.toInt()/2)
                     true
                 }
             }
@@ -346,4 +339,22 @@ fun MapScreen(navController : NavController,
             }
         }
     }
+}
+private fun MapView.visibleRadius(center: GeoPoint): Int {
+
+    val projection = projection
+
+    val topLeft = projection.fromPixels(0, 0) as GeoPoint
+    val topRight = projection.fromPixels(width, 0) as GeoPoint
+    val bottomLeft = projection.fromPixels(0, height) as GeoPoint
+    val bottomRight = projection.fromPixels(width, height) as GeoPoint
+
+    val radius = listOf(
+        center.distanceToAsDouble(topLeft),
+        center.distanceToAsDouble(topRight),
+        center.distanceToAsDouble(bottomLeft),
+        center.distanceToAsDouble(bottomRight)
+    ).minOrNull() ?: 100.0
+
+    return radius.toInt() / 2
 }

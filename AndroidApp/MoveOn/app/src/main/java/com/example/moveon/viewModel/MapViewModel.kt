@@ -76,6 +76,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
             _state.update {
                 it.copy(
+                    showStartButton = false,
                     routes = response.routes ?: emptyList(),
                     selectedRouteIndex = null,
                     selectedPoint = GeoPoint(response.centralPoint?.lat ?: lat,response.centralPoint?.lon ?: lon)
