@@ -290,6 +290,23 @@ fun MapScreen(navController : NavController,
                 modifier = Modifier.fillMaxSize(),
                 factory = { mapView }
             )
+            if (state.builtRoute.size >=2) {
+                Button(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp),
+                    onClick = {
+                        val p = state.builtRoute.getOrNull(state.builtRoute.size - 2)?.points?.lastOrNull()
+                        if(p!=null) {
+                            viewModel.undoStep(
+                                mapView.visibleRadius(GeoPoint(p.lat,p.lon))
+                            )
+                        }
+                    }
+                ) {
+                    Text("Отменить")
+                }
+            }
 
             if (state.showStartButton && state.selectedPoint != null) {
 

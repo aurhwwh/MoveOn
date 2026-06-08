@@ -102,6 +102,41 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         loadRouteOptions(lastPoint.lat, lastPoint.lon, radius)
     }
 
+    fun undoStep(radius: Int) {
+
+        val current = state.value.builtRoute
+
+        if (current.isEmpty()) return
+
+        val newBuilt = current.dropLast(1)
+
+        _state.update {
+            it.copy(
+                builtRoute = newBuilt,
+                routes = emptyList(),
+                selectedRouteIndex = null
+            )
+        }
+
+        if (newBuilt.isEmpty()) {
+            state.value.selectedPoint?.let {
+                loadRouteOptions(
+                    it.latitude,
+                    it.longitude,
+                    radius
+                )
+            }
+        } else {
+            val lastPoint = newBuilt.last().points.last()
+
+            loadRouteOptions(
+                lastPoint.lat,
+                lastPoint.lon,
+                radius
+            )
+        }
+    }
+
 
     private fun loadLocation() {
         viewModelScope.launch {
