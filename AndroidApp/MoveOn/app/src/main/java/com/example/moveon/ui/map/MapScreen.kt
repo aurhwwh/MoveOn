@@ -33,9 +33,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.example.moveon.client.jsonClasses.EventsMarker
 import kotlinx.coroutines.delay
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.views.overlay.MapEventsOverlay
@@ -139,6 +142,7 @@ fun MapScreen(navController : NavController,
     val selectedMarker = remember { mutableStateOf<org.osmdroid.views.overlay.Marker?>(null) }
     val routeOverlays = remember { mutableListOf<org.osmdroid.views.overlay.Polyline>() }
     val markerOverlays = remember { mutableListOf<org.osmdroid.views.overlay.Marker>() }
+    var selectedEvent by remember { mutableStateOf<EventsMarker?>(null) }
 
     LaunchedEffect(state.selectedPoint) {
         selectedMarker.value?.let {
@@ -267,6 +271,11 @@ fun MapScreen(navController : NavController,
                         org.osmdroid.views.overlay.Marker.ANCHOR_CENTER,
                         org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM
                     )
+
+                    setOnMarkerClickListener { _, _ ->
+                        selectedEvent = event
+                        true
+                    }
                 }
 
             mapView.overlays.add(marker)
@@ -290,6 +299,7 @@ fun MapScreen(navController : NavController,
                 modifier = Modifier.fillMaxSize(),
                 factory = { mapView }
             )
+
             if (state.builtRoute.size >=2) {
                 Button(
                     modifier = Modifier
@@ -309,38 +319,6 @@ fun MapScreen(navController : NavController,
             }
 
             if (state.showStartButton && state.selectedPoint != null) {
-
-                /* Button(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp),
-                    onClick = {
-                        val projection = mapView.projection
-                        val topLeft = projection.fromPixels(0, 0) as GeoPoint
-                        val topRight = projection.fromPixels(mapView.width, 0) as GeoPoint
-                        val bottomLeft = projection.fromPixels(0, mapView.height) as GeoPoint
-                        val bottomRight = projection.fromPixels(mapView.width, mapView.height) as GeoPoint
-                        val center = state.selectedPoint!!
-
-                        val distances = listOf(
-                            center.distanceToAsDouble(topLeft),
-                            center.distanceToAsDouble(topRight),
-                            center.distanceToAsDouble(bottomLeft),
-                            center.distanceToAsDouble(bottomRight)
-                        )
-
-                        val radiusMeters = (distances.minOrNull()) ?: 100.0
-                        viewModel.startNewRoute(
-                            state.selectedPoint!!.latitude,
-                            state.selectedPoint!!.longitude,
-                            radiusMeters.toInt()/2
-                        )
-                    }
-                ) {
-                    Text("Начать маршрут")
-                } */
-
-
                 Button(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -352,6 +330,19 @@ fun MapScreen(navController : NavController,
                     }
                 ) {
                     Text("Create event")
+                }
+            }
+
+            selectedEvent?.let { event ->
+
+                Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                    MapEventCard(
+                        navController,
+                        event = event,
+                        onDismiss = {
+                            selectedEvent = null
+                        }
+                    )
                 }
             }
         }

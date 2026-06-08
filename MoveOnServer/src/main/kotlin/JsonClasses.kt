@@ -289,10 +289,16 @@ data class ViewEventsMarkersResponse(
     val events: List<EventsMarker>? = null
 )
 
+
 @Serializable
+@OptIn(kotlin.time.ExperimentalTime::class)
 data class EventsMarker (
     val eventId: Int,
     val title: String,
     val lat: Double,
-    val lon: Double
+    val lon: Double,
+    val sportType: String,
+    val dateTime: Instant,
+    val maxAmountOfPeople: Int,
+    val currentAmountOfPeople: Int
 )

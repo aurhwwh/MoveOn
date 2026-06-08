@@ -966,8 +966,21 @@ fun Application.configureRouting() {
 
                 try {
                     val events = Database.useConnection { conn ->
-                        val sql = """ SELECT id, title, lat, lon FROM events 
-                            WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?
+                        val sql = """ 
+                            SELECT 
+                                e.id,
+                                e.title,
+                                e.lat,
+                                e.lon,
+                                e.sport_type,
+                                e.time,
+                                e.max_amount_of_people,
+                                COUNT(p.user_id) AS current_amount
+                            FROM events e
+                            LEFT JOIN event_participants p ON e.id = p.event_id
+                            WHERE e.lat BETWEEN ? AND ?
+                              AND e.lon BETWEEN ? AND ?
+                            GROUP BY e.id
                             """.trimIndent()
 
                         conn.prepareStatement(sql).use { stmt ->
@@ -987,7 +1000,11 @@ fun Application.configureRouting() {
                                         eventId = rs.getInt("id"),
                                         title = rs.getString("title"),
                                         lat = rs.getDouble("lat"),
-                                        lon = rs.getDouble("lon")
+                                        lon = rs.getDouble("lon"),
+                                        sportType = rs.getString("sport_type"),
+                                        dateTime = rs.getTimestamp("time").toInstant().toKotlinInstant(),
+                                        maxAmountOfPeople = rs.getInt("max_amount_of_people"),
+                                        currentAmountOfPeople = rs.getInt("current_amount")
                                     )
                                 )
                             }
