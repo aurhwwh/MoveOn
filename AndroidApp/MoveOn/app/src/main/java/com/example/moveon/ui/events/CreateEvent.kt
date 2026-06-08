@@ -17,6 +17,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -158,24 +162,13 @@ fun CreateEvent(navController : NavController,
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextField(
-                value = sportType,
-                onValueChange = {
+
+            SportPicker(
+                selectedSport = sportType,
+                onSportSelected = {
                     sportType = it
                     isSportTypeError = false
-                },
-                isError = isSportTypeError,
-                label = { Text("Sport type") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = {
-                        focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down)
-                    }
-                )
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -395,6 +388,68 @@ fun LocationSearchField(
                         color = Color.LightGray
                     )
                 }
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SportPicker(
+    selectedSport: String,
+    onSportSelected: (String) -> Unit
+) {
+    val sports = listOf(
+        "Футбол",
+        "Баскетбол",
+        "Хоккей",
+        "Теннис",
+        "Воллейбол",
+        "Бадбинтон",
+        "Бег",
+        "Велоспорт",
+        "Ролики",
+        "Коньки",
+        "Лыжи",
+        "Шашки",
+        "Шахматы",
+        "Прес качат",
+        "Другое"
+    )
+
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+
+        TextField(
+            value = selectedSport,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(text = "Sport type") },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+            },
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            sports.forEach { sport ->
+                DropdownMenuItem(
+                    text = { Text(sport, fontSize = 16.sp) },
+                    onClick = {
+                        onSportSelected(sport)
+                        expanded = false
+                    }
+                )
             }
         }
     }
