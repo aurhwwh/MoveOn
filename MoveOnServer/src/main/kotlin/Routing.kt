@@ -509,7 +509,7 @@ fun Application.configureRouting() {
                 try {
                     val eventData = Database.useConnection { conn ->
                         val sql = """
-                        SELECT e.id, e.title, e.description, e.time, e.max_amount_of_people, e.sport_type, e.creator_id,
+                        SELECT e.id, e.title, e.description, e.time, e.max_amount_of_people, e.sport_type, e.creator_id, e.lat, e.lon, e.place,
                                (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount
                         FROM events e
                         WHERE e.id = ?
@@ -564,7 +564,10 @@ fun Application.configureRouting() {
                                     maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                     sportType = rs.getString("sport_type"),
                                     isUserCreator = (userId==rs.getInt("creator_id")),
-                                    isUserParticipant = participants.second
+                                    isUserParticipant = participants.second,
+                                    lat = rs.getDouble("lat"),
+                                    lon = rs.getDouble("lon"),
+                                    place = rs.getString("place")
                                 )
                             } else null
                         }

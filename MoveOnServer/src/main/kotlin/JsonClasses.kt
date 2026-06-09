@@ -141,8 +141,10 @@ data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(
     val sportType: String? = null,
     val isUserParticipant: Boolean? = null,
     val isUserCreator: Boolean? = null,
-    val photoId: Int? = null
-
+    val photoId: Int? = null,
+    val lat: Double? = null,
+    val lon: Double? = null,
+    val place: String? = null
 )
 
 //@Serializable

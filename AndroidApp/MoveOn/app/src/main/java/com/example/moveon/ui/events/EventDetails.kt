@@ -1,5 +1,7 @@
 package com.example.moveon.ui.events
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -37,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -55,6 +59,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -82,43 +87,66 @@ fun EventDetails(navController : NavController,
                 navController.popBackStack()
                 return
             }
+            val context = LocalContext.current
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState(),)
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
                 ) {
                     val previousRoute = navController.previousBackStackEntry?.destination?.route
                     MoveOnTopBar(navController, previousRoute ?: "main")
 
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = data.title!!,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold,
-                        fontStyle = FontStyle.Italic,
-                        fontFamily = FontFamily.SansSerif,
-                        fontSize = 25.sp,
-                        modifier = Modifier.padding(8.dp)
-                    )
-
-
-                    val localDateTime = data.dateTime!!.toLocalDateTime(TimeZone.currentSystemDefault())
-                    val formattedDate = remember(localDateTime) {
-                        java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").format(
-                            localDateTime.toJavaLocalDateTime()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = data.title!!,
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.SansSerif,
+                            fontSize = 30.sp,
+                            modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterStart).padding(end = 120.dp)
                         )
+
+
+                        val localDateTime =
+                            data.dateTime!!.toLocalDateTime(TimeZone.currentSystemDefault())
+
+                        val date = remember(localDateTime) {
+                            java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                                .format(localDateTime.toJavaLocalDateTime())
+                        }
+
+                        val time = remember(localDateTime) {
+                            java.time.format.DateTimeFormatter.ofPattern("HH:mm")
+                                .format(localDateTime.toJavaLocalDateTime())
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .align(Alignment.TopEnd),
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            Text(
+                                text = date,
+                                fontSize = 20.sp,
+                                fontStyle = FontStyle.Italic,
+                                color = Color.Gray
+                            )
+
+                            Text(
+                                text = time,
+                                fontSize = 20.sp,
+                                fontStyle = FontStyle.Italic,
+                                color = Color.Gray
+                            )
+                        }
                     }
-                    Text(
-                        text = formattedDate,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(8.dp),
-                        fontStyle = FontStyle.Italic
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = data.sportType!!,
+                        text = "Вид спорта: "+data.sportType!!,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(8.dp)
@@ -127,6 +155,31 @@ fun EventDetails(navController : NavController,
                     Spacer(modifier = Modifier.height(16.dp).padding(8.dp))
 
                     Text(text = data.description ?: "", fontSize = 20.sp, modifier = Modifier.padding(8.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = data.place?:"",
+                            modifier = Modifier.weight(1f),
+                            fontSize = 18.sp
+                        )
+
+                        Button(
+                            modifier = Modifier.padding(end = 8.dp),
+                            onClick = {
+                                val uri =
+                                    "geo:${data.lat},${data.lon}?q=${data.lat},${data.lon}".toUri()
+                                val intent = Intent(Intent.ACTION_VIEW, uri)
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Text("Открыть в картах")
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(18.dp))
 
