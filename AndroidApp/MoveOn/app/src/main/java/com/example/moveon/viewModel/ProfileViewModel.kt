@@ -1,14 +1,17 @@
 package com.example.moveon.viewModel
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moveon.client.handlers.Handlers
+import com.example.moveon.client.jsonClasses.EditProfileRequest
 import com.example.moveon.client.jsonClasses.EventListElement
 import com.example.moveon.data.ProfileData
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 
 class ProfileViewModel : ViewModel() {
 
@@ -25,6 +28,10 @@ class ProfileViewModel : ViewModel() {
         private set
 
     fun loadMyProfile() {
+        if (profile != null) {
+            return
+        }
+
         viewModelScope.launch {
             isProfileLoading = true
             profileError = null
@@ -77,6 +84,10 @@ class ProfileViewModel : ViewModel() {
         }
 
     fun loadMyEvents() {
+        if (myEvents.isNotEmpty()) {
+            return
+        }
+
         viewModelScope.launch {
             isEventsLoading = true
             eventsError = null
@@ -89,5 +100,63 @@ class ProfileViewModel : ViewModel() {
                 isEventsLoading = false
             }
         }
+    }
+
+
+    var editSuccess by mutableStateOf(false)
+        private set
+
+    var editError by mutableStateOf<String?>(null)
+        private set
+
+    var isEditing by mutableStateOf(false)
+        private set
+
+    fun editProfile(
+        name: String,
+        surname: String,
+        birth: LocalDate,
+        description: String
+    ) {
+        viewModelScope.launch {
+            Log.d("PROFILE_EDIT", "Start editing")
+
+            isEditing = true
+            editError = null
+            editSuccess = false
+
+            try {
+                val request = EditProfileRequest(
+                    userName = name,
+                    userSurname = surname,
+                    dateOfBirth = birth,
+                    description = description
+                )
+
+                handler.editProfile(request)
+
+                profile = profile?.copy(
+                    name = name,
+                    surname = surname,
+                    birth = birth,
+                    description = description
+                )
+
+                Log.d("PROFILE_EDIT", "Success")
+                editSuccess = true
+
+            } catch (e: Exception) {
+                editError = e.message
+                Log.e("PROFILE_EDIT", "Error", e)
+
+            } finally {
+                isEditing = false
+            }
+        }
+    }
+
+    fun clearEditState() {
+        editSuccess = false
+        editError = null
     }
 }

@@ -23,6 +23,7 @@ import com.example.moveon.ui.profile.MyProfileScreen
 import com.example.moveon.ui.profile.UserProfileScreen
 import com.example.moveon.ui.theme.MGreen
 import com.example.moveon.viewModel.CityViewModel
+import com.example.moveon.viewModel.ProfileViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +43,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             val cityViewModel: CityViewModel = viewModel()
+            val profileViewModel: ProfileViewModel = viewModel()
 
             NavHost(
                 navController = navController,
@@ -57,10 +59,10 @@ class MainActivity : ComponentActivity() {
                     MainScreen(navController, cityViewModel)
                 }
                 composable("profile") {
-                    MyProfileScreen(navController, cityViewModel)
+                    MyProfileScreen(navController, cityViewModel, profileViewModel)
                 }
                 composable("editProfile") {
-                    EditProfileScreen(navController)
+                    EditProfileScreen(navController, profileViewModel)
                 }
                 composable("addEvent?lat={lat}&lon={lon}",
                     arguments = listOf(

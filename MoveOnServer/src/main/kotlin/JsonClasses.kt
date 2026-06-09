@@ -302,3 +302,20 @@ data class EventsMarker (
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int
 )
+
+
+@Serializable
+data class EditProfileRequest(
+    val userName: String,
+    val userSurname: String,
+    val dateOfBirth: LocalDate,
+    val description: String?
+)
+
+@Serializable
+data class EditProfileResponse(
+    val success: Boolean,
+    val errorMessage: String? = null
+)
+
+

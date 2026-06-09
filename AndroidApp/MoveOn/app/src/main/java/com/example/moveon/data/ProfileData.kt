@@ -2,7 +2,7 @@ package com.example.moveon.data
 
 import kotlinx.datetime.LocalDate
 
-class ProfileData (
+data class ProfileData (
     val photoId: Int,
     val name: String,
     val surname: String,

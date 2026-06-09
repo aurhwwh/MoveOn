@@ -221,6 +221,51 @@ fun Application.configureRouting() {
             }
         }
 
+        authenticate("auth-jwt") {
+            post("/edit_profile") {
+                val request = try {
+                    call.receive<EditProfileRequest>()
+                } catch (e: Exception) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        EditProfileResponse(false, "Invalid JSON: ${e.message}")
+                    )
+                    return@post
+                }
+
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal!!.payload.getClaim("userId").asInt()
+
+                try {
+                    Database.transaction { conn ->
+                        val sql = """
+                            UPDATE users SET 
+                                user_name = ?,
+                                user_surname = ?,
+                                date_of_birth = ?,
+                                description = ?
+                            WHERE id = ?
+                        """.trimIndent()
+
+                        conn.prepareStatement(sql).use { stmt ->
+                            stmt.setString(1, request.userName)
+                            stmt.setString(2, request.userSurname)
+                            stmt.setObject(3, request.dateOfBirth.toJavaLocalDate())
+                            stmt.setString(4, request.description)
+                            stmt.setInt(5, userId)
+
+                            stmt.executeUpdate()
+                        }
+                    }
+                    call.respond(HttpStatusCode.OK, EditProfileResponse(true))
+
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError,
+                        RegisterResponse(false, "Database error: ${e.message}"))
+                }
+            }
+        }
+
         post("/login") {
             val request = try {
                 call.receive<LoginRequest>()
