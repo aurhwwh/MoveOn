@@ -14,6 +14,7 @@ import androidx.paging.cachedIn
 import com.example.moveon.client.handlers.EventsHandler
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.client.jsonClasses. CreateEventRequest
+import com.example.moveon.client.jsonClasses.CreateEventWithRouteRequest
 import com.example.moveon.client.jsonClasses.EventListElement
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -98,6 +99,22 @@ class EventsViewModel : ViewModel() {
 
             try {
                 handler.createEvent(request)
+                createSuccess = true
+            } catch (e: Exception) {
+                error = e.message
+            } finally {
+                isCreating = false
+            }
+        }
+    }
+    fun createEventWithRoute(request: CreateEventWithRouteRequest) {
+        viewModelScope.launch {
+            isCreating = true
+            error = null
+            createSuccess = false
+
+            try {
+                handler.createEventWithRoute(request)
                 createSuccess = true
             } catch (e: Exception) {
                 error = e.message

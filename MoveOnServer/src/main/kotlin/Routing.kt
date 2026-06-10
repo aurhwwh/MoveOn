@@ -14,6 +14,7 @@ import io.ktor.server.auth.principal
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toKotlinLocalDate
 import kotlinx.serialization.json.Json
+import org.postgresql.util.PGobject
 import java.sql.Date
 import kotlin.math.cos
 import kotlin.math.sin
@@ -749,7 +750,11 @@ fun Application.configureRouting() {
                             stmt.setInt(8, request.maxAmountOfPeople)
                             stmt.setString(9, request.sportType)
                             stmt.setInt(10, creatorId)
-                            stmt.setString(11, Json.encodeToString(request.route))
+                            val json = PGobject().apply {
+                                type = "jsonb"
+                                value = Json.encodeToString(request.route)
+                            }
+                            stmt.setObject(11, json)
 
                             val rs = stmt.executeQuery()
                             rs.next()

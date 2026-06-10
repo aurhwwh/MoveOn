@@ -99,6 +99,10 @@ class MainActivity : ComponentActivity() {
                 composable("map") {
                     MapScreen(navController)
                 }
+                composable("map/{eventId}") { backStackEntry ->
+                    val eventId = backStackEntry.arguments?.getString("eventId")!!.toInt()
+                    MapScreen(navController, eventId = eventId)
+                }
             }
         }
     }

@@ -1,11 +1,13 @@
 package com.example.moveon.viewModel
 
+import android.R
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.client.jsonClasses.EventsMarker
+import com.example.moveon.client.jsonClasses.Point
 import com.example.moveon.client.jsonClasses.Route
 import com.example.moveon.ui.map.UserLocation
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +27,9 @@ data class MapUiState(
     val routes: List<Route> = emptyList(),
     val selectedRouteIndex: Int? = null,
     val builtRoute: List<Route> = emptyList(),
-    val markers: List<EventsMarker> = emptyList()
+    val markers: List<EventsMarker> = emptyList(),
+    val showedEventRoute:List<Point> = emptyList(),
+    val showEventRoute: Boolean = false
 )
 
 
@@ -191,6 +195,23 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     fun updateCenter(center: GeoPoint) {
         _state.update {
             it.copy(mapCenter = center)
+        }
+    }
+
+    private val handler = Handlers.eventsHandler
+    fun loadEvent(eventId: Int) {
+        viewModelScope.launch {
+
+            try {
+                val event = handler.viewEvent(eventId)
+                _state.update{
+                    it.copy(showedEventRoute = event.route!!,
+                        showEventRoute = true
+                        )
+                }
+            } catch (e: Exception) {
+               println("Error loading route event")
+            }
         }
     }
 }

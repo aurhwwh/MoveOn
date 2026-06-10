@@ -31,6 +31,8 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,15 +40,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.example.moveon.client.jsonClasses.CreateEventWithRouteRequest
 import com.example.moveon.client.jsonClasses.EventsMarker
+import com.example.moveon.ui.events.CreateEvent
 import kotlinx.coroutines.delay
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.views.overlay.MapEventsOverlay
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(navController : NavController,
-              viewModel: MapViewModel = viewModel()) {
+              viewModel: MapViewModel = viewModel(),
+              eventId: Int? = null
+              ) {
+    LaunchedEffect(eventId) {
+        if(eventId!=null)
+        viewModel.loadEvent(eventId)
+    }
 
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -143,6 +154,8 @@ fun MapScreen(navController : NavController,
     val routeOverlays = remember { mutableListOf<org.osmdroid.views.overlay.Polyline>() }
     val markerOverlays = remember { mutableListOf<org.osmdroid.views.overlay.Marker>() }
     var selectedEvent by remember { mutableStateOf<EventsMarker?>(null) }
+    var showCreateEventRoute by remember { mutableStateOf(false) }
+    var showCreateEventPoint by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.selectedPoint) {
         selectedMarker.value?.let {
@@ -186,6 +199,8 @@ fun MapScreen(navController : NavController,
 
                 outlinePaint.strokeWidth = 8f
                 outlinePaint.alpha = 255
+                outlinePaint.strokeJoin = android.graphics.Paint.Join.ROUND
+                outlinePaint.strokeCap = android.graphics.Paint.Cap.ROUND
             }
 
             mapView.overlays.add(line)
@@ -206,10 +221,12 @@ fun MapScreen(navController : NavController,
                 outlinePaint.color = android.graphics.Color.rgb(138, 43, 226)
 
                 outlinePaint.strokeWidth =
-                    if (index == state.selectedRouteIndex) 18f else 14f
+                    if (index == state.selectedRouteIndex) 25f else 20f
 
                 outlinePaint.alpha =
                     if (index == state.selectedRouteIndex) 120 else 90
+                outlinePaint.strokeJoin = android.graphics.Paint.Join.ROUND
+
 
                 setOnClickListener { _, _, _ ->
                     viewModel.selectRoute(
@@ -225,6 +242,38 @@ fun MapScreen(navController : NavController,
         }
 
         //mapView.invalidate()
+    }
+
+    LaunchedEffect(state.showedEventRoute) {
+
+        if (!state.showEventRoute) return@LaunchedEffect
+
+        routeOverlays.forEach { mapView.overlays.remove(it) }
+        routeOverlays.clear()
+
+        val geoPoints = state.showedEventRoute.map {
+            GeoPoint(it.lat, it.lon)
+        }
+
+        val line = org.osmdroid.views.overlay.Polyline().apply {
+            setPoints(geoPoints)
+            outlinePaint.color =  android.graphics.Color.rgb(138, 43, 226)
+            outlinePaint.strokeWidth = 12f
+            outlinePaint.strokeJoin = android.graphics.Paint.Join.ROUND
+            outlinePaint.strokeCap = android.graphics.Paint.Cap.ROUND
+        }
+
+        mapView.overlays.add(line)
+        routeOverlays.add(line)
+
+        if (geoPoints.isNotEmpty()) {
+            val boundingBox = org.osmdroid.util.BoundingBox.fromGeoPoints(geoPoints)
+            mapView.zoomToBoundingBox(
+                boundingBox,
+                false,
+                200
+            )
+        }
     }
 
 
@@ -318,18 +367,57 @@ fun MapScreen(navController : NavController,
                 }
             }
 
-            if (state.showStartButton && state.selectedPoint != null) {
+            if (state.showStartButton && state.selectedPoint != null || !state.builtRoute.isEmpty()) {
                 Button(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(16.dp),
                     onClick = {
-                        val point = state.selectedPoint!!
-
-                        navController.navigate("addEvent?lat=${point.latitude}&lon=${point.longitude}")
+                        if (state.builtRoute.isEmpty()){
+                            showCreateEventPoint = true
+                        }
+                        else {
+                            showCreateEventRoute = true
+                        }
                     }
                 ) {
                     Text("Create event")
+                }
+            }
+            if (showCreateEventPoint) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        showCreateEventPoint = false
+                    }
+                ) {
+                    val point = state.selectedPoint
+                    if (point != null) {
+                        CreateEvent(
+                            navController = navController,
+                            lat = point.latitude,
+                            lon = point.longitude,
+                        )
+                    }
+                }
+            }
+            if (showCreateEventRoute) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        showCreateEventRoute = false
+                    }
+                ) {
+                    val firstPoint = state.builtRoute
+                        .firstOrNull()
+                        ?.points
+                        ?.firstOrNull()
+                    if (firstPoint != null) {
+                        CreateEvent(
+                            navController = navController,
+                            lat = firstPoint.lat,
+                            lon = firstPoint.lon,
+                            route = state.builtRoute.flatMap { it.points }
+                        )
+                    }
                 }
             }
 

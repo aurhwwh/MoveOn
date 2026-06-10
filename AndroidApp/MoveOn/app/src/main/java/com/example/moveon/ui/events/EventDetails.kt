@@ -177,7 +177,18 @@ fun EventDetails(navController : NavController,
                                 context.startActivity(intent)
                             }
                         ) {
-                            Text("Открыть в картах")
+                            Text("Открыть в...")
+                        }
+                    }
+                    if (!data.route.isNullOrEmpty()) {
+
+                        Button(
+                            modifier = Modifier.padding(8.dp),
+                            onClick = {
+                                navController.navigate("map/${eventId}")
+                            }
+                        ) {
+                            Text("Открыть маршрут на карте")
                         }
                     }
 

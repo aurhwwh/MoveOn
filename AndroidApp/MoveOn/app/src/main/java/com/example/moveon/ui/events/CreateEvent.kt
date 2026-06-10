@@ -48,6 +48,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.client.handlers.Place
 import com.example.moveon.client.jsonClasses.CreateEventRequest
+import com.example.moveon.client.jsonClasses.CreateEventWithRouteRequest
+import com.example.moveon.client.jsonClasses.Point
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
 import com.example.moveon.viewModel.EventsViewModel
@@ -64,7 +66,8 @@ import kotlin.time.ExperimentalTime
 fun CreateEvent(navController : NavController,
                 lat: Double? = null,
                 lon: Double? = null,
-                viewModel: EventsViewModel = viewModel()
+                route: List<Point>? = null,
+                viewModel: EventsViewModel = viewModel(),
 ) {
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -123,13 +126,19 @@ fun CreateEvent(navController : NavController,
                     modifier = Modifier.padding(8.dp)
                 )
             }
+            var label = "Create Event with route"
+            if(route.isNullOrEmpty()){
+                label = "Create Event at point"
+            }
+            if(route.isNullOrEmpty() && lat == null && lon == null) {
+                MoveOnTopBar(navController, "main")
+                Spacer(modifier = Modifier.height(16.dp))
+                label = "Create Event"
+            }
 
-            MoveOnTopBar(navController, "main")
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Create Event",
+                text = label,
                 color = Color.Black,
                 fontWeight = FontWeight.Bold,
                 fontStyle = FontStyle.Italic,
@@ -293,19 +302,38 @@ fun CreateEvent(navController : NavController,
                     return@Button
                 }
 
-                val request = CreateEventRequest(
-                    title = name,
-                    description = description,
-                    dateTime = dateTime!!,
-                    maxAmountOfPeople = maxPeople!!,
-                    sportType = sportType,
-                    city = selectedPlace!!.city,
-                    place = selectedPlace!!.name,
-                    lat = selectedPlace!!.lat,
-                    lon = selectedPlace!!.lon
-                )
+                if (route.isNullOrEmpty()) {
 
-                viewModel.createEvent(request)
+                    val request = CreateEventRequest(
+                        title = name,
+                        description = description,
+                        dateTime = dateTime!!,
+                        maxAmountOfPeople = maxPeople!!,
+                        sportType = sportType,
+                        city = selectedPlace!!.city,
+                        place = selectedPlace!!.name,
+                        lat = selectedPlace!!.lat,
+                        lon = selectedPlace!!.lon
+                    )
+
+                    viewModel.createEvent(request)
+                }
+                else{
+                    val request = CreateEventWithRouteRequest(
+                        title = name,
+                        description = description,
+                        dateTime = dateTime!!,
+                        maxAmountOfPeople = maxPeople!!,
+                        sportType = sportType,
+                        city = selectedPlace!!.city,
+                        place = selectedPlace!!.name,
+                        lat = selectedPlace!!.lat,
+                        lon = selectedPlace!!.lon,
+                        route = route
+                    )
+
+                    viewModel.createEventWithRoute(request)
+                }
             },
             colors = ButtonDefaults.buttonColors(containerColor = MGreen)
         ) {
