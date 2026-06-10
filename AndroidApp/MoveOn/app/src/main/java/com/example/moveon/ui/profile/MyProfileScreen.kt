@@ -45,7 +45,7 @@ import com.example.moveon.viewModel.ProfileViewModel
 @Composable
 fun MyProfileScreen(navController : NavController,
                     cityViewModel: CityViewModel,
-                    viewModel: ProfileViewModel = viewModel()) {
+                    viewModel: ProfileViewModel) {
 
     LaunchedEffect("profile") {
         viewModel.loadMyProfile()

@@ -7,12 +7,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.moveon.ui.entry.SignInScreen
 import com.example.moveon.ui.entry.SignUpScreen
-import com.example.moveon.ui.events.AddEvent
+import com.example.moveon.ui.events.CreateEvent
 import com.example.moveon.ui.events.EventDetails
 import com.example.moveon.ui.events.MainScreen
 import com.example.moveon.ui.map.MapScreen
@@ -21,6 +23,7 @@ import com.example.moveon.ui.profile.MyProfileScreen
 import com.example.moveon.ui.profile.UserProfileScreen
 import com.example.moveon.ui.theme.MGreen
 import com.example.moveon.viewModel.CityViewModel
+import com.example.moveon.viewModel.ProfileViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +43,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             val cityViewModel: CityViewModel = viewModel()
+            val profileViewModel: ProfileViewModel = viewModel()
 
             NavHost(
                 navController = navController,
@@ -55,13 +59,28 @@ class MainActivity : ComponentActivity() {
                     MainScreen(navController, cityViewModel)
                 }
                 composable("profile") {
-                    MyProfileScreen(navController, cityViewModel)
+                    MyProfileScreen(navController, cityViewModel, profileViewModel)
                 }
                 composable("editProfile") {
-                    EditProfileScreen(navController)
+                    EditProfileScreen(navController, profileViewModel)
                 }
-                composable("addEvent") {
-                    AddEvent(navController)
+                composable("addEvent?lat={lat}&lon={lon}",
+                    arguments = listOf(
+                        navArgument("lat") {
+                            nullable = true
+                            defaultValue = null
+                        },
+                        navArgument("lon") {
+                            nullable = true
+                            defaultValue = null
+                        }
+                    )) { backStackEntry ->
+
+                    CreateEvent(
+                        navController = navController,
+                        lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull(),
+                        lon = backStackEntry.arguments?.getString("lon")?.toDoubleOrNull()
+                    )
                 }
                 composable("eventDetails/{eventId}") { backStackEntry ->
                     val eventId = backStackEntry.arguments?.getString("eventId")!!.toInt()
@@ -79,6 +98,10 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("map") {
                     MapScreen(navController)
+                }
+                composable("map/{eventId}") { backStackEntry ->
+                    val eventId = backStackEntry.arguments?.getString("eventId")!!.toInt()
+                    MapScreen(navController, eventId = eventId)
                 }
             }
         }

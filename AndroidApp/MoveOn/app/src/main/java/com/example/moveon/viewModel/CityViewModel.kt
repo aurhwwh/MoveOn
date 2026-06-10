@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 class CityViewModel : ViewModel() {
 
-    private val _selectedCity = MutableStateFlow("Saint-Petersburg")
+    private val _selectedCity = MutableStateFlow("Санкт-Петербург")
     val selectedCity: StateFlow<String> = _selectedCity
 
     fun updateCity(city: String) {

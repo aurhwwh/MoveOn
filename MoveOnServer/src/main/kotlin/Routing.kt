@@ -13,6 +13,8 @@ import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toKotlinLocalDate
+import kotlinx.serialization.json.Json
+import org.postgresql.util.PGobject
 import java.sql.Date
 import kotlin.math.cos
 import kotlin.math.sin
@@ -112,13 +114,13 @@ fun Application.configureRouting() {
                     )
                 )
             }
-            call.respond(toGeoJson(
+            call.respond(
                 RouteOptionsResponse(
                     success = true,
                     centralPoint = Point(centralLat, centralLon),
                     points = responsePoints,
                     routes = responsePaths
-                ))
+                )
             )
 
         }
@@ -218,6 +220,51 @@ fun Application.configureRouting() {
                 }
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, RegisterResponse(false, "Database error: ${e.message}"))
+            }
+        }
+
+        authenticate("auth-jwt") {
+            post("/edit_profile") {
+                val request = try {
+                    call.receive<EditProfileRequest>()
+                } catch (e: Exception) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        EditProfileResponse(false, "Invalid JSON: ${e.message}")
+                    )
+                    return@post
+                }
+
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal!!.payload.getClaim("userId").asInt()
+
+                try {
+                    Database.transaction { conn ->
+                        val sql = """
+                            UPDATE users SET 
+                                user_name = ?,
+                                user_surname = ?,
+                                date_of_birth = ?,
+                                description = ?
+                            WHERE id = ?
+                        """.trimIndent()
+
+                        conn.prepareStatement(sql).use { stmt ->
+                            stmt.setString(1, request.userName)
+                            stmt.setString(2, request.userSurname)
+                            stmt.setObject(3, request.dateOfBirth.toJavaLocalDate())
+                            stmt.setString(4, request.description)
+                            stmt.setInt(5, userId)
+
+                            stmt.executeUpdate()
+                        }
+                    }
+                    call.respond(HttpStatusCode.OK, EditProfileResponse(true))
+
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError,
+                        RegisterResponse(false, "Database error: ${e.message}"))
+                }
             }
         }
 
@@ -324,7 +371,7 @@ fun Application.configureRouting() {
             if (page==null || limit == null){
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    ViewProfileResponse(false,
+                    ViewFilteredEventsListResponse(false,
                         "Limit and page are required")
                 )
                 return@get
@@ -464,7 +511,7 @@ fun Application.configureRouting() {
                 try {
                     val eventData = Database.useConnection { conn ->
                         val sql = """
-                        SELECT e.id, e.title, e.description, e.time, e.max_amount_of_people, e.sport_type, e.creator_id,
+                        SELECT e.id, e.title, e.description, e.time, e.max_amount_of_people, e.sport_type, e.creator_id, e.lat, e.lon, e.place, e.route_points,
                                (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount
                         FROM events e
                         WHERE e.id = ?
@@ -473,6 +520,13 @@ fun Application.configureRouting() {
                             stmt.setInt(1, eventId)
                             val rs = stmt.executeQuery()
                             if (rs.next()) {
+                                val route = rs.getString("route_points")?.let {
+                                    try {
+                                        Json.decodeFromString<List<Point>>(it)
+                                    } catch (e: Exception) {
+                                        null
+                                    }
+                                }
                                 val participants = conn.prepareStatement(
                                     """SELECT u.id, u.user_name AS name, u.user_surname AS surname,
                                     AVG(r.rating) AS rating,
@@ -508,6 +562,7 @@ fun Application.configureRouting() {
                                     Pair(list, isUserParticipant)
                                 }
 
+
                                 ViewEventResponse(
                                     success = true,
                                     creatorId = rs.getInt("creator_id"),
@@ -519,7 +574,11 @@ fun Application.configureRouting() {
                                     maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                     sportType = rs.getString("sport_type"),
                                     isUserCreator = (userId==rs.getInt("creator_id")),
-                                    isUserParticipant = participants.second
+                                    isUserParticipant = participants.second,
+                                    lat = rs.getDouble("lat"),
+                                    lon = rs.getDouble("lon"),
+                                    place = rs.getString("place"),
+                                    route = route,
                                 )
                             } else null
                         }
@@ -598,18 +657,33 @@ fun Application.configureRouting() {
                     val eventId = Database.transaction { conn ->
 
                         val sqlEvent = """
-        INSERT INTO events (title, description, time, city, max_amount_of_people, sport_type, creator_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
-    """.trimIndent()
+                            INSERT INTO events (
+                                title,
+                                description,
+                                time,
+                                city,
+                                place,
+                                lat,
+                                lon,
+                                max_amount_of_people,
+                                sport_type,
+                                creator_id
+                            )
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            RETURNING id
+                        """.trimIndent()
 
                         val id = conn.prepareStatement(sqlEvent).use { stmt ->
                             stmt.setString(1, request.title)
                             stmt.setString(2, request.description)
                             stmt.setTimestamp(3, java.sql.Timestamp.from(request.dateTime.toJavaInstant()))
                             stmt.setString(4, request.city)
-                            stmt.setInt(5, request.maxAmountOfPeople)
-                            stmt.setString(6, request.sportType)
-                            stmt.setInt(7, creatorId)
+                            stmt.setString(5, request.place)
+                            stmt.setDouble(6, request.lat)
+                            stmt.setDouble(7, request.lon)
+                            stmt.setInt(8, request.maxAmountOfPeople)
+                            stmt.setString(9, request.sportType)
+                            stmt.setInt(10, creatorId)
 
                             val rs = stmt.executeQuery()
                             rs.next()
@@ -635,6 +709,79 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, CreateEventResponse(false, "Database error: ${e.message}"))
                 }
             }
+            post("/create_event_with_route") {
+                val request = try {
+                    call.receive<CreateEventWithRouteRequest>()
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, CreateEventResponse(false, "Invalid JSON: ${e.message}"))
+                    return@post
+                }
+                val principal = call.principal<JWTPrincipal>()
+                val creatorId = principal!!.payload.getClaim("userId").asInt()
+                try {
+                    val eventId = Database.transaction { conn ->
+
+                        val sqlEvent = """
+                            INSERT INTO events (
+                                title,
+                                description,
+                                time,
+                                city,
+                                place,
+                                lat,
+                                lon,
+                                max_amount_of_people,
+                                sport_type,
+                                creator_id,
+                                route_points
+                            )
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            RETURNING id
+                        """.trimIndent()
+
+                        val id = conn.prepareStatement(sqlEvent).use { stmt ->
+                            stmt.setString(1, request.title)
+                            stmt.setString(2, request.description)
+                            stmt.setTimestamp(3, java.sql.Timestamp.from(request.dateTime.toJavaInstant()))
+                            stmt.setString(4, request.city)
+                            stmt.setString(5, request.place)
+                            stmt.setDouble(6, request.lat)
+                            stmt.setDouble(7, request.lon)
+                            stmt.setInt(8, request.maxAmountOfPeople)
+                            stmt.setString(9, request.sportType)
+                            stmt.setInt(10, creatorId)
+                            val json = PGobject().apply {
+                                type = "jsonb"
+                                value = Json.encodeToString(request.route)
+                            }
+                            stmt.setObject(11, json)
+
+                            val rs = stmt.executeQuery()
+                            rs.next()
+                            rs.getInt(1)
+                        }
+
+                        val sqlParticipant = """
+                            INSERT INTO event_participants (event_id, user_id, status)
+                            VALUES (?, ?, 'accepted')
+                        """.trimIndent()
+
+                        conn.prepareStatement(sqlParticipant).use { stmt ->
+                            stmt.setInt(1, id)
+                            stmt.setInt(2, creatorId)
+                            stmt.executeUpdate()
+                        }
+
+                        id
+                    }
+
+                    call.respond(HttpStatusCode.OK, CreateEventResponse(true, eventId = eventId))
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, CreateEventResponse(false, "Database error: ${e.message}"))
+                }
+            }
+
+
             post("/join_application") {
                 val request = try {
                     call.receive<JoinApplicationRequest>()
@@ -924,6 +1071,93 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.OK, ViewMyEventsListResponse(true, events = events))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ViewMyEventsListResponse(false, "Database error: ${e.message}"))
+                }
+            }
+
+
+            get("/view_events_markers") {
+                val minLat = call.request.queryParameters["minLat"]?.toDoubleOrNull()
+                val maxLat = call.request.queryParameters["maxLat"]?.toDoubleOrNull()
+                val minLon = call.request.queryParameters["minLon"]?.toDoubleOrNull()
+                val maxLon = call.request.queryParameters["maxLon"]?.toDoubleOrNull()
+
+                if (
+                    minLat == null || maxLat == null || minLon == null || maxLon == null
+                ) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        ViewEventsMarkersResponse(
+                            success = false,
+                            errorMessage = "Bounds are required"
+                        )
+                    )
+                    return@get
+                }
+
+                try {
+                    val events = Database.useConnection { conn ->
+                        val sql = """ 
+                            SELECT 
+                                e.id,
+                                e.title,
+                                e.lat,
+                                e.lon,
+                                e.sport_type,
+                                e.time,
+                                e.max_amount_of_people,
+                                COUNT(p.user_id) AS current_amount
+                            FROM events e
+                            LEFT JOIN event_participants p ON e.id = p.event_id
+                            WHERE e.lat BETWEEN ? AND ?
+                              AND e.lon BETWEEN ? AND ?
+                            GROUP BY e.id
+                            """.trimIndent()
+
+                        conn.prepareStatement(sql).use { stmt ->
+
+                            stmt.setDouble(1, minLat)
+                            stmt.setDouble(2, maxLat)
+                            stmt.setDouble(3, minLon)
+                            stmt.setDouble(4, maxLon)
+
+                            val rs = stmt.executeQuery()
+
+                            val result = mutableListOf<EventsMarker>()
+
+                            while (rs.next()) {
+                                result.add(
+                                    EventsMarker(
+                                        eventId = rs.getInt("id"),
+                                        title = rs.getString("title"),
+                                        lat = rs.getDouble("lat"),
+                                        lon = rs.getDouble("lon"),
+                                        sportType = rs.getString("sport_type"),
+                                        dateTime = rs.getTimestamp("time").toInstant().toKotlinInstant(),
+                                        maxAmountOfPeople = rs.getInt("max_amount_of_people"),
+                                        currentAmountOfPeople = rs.getInt("current_amount")
+                                    )
+                                )
+                            }
+
+                            result
+                        }
+                    }
+
+                    call.respond(
+                        HttpStatusCode.OK,
+                        ViewEventsMarkersResponse(
+                            success = true,
+                            events = events
+                        )
+                    )
+                } catch (e: Exception) {
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        ViewEventsMarkersResponse(
+                            success = false,
+                            errorMessage = "Database error: ${e.message}"
+                        )
+                    )
                 }
             }
         }
