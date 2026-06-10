@@ -2,6 +2,7 @@ package com.example.moveon.client.handlers
 
 import com.example.moveon.client.api.EventsApi
 import com.example.moveon.client.jsonClasses.CreateEventRequest
+import com.example.moveon.client.jsonClasses.CreateEventWithRouteRequest
 import com.example.moveon.client.jsonClasses.EventListElement
 import com.example.moveon.client.jsonClasses.EventsMarker
 import com.example.moveon.client.jsonClasses.JoinApplicationRequest
@@ -25,6 +26,14 @@ class EventsHandler(private val api : EventsApi) {
 
     suspend fun createEvent(request: CreateEventRequest) {
         val response = api.createEvent(request)
+
+        if (!response.success) {
+            throw Exception(response.errorMessage ?: "Unknown error")
+        }
+    }
+
+    suspend fun createEventWithRoute(request: CreateEventWithRouteRequest) {
+        val response = api.createEventWithRoute(request)
 
         if (!response.success) {
             throw Exception(response.errorMessage ?: "Unknown error")

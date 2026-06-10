@@ -85,6 +85,19 @@ data class CreateEventRequest @OptIn(ExperimentalTime::class) constructor(
     val lat: Double,
     val lon: Double
 )
+@Serializable
+data class CreateEventWithRouteRequest @OptIn(ExperimentalTime::class) constructor(
+    val title: String,
+    val description: String,
+    val dateTime: Instant,
+    val maxAmountOfPeople: Int,
+    val sportType: String,
+    val city: String = "Unknown",
+    val place: String,
+    val lat: Double,
+    val lon: Double,
+    val route: List<Point>
+)
 
 @Serializable
 data class EventListElement @OptIn(ExperimentalTime::class) constructor(
@@ -144,7 +157,8 @@ data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(
     val photoId: Int? = null,
     val lat: Double? = null,
     val lon: Double? = null,
-    val place: String? = null
+    val place: String? = null,
+    val route: List<Point>? = null,
 )
 
 //@Serializable

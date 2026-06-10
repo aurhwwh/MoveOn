@@ -22,7 +22,8 @@ data class ViewEventResponse(
     val photoId: Int? = null,
     val lat: Double? = null,
     val lon: Double? = null,
-    val place: String? = null
+    val place: String? = null,
+    val route: List<Point>? = null,
 )
 
 

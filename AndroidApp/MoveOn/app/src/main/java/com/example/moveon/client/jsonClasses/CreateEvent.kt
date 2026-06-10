@@ -17,7 +17,20 @@ data class CreateEventRequest (
     val lat: Double,
     val lon: Double
 )
-
+@Serializable
+@OptIn(kotlin.time.ExperimentalTime::class)
+data class CreateEventWithRouteRequest (
+    val title: String,
+    val description: String,
+    val dateTime: Instant,
+    val maxAmountOfPeople: Int,
+    val sportType: String,
+    val city: String = "Unknown",
+    val place: String,
+    val lat: Double,
+    val lon: Double,
+    val route: List<Point>
+)
 
 @Serializable
 data class CreateEventResponse(

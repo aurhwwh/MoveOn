@@ -2,6 +2,7 @@ package com.example.moveon.client.api
 
 import com.example.moveon.client.jsonClasses.CreateEventRequest
 import com.example.moveon.client.jsonClasses.CreateEventResponse
+import com.example.moveon.client.jsonClasses.CreateEventWithRouteRequest
 import com.example.moveon.client.jsonClasses.JoinApplicationRequest
 import com.example.moveon.client.jsonClasses.JoinApplicationResponse
 import com.example.moveon.client.jsonClasses.ViewEventResponse
@@ -41,6 +42,13 @@ class EventsApi(private val client: HttpClient) {
 
     suspend fun createEvent(request : CreateEventRequest) : CreateEventResponse {
         return client.post("$baseUrl/create_event") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun createEventWithRoute(request : CreateEventWithRouteRequest) : CreateEventResponse {
+        return client.post("$baseUrl/create_event_with_route") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()

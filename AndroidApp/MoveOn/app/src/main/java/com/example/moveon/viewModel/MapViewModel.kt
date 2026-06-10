@@ -85,6 +85,10 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun createEventWithRoute() {
+
+    }
+
     fun selectRoute(index: Int, radius: Int) {
 
         val route = state.value.routes[index]
