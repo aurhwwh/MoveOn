@@ -165,7 +165,8 @@ fun EventDetails(navController : NavController,
                         Text(
                             text = data.place?:"",
                             modifier = Modifier.weight(1f),
-                            fontSize = 18.sp
+                            fontSize = 18.sp,
+                            fontStyle = FontStyle.Italic
                         )
 
                         Button(
@@ -183,7 +184,7 @@ fun EventDetails(navController : NavController,
                     if (!data.route.isNullOrEmpty()) {
 
                         Button(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(start = 8.dp, top = 13.dp),
                             onClick = {
                                 navController.navigate("map/${eventId}")
                             }

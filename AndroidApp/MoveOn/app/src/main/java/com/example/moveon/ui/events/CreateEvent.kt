@@ -312,8 +312,8 @@ fun CreateEvent(navController : NavController,
                         sportType = sportType,
                         city = selectedPlace!!.city,
                         place = selectedPlace!!.name,
-                        lat = selectedPlace!!.lat,
-                        lon = selectedPlace!!.lon
+                        lat = lat!! ?: selectedPlace!!.lat,
+                        lon = lon!! ?: selectedPlace!!.lon
                     )
 
                     viewModel.createEvent(request)
@@ -327,8 +327,8 @@ fun CreateEvent(navController : NavController,
                         sportType = sportType,
                         city = selectedPlace!!.city,
                         place = selectedPlace!!.name,
-                        lat = selectedPlace!!.lat,
-                        lon = selectedPlace!!.lon,
+                        lat = lat!!,
+                        lon = lon!!,
                         route = route
                     )
 

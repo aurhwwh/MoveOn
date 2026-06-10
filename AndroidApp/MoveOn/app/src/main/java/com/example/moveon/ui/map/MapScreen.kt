@@ -30,6 +30,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -147,6 +148,8 @@ fun MapScreen(navController : NavController,
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+            mapView.overlays.clear()
+            mapView.onDetach()
         }
     }
 
@@ -342,6 +345,7 @@ fun MapScreen(navController : NavController,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .statusBarsPadding()
         ) {
 
             AndroidView(
