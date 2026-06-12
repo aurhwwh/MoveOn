@@ -1021,6 +1021,8 @@ fun Application.configureRouting() {
                     return@get
                 }
 
+                val type = call.request.queryParameters["type"]
+
                 try {
                     val events = Database.useConnection { conn ->
                         val sqlBuilder = StringBuilder("""
@@ -1033,12 +1035,17 @@ fun Application.configureRouting() {
                         AND EXISTS (
                             SELECT 1 FROM event_participants ep WHERE ep.event_id = e.id AND ep.user_id = ?
                         )
-                         AND e.time > CURRENT_TIMESTAMP
                     """.trimIndent())
+
+                        when (type) {
+                            "upcoming" -> sqlBuilder.append(" AND e.time > CURRENT_TIMESTAMP")
+                            "past" -> sqlBuilder.append(" AND e.time <= CURRENT_TIMESTAMP")
+                        }
 
                         sqlBuilder.append(" ORDER BY e.time ASC")
 
                         val sql = sqlBuilder.toString()
+
                         conn.prepareStatement(sql).use { stmt ->
                             stmt.setInt(1, userId)
                             stmt.setInt(2, userId)

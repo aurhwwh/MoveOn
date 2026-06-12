@@ -1,6 +1,5 @@
 package com.example.moveon.ui.profile
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,32 +12,29 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.ui.common.BottomBar
 import com.example.moveon.ui.common.CityTopBar
 import com.example.moveon.ui.events.MakeEvent
 import com.example.moveon.viewModel.CityViewModel
+import com.example.moveon.viewModel.EventOwnerFilter
+import com.example.moveon.viewModel.EventTimeFilter
 import com.example.moveon.viewModel.ProfileViewModel
 
 
@@ -47,9 +43,9 @@ fun MyProfileScreen(navController : NavController,
                     cityViewModel: CityViewModel,
                     viewModel: ProfileViewModel) {
 
-    LaunchedEffect("profile") {
+    LaunchedEffect(Unit) {
         viewModel.loadMyProfile()
-        viewModel.loadMyEvents()
+        viewModel.updateTimeFilter(EventTimeFilter.UPCOMING)
     }
 
     Scaffold(
@@ -84,7 +80,7 @@ fun MyProfileScreen(navController : NavController,
                         }
                     }
 
-                    ProfileBottomIcons()
+                    // ProfileBottomIcons()
                 }
             }
 
@@ -94,41 +90,53 @@ fun MyProfileScreen(navController : NavController,
                 text = "Events",
                 color = Color.Black,
                 fontFamily = FontFamily.SansSerif,
-                fontSize = 25.sp
+                fontStyle = FontStyle.Italic,
+                fontWeight = FontWeight.Medium,
+                fontSize = 28.sp,
+                modifier = Modifier.padding(start = 4.dp)
             )
 
-            var expanded by remember { mutableStateOf(false) }
-            val types = listOf("All", "Created by me")
+            Spacer(Modifier.size(5.dp))
 
-            Box()   {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { expanded = true })
-                {
-                    Text(
-                        text = viewModel.selectedEventsType,
-                        color = Color.Black,
-                        fontFamily = FontFamily.SansSerif,
-                        fontSize = 24.sp
-                    )
-                    Icon(
-                        imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = null,
-                        modifier = Modifier.clickable { expanded = true }
-                    )
-                }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Spacer(Modifier.size(4.dp))
 
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    types.forEach { type ->
-                        DropdownMenuItem(
-                            text = { Text(text = type, fontSize = 20.sp) },
-                            onClick = {
-                                viewModel.updateSelectedEventsType(type)
-                                expanded = false
-                            }
+                FilterChip(
+                    modifier = Modifier.weight(1f),
+                    selected = viewModel.selectedTimeFilter == EventTimeFilter.UPCOMING,
+                    onClick = {
+                        viewModel.updateTimeFilter(EventTimeFilter.UPCOMING)
+                    },
+                    label = {Text(text = "Upcoming", fontSize = 18.sp)}
+                )
+
+                Spacer(Modifier.size(4.dp))
+
+                FilterChip(
+                    modifier = Modifier.weight(1f),
+                    selected = viewModel.selectedTimeFilter == EventTimeFilter.PAST,
+                    onClick = {
+                        viewModel.updateTimeFilter(EventTimeFilter.PAST)
+                    },
+                    label = {Text(text = "Past", fontSize = 18.sp)}
+                )
+
+                Spacer(Modifier.size(4.dp))
+            }
+
+            Row (verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = viewModel.selectedOwnerFilter == EventOwnerFilter.ME,
+
+                    onCheckedChange = { checked ->
+                        viewModel.updateOwnerFilter(
+                            if (checked) EventOwnerFilter.ME
+                            else EventOwnerFilter.ANYONE
                         )
                     }
-                }
+                )
+
+                Text(text = "Show only created by me", fontSize = 17.sp)
             }
 
             when {

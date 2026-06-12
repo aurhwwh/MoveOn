@@ -68,8 +68,10 @@ class EventsApi(private val client: HttpClient) {
     }
 
     @OptIn(ExperimentalTime::class)
-    suspend fun getMyEventsList(): ViewMyEventsListResponse {
-        return client.get("$baseUrl/view_my_events_list").body()
+    suspend fun getMyEventsList(type : String = "upcoming"): ViewMyEventsListResponse {
+        return client.get("$baseUrl/view_my_events_list") {
+            parameter("type", type)
+        }.body()
     }
 
     suspend fun getEventsMarkers(

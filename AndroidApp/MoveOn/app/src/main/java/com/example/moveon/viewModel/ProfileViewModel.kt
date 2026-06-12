@@ -13,6 +13,7 @@ import com.example.moveon.data.ProfileData
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 
+
 class ProfileViewModel : ViewModel() {
 
     private val handler = Handlers.profileHandler
@@ -62,47 +63,6 @@ class ProfileViewModel : ViewModel() {
     }
 
 
-    var myEvents by mutableStateOf<List<EventListElement>>(emptyList())
-        private set
-
-    var selectedEventsType by mutableStateOf("All")
-        private set
-    var isEventsLoading by mutableStateOf(false)
-        private set
-
-    var eventsError by mutableStateOf<String?>(null)
-        private set
-
-    fun updateSelectedEventsType(type: String) {
-        selectedEventsType = type
-    }
-
-    val filteredEvents: List<EventListElement>
-        get() = when (selectedEventsType) {
-            "Created by me" -> myEvents.filter { it.isCreator }
-            else -> myEvents
-        }
-
-    fun loadMyEvents() {
-        if (myEvents.isNotEmpty()) {
-            return
-        }
-
-        viewModelScope.launch {
-            isEventsLoading = true
-            eventsError = null
-
-            try {
-                myEvents = eventsHandler.getMyEvents()
-            } catch (e: Exception) {
-                eventsError = e.message
-            } finally {
-                isEventsLoading = false
-            }
-        }
-    }
-
-
     var editSuccess by mutableStateOf(false)
         private set
 
@@ -119,8 +79,6 @@ class ProfileViewModel : ViewModel() {
         description: String
     ) {
         viewModelScope.launch {
-            Log.d("PROFILE_EDIT", "Start editing")
-
             isEditing = true
             editError = null
             editSuccess = false
@@ -142,12 +100,10 @@ class ProfileViewModel : ViewModel() {
                     description = description
                 )
 
-                Log.d("PROFILE_EDIT", "Success")
                 editSuccess = true
 
             } catch (e: Exception) {
                 editError = e.message
-                Log.e("PROFILE_EDIT", "Error", e)
 
             } finally {
                 isEditing = false
@@ -159,4 +115,82 @@ class ProfileViewModel : ViewModel() {
         editSuccess = false
         editError = null
     }
+
+
+    var selectedTimeFilter by mutableStateOf(
+        EventTimeFilter.UPCOMING
+    )
+
+    var selectedOwnerFilter by mutableStateOf(
+        EventOwnerFilter.ANYONE
+    )
+
+    var upcomingEvents by mutableStateOf<List<EventListElement>>(emptyList())
+        private set
+
+    var pastEvents by mutableStateOf<List<EventListElement>>(emptyList())
+        private set
+
+
+    var isEventsLoading by mutableStateOf(false)
+        private set
+
+    var eventsError by mutableStateOf<String?>(null)
+        private set
+
+
+    private val myEvents
+        get() = when (selectedTimeFilter) {
+            EventTimeFilter.UPCOMING -> upcomingEvents
+            EventTimeFilter.PAST -> pastEvents
+        }
+
+    val filteredEvents
+        get() = when (selectedOwnerFilter) {
+            EventOwnerFilter.ANYONE -> myEvents
+            EventOwnerFilter.ME -> myEvents.filter { it.isCreator }
+        }
+
+    fun loadMyEvents(filter: EventTimeFilter) {
+
+        viewModelScope.launch {
+            isEventsLoading = true
+            eventsError = null
+
+            try {
+                when (filter) {
+                    EventTimeFilter.UPCOMING -> {
+                        upcomingEvents = eventsHandler.getMyEvents("upcoming")
+                    }
+                    EventTimeFilter.PAST -> {
+                        pastEvents = eventsHandler.getMyEvents("past")
+                    }
+                }
+            } catch (e: Exception) {
+                eventsError = e.message
+            } finally {
+                isEventsLoading = false
+            }
+        }
+    }
+
+    fun updateTimeFilter(filter: EventTimeFilter) {
+        selectedTimeFilter = filter
+        loadMyEvents(filter)
+    }
+
+    fun updateOwnerFilter(filter: EventOwnerFilter) {
+        selectedOwnerFilter = filter
+    }
+}
+
+
+enum class EventTimeFilter {
+    UPCOMING,
+    PAST
+}
+
+enum class EventOwnerFilter {
+    ANYONE,
+    ME
 }
