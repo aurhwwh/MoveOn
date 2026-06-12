@@ -27,7 +27,7 @@ fun SelectCity(
     selectedCity: String,
     onSelectedCity: (String) -> Unit
 ) {
-    val cities = listOf("Saint-Petersburg", "Moscow")
+    val cities = listOf("Санкт-Петербург", "Москва")
 
     var expanded by remember { mutableStateOf(false) }
 

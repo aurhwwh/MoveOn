@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.DateRange
@@ -39,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,19 +49,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.R
 import com.example.moveon.data.TokenStorage
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.viewModel.ProfileViewModel
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -72,12 +81,30 @@ import kotlin.time.Instant
 
 
 @Composable
-fun EditProfileScreen(navController : NavController) {
-    var name by remember { mutableStateOf("") }
-    var surname by remember { mutableStateOf("") }
-    var birth by remember { mutableStateOf<LocalDate?>(null) }
-    var city by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+fun EditProfileScreen(
+    navController : NavController,
+    viewModel: ProfileViewModel
+) {
+    val profile = viewModel.profile ?: return
+
+    var name by remember(profile) {mutableStateOf(profile.name)}
+    var surname by remember (profile) {mutableStateOf(profile.surname)}
+    var birth by remember (profile) {mutableStateOf(profile.birth)}
+    var description by remember (profile) {mutableStateOf(profile.description)}
+
+    var isNameError by remember { mutableStateOf(false) }
+    var isSurnameError by remember { mutableStateOf(false) }
+    var isBirthError by remember { mutableStateOf(false) }
+
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(viewModel.editSuccess) {
+        if (viewModel.editSuccess) {
+            viewModel.clearEditState()
+            navController.popBackStack()
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -96,7 +123,17 @@ fun EditProfileScreen(navController : NavController) {
             value = name,
             onValueChange = { name = it },
             label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = isNameError,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -105,24 +142,29 @@ fun EditProfileScreen(navController : NavController) {
             value = surname,
             onValueChange = { surname = it },
             label = { Text("Surname") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = isSurnameError,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                }
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         BirthDatePicker(
             selectedDate = birth,
-            onDateSelected = { birth = it },
-            width = 1f
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = city,
-            onValueChange = { city = it },
-            label = { Text("City") },
-            modifier = Modifier.fillMaxWidth()
+            onDateSelected = {
+                birth = it
+                isBirthError = false
+            },
+            width = 1f,
+            isError = isBirthError
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -131,14 +173,30 @@ fun EditProfileScreen(navController : NavController) {
             value = description,
             onValueChange = { description = it },
             label = { Text("Description") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                }
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            onClick = {},
+            onClick = {
+                viewModel.editProfile(
+                    name = name,
+                    surname = surname,
+                    birth = birth,
+                    description = description
+                )
+            },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MGreen
             )
@@ -150,6 +208,7 @@ fun EditProfileScreen(navController : NavController) {
 
         Button(
             modifier = Modifier.align(Alignment.End).padding(8.dp),
+            enabled = !viewModel.isEditing,
             onClick = {
                 TokenStorage.clear()
 
@@ -170,6 +229,8 @@ fun EditProfileScreen(navController : NavController) {
         }
     }
 }
+
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun BirthDatePicker(

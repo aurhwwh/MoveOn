@@ -15,14 +15,19 @@ CREATE TABLE events (
                         id SERIAL PRIMARY KEY,
                         title VARCHAR(100) NOT NULL,
                         description TEXT,
---                         time TIME NOT NULL,
---                         date DATE NOT NULL,
                         time TIMESTAMP WITH TIME ZONE,
                         city VARCHAR(100) NOT NULL,
+                        place TEXT NOT NULL,
+                        lat DOUBLE PRECISION NOT NULL,
+                        lon DOUBLE PRECISION NOT NULL,
                         max_amount_of_people INTEGER NOT NULL,
                         sport_type VARCHAR(50) NOT NULL,
-                        creator_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
+                        creator_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        route_points JSONB
 );
+
+CREATE INDEX idx_events_lat_lon
+    ON events(lat, lon);
 
 CREATE TABLE event_participants (
                                     event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,

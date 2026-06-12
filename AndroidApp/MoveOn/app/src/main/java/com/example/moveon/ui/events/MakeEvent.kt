@@ -50,7 +50,7 @@ fun MakeEvent(data: EventListElement, onClick: () -> Unit) {
                 Column(modifier = Modifier.padding(start = 10.dp).padding(top = 8.dp)) {
                     Text(text = data.title, fontWeight = FontWeight.Bold, fontSize = 22.sp)
                     Text(text = data.sportType, fontStyle = FontStyle.Italic, fontSize = 20.sp)
-                    Text(text = data.description, fontSize = 18.sp)
+                    Text(text = if (data.description.length > 28) data.description.take(28) + "..." else data.description, fontSize = 18.sp)
                     Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, end = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Bottom

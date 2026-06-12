@@ -1,5 +1,7 @@
 package com.example.moveon.client.handlers
 import com.example.moveon.client.api.ProfileApi
+import com.example.moveon.client.jsonClasses.CreateEventRequest
+import com.example.moveon.client.jsonClasses.EditProfileRequest
 import com.example.moveon.data.ProfileData
 
 class ProfileHandler (private val api : ProfileApi) {
@@ -38,5 +40,14 @@ class ProfileHandler (private val api : ProfileApi) {
             description = response.description ?: "",
             rating = response.rating ?: 0.0
         )
+    }
+
+
+    suspend fun editProfile(request: EditProfileRequest) {
+        val response = api.editProfile(request)
+
+        if (!response.success) {
+            throw Exception(response.errorMessage ?: "Unknown error")
+        }
     }
 }

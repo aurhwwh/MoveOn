@@ -78,10 +78,25 @@ data class CreateEventRequest @OptIn(ExperimentalTime::class) constructor(
     val title: String,
     val description: String,
     val dateTime: Instant,
-    //val position: Position, пока непонятно в каком формате, есть какие-то встроенные
     val maxAmountOfPeople: Int,
     val sportType: String,
     val city: String = "Unknown",
+    val place: String,
+    val lat: Double,
+    val lon: Double
+)
+@Serializable
+data class CreateEventWithRouteRequest @OptIn(ExperimentalTime::class) constructor(
+    val title: String,
+    val description: String,
+    val dateTime: Instant,
+    val maxAmountOfPeople: Int,
+    val sportType: String,
+    val city: String = "Unknown",
+    val place: String,
+    val lat: Double,
+    val lon: Double,
+    val route: List<Point>
 )
 
 @Serializable
@@ -139,8 +154,11 @@ data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(
     val sportType: String? = null,
     val isUserParticipant: Boolean? = null,
     val isUserCreator: Boolean? = null,
-    val photoId: Int? = null
-
+    val photoId: Int? = null,
+    val lat: Double? = null,
+    val lon: Double? = null,
+    val place: String? = null,
+    val route: List<Point>? = null,
 )
 
 //@Serializable
@@ -278,3 +296,42 @@ data class RouteOptionsResponse(
     val points: List<Point>? = null,
     val routes: List<Route>? = null,
 )
+
+
+@Serializable
+data class ViewEventsMarkersResponse(
+    val success: Boolean,
+    val errorMessage: String? = null,
+    val events: List<EventsMarker>? = null
+)
+
+
+@Serializable
+@OptIn(kotlin.time.ExperimentalTime::class)
+data class EventsMarker (
+    val eventId: Int,
+    val title: String,
+    val lat: Double,
+    val lon: Double,
+    val sportType: String,
+    val dateTime: Instant,
+    val maxAmountOfPeople: Int,
+    val currentAmountOfPeople: Int
+)
+
+
+@Serializable
+data class EditProfileRequest(
+    val userName: String,
+    val userSurname: String,
+    val dateOfBirth: LocalDate,
+    val description: String?
+)
+
+@Serializable
+data class EditProfileResponse(
+    val success: Boolean,
+    val errorMessage: String? = null
+)
+
+

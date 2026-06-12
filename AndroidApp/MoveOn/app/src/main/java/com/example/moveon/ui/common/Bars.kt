@@ -185,7 +185,7 @@ fun MoveOnTopBar(navController : NavController, prevScreen : String) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = {navController.navigate(prevScreen) }) {
+        IconButton(onClick = {navController.popBackStack()}) {
             Icon(
                 imageVector = Icons.Filled.ArrowBackIosNew,
                 contentDescription = null,
