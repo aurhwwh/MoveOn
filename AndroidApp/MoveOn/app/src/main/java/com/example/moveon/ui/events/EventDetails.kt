@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,15 +20,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,9 +70,10 @@ import androidx.core.net.toUri
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun EventDetails(navController : NavController,
-                 eventId: Int,
-                 viewModel: EventDetailsViewModel = viewModel()
+fun EventDetails(
+    navController: NavController,
+    eventId: Int,
+    viewModel: EventDetailsViewModel = viewModel()
 ) {
     LaunchedEffect(eventId) {
         viewModel.loadEvent(eventId)
@@ -97,8 +105,7 @@ fun EventDetails(navController : NavController,
 
                     Spacer(modifier = Modifier.height(16.dp))
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(
                             text = data.title!!,
@@ -108,7 +115,6 @@ fun EventDetails(navController : NavController,
                             fontSize = 30.sp,
                             modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterStart).padding(end = 120.dp)
                         )
-
 
                         val localDateTime =
                             data.dateTime!!.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -146,7 +152,7 @@ fun EventDetails(navController : NavController,
                     }
 
                     Text(
-                        text = "Вид спорта: "+data.sportType!!,
+                        text = "Вид спорта: " + data.sportType!!,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(8.dp)
@@ -163,7 +169,7 @@ fun EventDetails(navController : NavController,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = data.place?:"",
+                            text = data.place ?: "",
                             modifier = Modifier.weight(1f),
                             fontSize = 18.sp,
                             fontStyle = FontStyle.Italic
@@ -172,8 +178,7 @@ fun EventDetails(navController : NavController,
                         Button(
                             modifier = Modifier.padding(end = 8.dp),
                             onClick = {
-                                val uri =
-                                    "geo:${data.lat},${data.lon}?q=${data.lat},${data.lon}".toUri()
+                                val uri = "geo:${data.lat},${data.lon}?q=${data.lat},${data.lon}".toUri()
                                 val intent = Intent(Intent.ACTION_VIEW, uri)
                                 context.startActivity(intent)
                             }
@@ -182,11 +187,10 @@ fun EventDetails(navController : NavController,
                         }
                     }
                     if (!data.route.isNullOrEmpty()) {
-
                         Button(
                             modifier = Modifier.padding(start = 8.dp, top = 13.dp),
                             onClick = {
-                                navController.navigate("map/${eventId}")
+                                navController.navigate("map/$eventId")
                             }
                         ) {
                             Text("Открыть маршрут на карте")
@@ -208,9 +212,14 @@ fun EventDetails(navController : NavController,
 
                     var expanded by remember { mutableStateOf(true) }
 
-                    Row(modifier = Modifier.clickable {expanded = !expanded}.padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "Участники: ${data.currentAmountOfPeople}/${data.maxAmountOfPeople}", fontSize = 20.sp)
+                    Row(
+                        modifier = Modifier.clickable { expanded = !expanded }.padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Участники: ${data.currentAmountOfPeople}/${data.maxAmountOfPeople}",
+                            fontSize = 20.sp
+                        )
 
                         Spacer(modifier = Modifier.width(4.dp))
 
@@ -221,7 +230,6 @@ fun EventDetails(navController : NavController,
                             modifier = Modifier.size(25.dp)
                         )
                     }
-
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -240,6 +248,76 @@ fun EventDetails(navController : NavController,
                             }
                         }
                     }
+
+                    if (data.isUserParticipant == true) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = "Чат",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(8.dp)
+                        )
+
+                        if (viewModel.isLoadingMessages) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp)
+                                    .padding(horizontal = 8.dp)
+                            ) {
+                                items(viewModel.messages) { message ->
+                                    MessageItem(message)
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                            }
+                        }
+
+                        var text by remember { mutableStateOf("") }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = text,
+                                onValueChange = { text = it },
+                                modifier = Modifier.weight(1f),
+                                placeholder = { Text("Написать сообщение...") },
+                                enabled = !viewModel.isSendingMessage
+                            )
+                            IconButton(
+                                onClick = {
+                                    if (text.isNotBlank()) {
+                                        viewModel.sendMessage(eventId, text)
+                                        text = ""
+                                    }
+                                },
+                                enabled = !viewModel.isSendingMessage
+                            ) {
+                                if (viewModel.isSendingMessage) {
+                                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                } else {
+                                    Icon(Icons.Default.Send, contentDescription = "Отправить", tint = MGreen)
+                                }
+                            }
+                        }
+                        viewModel.sendMessageError?.let {
+                            Text(
+                                text = it,
+                                color = Color.Red,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
                 }
 
                 viewModel.error?.let {
@@ -255,9 +333,7 @@ fun EventDetails(navController : NavController,
                         modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
                         onClick = { viewModel.joinEvent(eventId) },
                         enabled = !viewModel.isJoining,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MGreen
-                        )
+                        colors = ButtonDefaults.buttonColors(containerColor = MGreen)
                     ) {
                         Text(
                             fontSize = 25.sp,
@@ -272,18 +348,50 @@ fun EventDetails(navController : NavController,
 
 @Composable
 fun Participant(participant: Person, onClick: () -> Unit) {
-    Row(modifier = Modifier.padding(8.dp).clickable{ onClick() }) {
-        Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
+    Row(modifier = Modifier.padding(8.dp).clickable { onClick() }) {
+        Image(
+            painter = painterResource(R.drawable.img),
             contentDescription = "image",
             contentScale = ContentScale.Crop,
-            modifier = Modifier.padding(5.dp).size(50.dp).clip(CircleShape))
+            modifier = Modifier.padding(5.dp).size(50.dp).clip(CircleShape)
+        )
 
         Column(modifier = Modifier.padding(start = 10.dp, top = 8.dp)) {
-            Text(text = participant.name + " " + participant.surname,
+            Text(
+                text = participant.name + " " + participant.surname,
                 fontSize = 18.sp,
-                modifier = Modifier.padding(2.dp))
+                modifier = Modifier.padding(2.dp)
+            )
 
             DrawStars(participant.rating ?: 0.0)
         }
+    }
+}
+
+@Composable
+fun MessageItem(message: com.example.moveon.client.jsonClasses.EventMessage) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Row {
+            Text(
+                text = "${message.userName ?: "User"} ${message.userSurname ?: ""}",
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
+            Text(
+                text = " • ${message.createdAt.take(16)}",
+                fontSize = 12.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+        Text(
+            text = message.message,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(top = 4.dp)
+        )
     }
 }

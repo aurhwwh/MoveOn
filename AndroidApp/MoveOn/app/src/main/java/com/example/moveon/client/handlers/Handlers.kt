@@ -13,4 +13,6 @@ object Handlers {
     val entryHandler = EntryHandler(EntryApi(Client.client))
     val geocodingHandler = GeocodingHandler(GeocodingApi(Client.client))
     val mapRoutesHandler = MapRoutesHandler(MapRoutesApi(Client.client))
+
+    val chatHandler = ChatHandler()
 }
