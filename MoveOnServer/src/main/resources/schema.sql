@@ -63,3 +63,14 @@ CREATE TABLE friends (
                          PRIMARY KEY (user_id, friend_id),
                          CHECK (user_id != friend_id)
     );
+
+CREATE TABLE event_messages (
+                                id SERIAL PRIMARY KEY,
+                                event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+                                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                                message TEXT NOT NULL,
+                                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_event_messages_event_time ON event_messages(event_id, created_at);

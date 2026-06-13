@@ -6,6 +6,8 @@ import io.ktor.server.request.receive
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import MoveOn.database.Database
+import MoveOn.database.ChatDao
+import MoveOn.database.ParticipantDao
 import MoveOn.security.Security
 import com.graphhopper.GHRequest
 import io.ktor.server.auth.authenticate
@@ -1158,6 +1160,49 @@ fun Application.configureRouting() {
                             errorMessage = "Database error: ${e.message}"
                         )
                     )
+                }
+            }
+
+            // ---------- Чат (форум) событий ----------
+            post("/send_message") {
+                val request = try {
+                    call.receive<SendMessageRequest>()
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, SendMessageResponse(success = false, error = "Invalid JSON: ${e.message}"))
+                    return@post
+                }
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal!!.payload.getClaim("userId").asInt()
+                try {
+                    val messageId = ChatDao().insertMessage(request.eventId, userId, request.message)
+                    if (messageId != null) {
+                        call.respond(HttpStatusCode.OK, SendMessageResponse(success = true, messageId = messageId))
+                    } else {
+                        call.respond(HttpStatusCode.InternalServerError, SendMessageResponse(success = false, error = "Failed to save message"))
+                    }
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, SendMessageResponse(success = false, error = "Database error: ${e.message}"))
+                }
+            }
+
+            get("/messages/{eventId}") {
+                val eventId = call.parameters["eventId"]?.toIntOrNull()
+                if (eventId == null) {
+                    call.respond(HttpStatusCode.BadRequest, GetMessagesResponse(success = false, error = "Invalid eventId"))
+                    return@get
+                }
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal!!.payload.getClaim("userId").asInt()
+                try {
+                    val isParticipant = ParticipantDao().isUserParticipant(eventId, userId)
+                    if (!isParticipant) {
+                        call.respond(HttpStatusCode.Forbidden, GetMessagesResponse(success = false, error = "You are not a participant of this event"))
+                        return@get
+                    }
+                    val messages = ChatDao().getMessagesByEvent(eventId)
+                    call.respond(HttpStatusCode.OK, GetMessagesResponse(success = true, messages = messages))
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, GetMessagesResponse(success = false, error = "Database error: ${e.message}"))
                 }
             }
         }

@@ -5,11 +5,11 @@ import kotlinx.datetime.LocalDate
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-
 @Serializable
 data class RefreshRequest(
     val oldRefreshToken: String
 )
+
 @Serializable
 data class RefreshResponse(
     val success: Boolean,
@@ -52,7 +52,7 @@ data class LoginRequest(
 data class ViewProfileResponse(
     val success: Boolean,
     val errorMessage: String? = null,
-    val photoId: Int? = null, //temporary
+    val photoId: Int? = null,
     val userName: String? = null,
     val userSurname: String? = null,
     val dateOfBirth: LocalDate? = null,
@@ -60,11 +60,6 @@ data class ViewProfileResponse(
     val rating: Double? = null,
     val friendsAmount: Int? = null
 )
-
-//@Serializable
-//data class ViewProfileRequest(
-//    val userId: Int
-//)
 
 @Serializable
 data class CreateEventResponse(
@@ -85,6 +80,7 @@ data class CreateEventRequest @OptIn(ExperimentalTime::class) constructor(
     val lat: Double,
     val lon: Double
 )
+
 @Serializable
 data class CreateEventWithRouteRequest @OptIn(ExperimentalTime::class) constructor(
     val title: String,
@@ -121,24 +117,12 @@ data class ViewFilteredEventsListResponse(
     val events: List<EventListElement>? = null
 )
 
-/*@Serializable
-data class ViewFilteredEventsListRequest(
-    val title: String,
-    val city: String,
-    val sportType: String,
-    val date: String,
-    val maxAmountOfPeople: Int,
-    val creatorRating: Double
-)*/
-
-
 @Serializable
 data class ViewMyEventsListResponse(
     val success: Boolean,
     val errorMessage: String? = null,
     val events: List<EventListElement>? = null
 )
-
 
 @Serializable
 data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(
@@ -161,11 +145,6 @@ data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(
     val route: List<Point>? = null,
 )
 
-//@Serializable
-//data class ViewEventRequest(
-//    val eventId: Int
-//)
-
 @Serializable
 data class JoinApplicationResponse(
     val success: Boolean,
@@ -177,26 +156,11 @@ data class JoinApplicationRequest(
     val eventId: Int
 )
 
-/*@Serializable
-data class SomeoneWantsToJoin( // do we need this?
-    val eventId: Int,
-    val userId: Int,
-    val userName: String,
-    val userSurname: String,
-    val title: String,
-    val date: String
-)*/
-
 @Serializable
-data class Notification( //todo: add more fields
+data class Notification(
     val eventId: Int? = null,
     val otherUserId: Int? = null,
 )
-
-//@Serializable
-//data class OpenNotificationsRequest(
-//    val userId: Int
-//)
 
 @Serializable
 data class OpenNotificationsResponse(
@@ -213,12 +177,6 @@ data class EventApplication @OptIn(ExperimentalTime::class) constructor(
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int
 )
-
-//@Serializable
-//data class OpenApplicationListRequest( //Applications made by user
-//    val userId: Int,
-//    val hasEventPassed: Boolean? = null
-//)
 
 @Serializable
 data class OpenApplicationListResponse(
@@ -243,17 +201,11 @@ data class GetPersonsListResponse(
     val persons: List<Person>? = null
 )
 
-//@Serializable
-//data class GetPersonsListRequest(
-//    val eventId: Int? = null
-//)
-
 @Serializable
 data class RateRequest(
     val ratedUserId: Int,
     val rating: Double,
-    val eventId: Int?=null,
-    //todo add boolean for every stat
+    val eventId: Int? = null,
 )
 
 @Serializable
@@ -297,14 +249,12 @@ data class RouteOptionsResponse(
     val routes: List<Route>? = null,
 )
 
-
 @Serializable
 data class ViewEventsMarkersResponse(
     val success: Boolean,
     val errorMessage: String? = null,
     val events: List<EventsMarker>? = null
 )
-
 
 @Serializable
 @OptIn(kotlin.time.ExperimentalTime::class)
@@ -318,7 +268,6 @@ data class EventsMarker (
     val maxAmountOfPeople: Int,
     val currentAmountOfPeople: Int
 )
-
 
 @Serializable
 data class EditProfileRequest(
@@ -334,4 +283,34 @@ data class EditProfileResponse(
     val errorMessage: String? = null
 )
 
+@Serializable
+data class SendMessageRequest(
+    val eventId: Int,
+    val message: String
+)
 
+@Serializable
+data class SendMessageResponse(
+    val success: Boolean,
+    val messageId: Int? = null,
+    val error: String? = null
+)
+
+@Serializable
+data class EventMessage(
+    val id: Int,
+    val eventId: Int,
+    val userId: Int,
+    val userName: String? = null,
+    val userSurname: String? = null,
+    val message: String,
+    val createdAt: String,
+    val updatedAt: String
+)
+
+@Serializable
+data class GetMessagesResponse(
+    val success: Boolean,
+    val messages: List<EventMessage> = emptyList(),
+    val error: String? = null
+)
