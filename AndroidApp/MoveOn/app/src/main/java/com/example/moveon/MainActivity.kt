@@ -1,6 +1,11 @@
 package com.example.moveon
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -24,10 +29,35 @@ import com.example.moveon.ui.profile.UserProfileScreen
 import com.example.moveon.ui.theme.MGreen
 import com.example.moveon.viewModel.CityViewModel
 import com.example.moveon.viewModel.ProfileViewModel
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    100
+                )
+            }
+
+            val channel = NotificationChannel(
+                "default",
+                "Default Channel",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener {
+                Log.d("FCM_TOKEN", it.result ?: "NULL")
+            }
 
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.Companion.dark(
