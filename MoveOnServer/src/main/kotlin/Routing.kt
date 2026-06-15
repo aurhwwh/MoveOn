@@ -386,11 +386,13 @@ fun Application.configureRouting() {
                                (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount,
                                COALESCE((SELECT AVG(rating) FROM ratings WHERE to_user_id = e.creator_id), 0.0) as creator_rating
                         FROM events e
-                        WHERE 1=1
+                        WHERE 1=1 
                     """.trimIndent())
 
                     val conditions = mutableListOf<String>()
                     val params = mutableListOf<Any>()
+
+                    conditions.add("e.time >= NOW()")
 
                     if (title != null) {
                         conditions.add("e.title ILIKE ?")
@@ -514,12 +516,14 @@ fun Application.configureRouting() {
                     val eventData = Database.useConnection { conn ->
                         val sql = """
                         SELECT e.id, e.title, e.description, e.time, e.max_amount_of_people, e.sport_type, e.creator_id, e.lat, e.lon, e.place, e.route_points,
-                               (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount
+                               (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount,
+                               EXISTS (SELECT 1 FROM ratings r WHERE r.from_user_id = ? AND event_id = e.id) as is_event_rated
                         FROM events e
                         WHERE e.id = ?
                     """.trimIndent()
                         conn.prepareStatement(sql).use { stmt ->
-                            stmt.setInt(1, eventId)
+                            stmt.setInt(1, userId)
+                            stmt.setInt(2, eventId)
                             val rs = stmt.executeQuery()
                             if (rs.next()) {
                                 val route = rs.getString("route_points")?.let {
@@ -581,6 +585,8 @@ fun Application.configureRouting() {
                                     lon = rs.getDouble("lon"),
                                     place = rs.getString("place"),
                                     route = route,
+                                    isEventRatedByUser = rs.getBoolean("is_event_rated"),
+                                    userId = userId
                                 )
                             } else null
                         }
@@ -936,6 +942,8 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, OpenApplicationListResponse(false, "Database error: ${e.message}"))
                 }
             }
+
+
             post("/rate") {
                 val request = try {
                     call.receive<RateRequest>()
@@ -950,15 +958,15 @@ fun Application.configureRouting() {
                     Database.transaction { conn ->
                         val sql = "INSERT INTO ratings (from_user_id, to_user_id, event_id, rating) VALUES (?, ?, ?, ?)"
                         conn.prepareStatement(sql).use { stmt ->
-                            stmt.setInt(1, userWhoRatesId)
-                            stmt.setInt(2, request.ratedUserId)
-                            if (request.eventId != null) {
+                            request.ratings.forEach { rating ->
+                                stmt.setInt(1, userWhoRatesId)
+                                stmt.setInt(2, rating.ratedUserId)
                                 stmt.setInt(3, request.eventId)
-                            } else {
-                                stmt.setNull(3, java.sql.Types.INTEGER)
+                                stmt.setDouble(4, rating.rating)
+
+                                stmt.addBatch()
                             }
-                            stmt.setDouble(4, request.rating)
-                            stmt.executeUpdate()
+                            stmt.executeBatch()
                         }
                     }
 
@@ -967,6 +975,8 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, RateResponse(false, "Database error: ${e.message}"))
                 }
             }
+
+
             post("/accept_or_decline_event_application") {
                 val request = try {
                     call.receive<AcceptOrDeclineEventApplicationRequest>()

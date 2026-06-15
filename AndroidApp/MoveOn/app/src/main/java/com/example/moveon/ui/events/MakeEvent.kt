@@ -36,7 +36,7 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 @Composable
 fun MakeEvent(data: EventListElement, onClick: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth().padding(4.dp).padding(top = 15.dp),
+    Card(modifier = Modifier.fillMaxWidth().padding(4.dp).padding(top = 8.dp),
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {

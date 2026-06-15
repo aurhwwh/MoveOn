@@ -24,6 +24,8 @@ data class ViewEventResponse(
     val lon: Double? = null,
     val place: String? = null,
     val route: List<Point>? = null,
+    val isEventRatedByUser: Boolean = false,
+    val userId: Int? = null
 )
 
 

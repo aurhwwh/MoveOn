@@ -5,6 +5,8 @@ import com.example.moveon.client.jsonClasses.CreateEventResponse
 import com.example.moveon.client.jsonClasses.CreateEventWithRouteRequest
 import com.example.moveon.client.jsonClasses.JoinApplicationRequest
 import com.example.moveon.client.jsonClasses.JoinApplicationResponse
+import com.example.moveon.client.jsonClasses.RateRequest
+import com.example.moveon.client.jsonClasses.RateResponse
 import com.example.moveon.client.jsonClasses.ViewEventResponse
 import com.example.moveon.client.jsonClasses.ViewEventsMarkersResponse
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
@@ -83,6 +85,13 @@ class EventsApi(private val client: HttpClient) {
             parameter("maxLat", maxLat)
             parameter("minLon", minLon)
             parameter("maxLon", maxLon)
+        }.body()
+    }
+
+    suspend fun rateUser(request:  RateRequest) : RateResponse {
+        return client.post("$baseUrl/rate") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
         }.body()
     }
 }

@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.client.jsonClasses.EventMessage
+import com.example.moveon.client.jsonClasses.RateRequest
+import com.example.moveon.client.jsonClasses.UserRating
 import com.example.moveon.client.jsonClasses.ViewEventResponse
 import kotlinx.coroutines.launch
 
@@ -108,6 +110,54 @@ class EventDetailsViewModel : ViewModel() {
                 error = e.message
             } finally {
                 isJoining = false
+            }
+        }
+    }
+
+
+    var isRating by mutableStateOf(false)
+        private set
+
+    var rateError by mutableStateOf<String?>(null)
+        private set
+
+    var showRating by mutableStateOf(false)
+        private set
+
+    fun openRating() {
+        showRating = true
+    }
+
+    fun closeRating() {
+        showRating = false
+    }
+
+    fun rateEvent(eventId: Int, ratings: Map<Int, Int>) {
+        println("rateEvent called")
+        viewModelScope.launch {
+            isRating = true
+            rateError = null
+
+            try {
+                handler.rateUser(
+                    RateRequest(
+                        eventId = eventId,
+                        ratings = ratings.filterValues { it > 0 }.map {
+                            UserRating(
+                                ratedUserId = it.key,
+                                rating = it.value.toDouble()
+                            )
+                        }
+                    )
+                )
+
+                loadEvent(eventId)
+                showRating = false
+
+            } catch (e: Exception) {
+                rateError = e.message
+            } finally {
+                isRating = false
             }
         }
     }

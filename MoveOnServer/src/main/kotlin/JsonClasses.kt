@@ -143,6 +143,8 @@ data class ViewEventResponse @OptIn(ExperimentalTime::class) constructor(
     val lon: Double? = null,
     val place: String? = null,
     val route: List<Point>? = null,
+    val isEventRatedByUser: Boolean = false,
+    val userId: Int? = null
 )
 
 @Serializable
@@ -201,11 +203,17 @@ data class GetPersonsListResponse(
     val persons: List<Person>? = null
 )
 
+
+@Serializable
+data class UserRating(
+    val ratedUserId: Int,
+    val rating: Double
+)
+
 @Serializable
 data class RateRequest(
-    val ratedUserId: Int,
-    val rating: Double,
-    val eventId: Int? = null,
+    val eventId: Int,
+    val ratings: List<UserRating>
 )
 
 @Serializable

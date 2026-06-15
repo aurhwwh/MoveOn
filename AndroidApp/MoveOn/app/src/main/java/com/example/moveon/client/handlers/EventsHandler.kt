@@ -6,6 +6,7 @@ import com.example.moveon.client.jsonClasses.CreateEventWithRouteRequest
 import com.example.moveon.client.jsonClasses.EventListElement
 import com.example.moveon.client.jsonClasses.EventsMarker
 import com.example.moveon.client.jsonClasses.JoinApplicationRequest
+import com.example.moveon.client.jsonClasses.RateRequest
 import com.example.moveon.client.jsonClasses.ViewEventResponse
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
 
@@ -79,5 +80,13 @@ class EventsHandler(private val api : EventsApi) {
         }
 
         return response.events ?: emptyList()
+    }
+
+    suspend fun rateUser (request: RateRequest) {
+        val response = api.rateUser(request)
+
+        if (!response.success) {
+            throw Exception(response.errorMessage ?: "Unknown error")
+        }
     }
 }

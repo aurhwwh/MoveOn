@@ -1,7 +1,6 @@
 package com.example.moveon.ui.events
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -24,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -35,6 +35,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,6 +55,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.moveon.R
@@ -67,6 +69,7 @@ import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 import androidx.core.net.toUri
+import kotlin.time.Clock
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -341,6 +344,47 @@ fun EventDetails(
                         )
                     }
                 }
+
+
+                if(data.dateTime!! <= Clock.System.now()
+                    && data.isUserParticipant == true
+                    && !data.isEventRatedByUser
+                    && !viewModel.isRating
+                    ) {
+                    Button(
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
+                        onClick = { viewModel.openRating() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MGreen
+                        )
+                    ) {
+                        Text(
+                            fontSize = 25.sp,
+                            text = "Rate participants"
+                        )
+                    }
+                }
+
+                if (viewModel.showRating && !viewModel.isRating) {
+                    Dialog(onDismissRequest = { viewModel.closeRating() }) {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            tonalElevation = 8.dp
+                        ) {
+                            RatingSheet(
+                                participants = data.participants ?: emptyList(),
+                                currentUserId = data.userId!!,
+                                isRating = viewModel.isRating,
+                                onSubmit = {ratings ->
+                                    viewModel.rateEvent(
+                                        eventId = eventId,
+                                        ratings = ratings
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -367,6 +411,7 @@ fun Participant(participant: Person, onClick: () -> Unit) {
         }
     }
 }
+
 
 @Composable
 fun MessageItem(message: com.example.moveon.client.jsonClasses.EventMessage) {

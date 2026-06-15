@@ -50,12 +50,6 @@ fun MakeProfile(data: ProfileData) {
                         fontStyle = FontStyle.Italic,
                         fontSize = 18.sp,
                         modifier = Modifier.padding(2.dp))
-                    Text(text = data.city,
-                        fontSize = 18.sp,
-                        color = Color.Gray,
-                        fontStyle = FontStyle.Italic,
-                        modifier = Modifier.padding(2.dp)
-                    )
                     DrawStars(data.rating)
                 }
             }
