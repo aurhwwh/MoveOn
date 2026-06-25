@@ -82,14 +82,6 @@ fun EventDetails(
         viewModel.loadEvent(eventId)
     }
 
-    LaunchedEffect(viewModel.joinSuccess) {
-        if (viewModel.joinSuccess) {
-            navController.navigate("main") {
-                popUpTo("eventDetails/$eventId") { inclusive = true }
-            }
-        }
-    }
-
     when {
         viewModel.isLoadingEvent -> Text("Loading")
         viewModel.error != null -> Text("${viewModel.error}")
@@ -299,7 +291,8 @@ fun EventDetails(
                             )
                             IconButton(
                                 onClick = {
-                                    if (text.isNotBlank()) {
+                                    val cleanedText = text.trim()
+                                    if (cleanedText.isNotEmpty()) {
                                         viewModel.sendMessage(eventId, text)
                                         text = ""
                                     }

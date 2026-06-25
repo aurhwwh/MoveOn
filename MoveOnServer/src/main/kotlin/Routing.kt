@@ -365,7 +365,7 @@ fun Application.configureRouting() {
             val title = call.request.queryParameters["title"]
             val city = call.request.queryParameters["city"]
             val sportType = call.request.queryParameters["sportType"]
-            val datetime = call.request.queryParameters["datetime"]?.toLong()
+            val nextDays = call.request.queryParameters["nextDays"]?.toInt()
             val maxAmountOfPeople = call.request.queryParameters["maxAmountOfPeople"]?.toInt()
             val creatorRating = call.request.queryParameters["creatorRating"]?.toDouble()
             val page = call.request.queryParameters["page"]?.toInt()
@@ -393,6 +393,10 @@ fun Application.configureRouting() {
                     val params = mutableListOf<Any>()
 
                     conditions.add("e.time >= NOW()")
+                    if (nextDays != null) {
+                        conditions.add("e.time <= NOW() + (? * INTERVAL '1 day')")
+                        params.add(nextDays)
+                    }
 
                     if (title != null) {
                         conditions.add("e.title ILIKE ?")
@@ -406,10 +410,7 @@ fun Application.configureRouting() {
                         conditions.add("e.sport_type = ?")
                         params.add(sportType)
                     }
-                    /*if (datetime != null) {
-                        conditions.add("e.date = ?")
-                        params.add(Date.valueOf(.date))
-                    }*/
+
                     if (maxAmountOfPeople != null) {
                         conditions.add("e.max_amount_of_people <= ?")
                         params.add(maxAmountOfPeople)
@@ -420,13 +421,15 @@ fun Application.configureRouting() {
                     }
 
                     sqlBuilder.append(" ORDER BY e.time ASC")
+                    sqlBuilder.append(" LIMIT ? OFFSET ?")
+                    params.add(limit)
+                    params.add(page * limit)
 
                     val sql = sqlBuilder.toString()
                     conn.prepareStatement(sql).use { stmt ->
                         params.forEachIndexed { index, value ->
                             when (value) {
                                 is String -> stmt.setString(index + 1, value)
-                                is Date -> stmt.setDate(index + 1, value)
                                 is Int -> stmt.setInt(index + 1, value)
                             }
                         }

@@ -21,6 +21,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +55,8 @@ fun MainScreen(navController : NavController, cityViewModel: CityViewModel) {
             }
         }
 
+        var showFilters by remember { mutableStateOf(false) }
+
         Scaffold(
             topBar = { CityTopBar(cityViewModel) },
             bottomBar = { BottomBar(navController) },
@@ -72,8 +78,7 @@ fun MainScreen(navController : NavController, cityViewModel: CityViewModel) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable {})
+                        Row(verticalAlignment = Alignment.CenterVertically)
                         {
                             Text(
                                 text = "Events ",
@@ -81,12 +86,18 @@ fun MainScreen(navController : NavController, cityViewModel: CityViewModel) {
                                 fontFamily = FontFamily.SansSerif,
                                 fontSize = 28.sp,
                             )
-                            Icon(
-                                imageVector = Icons.Filled.FilterAlt,
-                                contentDescription = "City",
-                                tint = Color.Black,
-                                modifier = Modifier.size(30.dp)
-                            )
+                            IconButton(
+                                onClick = {
+                                    showFilters = true
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.FilterAlt,
+                                    contentDescription = "Filter",
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(30.dp)
+                                )
+                            }
                         }
 
                         Row(verticalAlignment = Alignment.CenterVertically,
@@ -134,6 +145,28 @@ fun MainScreen(navController : NavController, cityViewModel: CityViewModel) {
                         }
                     }
                 }
+            }
+
+            if (showFilters) {
+                FiltersBottomSheet(
+                    currentFilters = eventsViewModel.filters,
+                    onDismiss = {
+                        showFilters = false
+                    },
+                    onApply = { sport, maxPeople, rating, nextDays ->
+                        eventsViewModel.updateFilters(
+                            sportType = sport,
+                            maxAmountOfPeople = maxPeople,
+                            creatorRating = rating,
+                            nextDays = nextDays
+                        )
+                        showFilters = false
+                    },
+                    onClear = {
+                        eventsViewModel.clearFilters()
+                        showFilters = false
+                    }
+                )
             }
         }
     }

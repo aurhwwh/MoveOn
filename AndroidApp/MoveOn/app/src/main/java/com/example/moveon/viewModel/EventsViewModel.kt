@@ -59,12 +59,36 @@ class EventsViewModel : ViewModel() {
             title = null,
             city = "Saint-Petersburg",
             sportType = null,
-            dateTime = null,
+            nextDays = null,
             maxAmountOfPeople = null,
             creatorRating = null
         )
     )
         private set
+
+
+    fun updateFilters(
+        sportType : String?,
+        nextDays : Int?,
+        maxAmountOfPeople : Int?,
+        creatorRating : Double?
+    ) {
+        filters = filters.copy(
+            sportType = sportType,
+            nextDays = nextDays,
+            maxAmountOfPeople = maxAmountOfPeople,
+            creatorRating = creatorRating
+        )
+    }
+
+    fun clearFilters() {
+        filters = filters.copy(
+            sportType = null,
+            nextDays = null,
+            maxAmountOfPeople = null,
+            creatorRating = null
+        )
+    }
 
     @OptIn(ExperimentalTime::class)
     fun setCity(city: String) {
@@ -75,7 +99,7 @@ class EventsViewModel : ViewModel() {
     val eventsFlow = snapshotFlow { filters }.flatMapLatest { newfilters ->
         Pager(
             config = PagingConfig(pageSize = 20,
-                /* initialLoadSize = pageSize * 3 по дефолту (вроде),*/
+                initialLoadSize = 20,
                 enablePlaceholders = false),
             pagingSourceFactory = {EventsPagingSource(handler, newfilters)}
         ).flow

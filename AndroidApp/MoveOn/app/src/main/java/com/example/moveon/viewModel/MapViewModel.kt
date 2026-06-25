@@ -1,6 +1,5 @@
 package com.example.moveon.viewModel
 
-import android.R
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
