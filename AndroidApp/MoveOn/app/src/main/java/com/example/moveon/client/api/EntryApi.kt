@@ -6,6 +6,8 @@ import com.example.moveon.client.jsonClasses.RefreshRequest
 import com.example.moveon.client.jsonClasses.RefreshResponse
 import com.example.moveon.client.jsonClasses.RegisterRequest
 import com.example.moveon.client.jsonClasses.RegisterResponse
+import com.example.moveon.client.jsonClasses.StoreFcmTokenRequest
+import com.example.moveon.client.jsonClasses.StoreFcmTokenResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
@@ -30,11 +32,10 @@ class EntryApi (val client: HttpClient) {
         }.body()
     }
 
-    /*suspend fun refresh(request : RefreshRequest) : RefreshResponse {
-        return client.post("$baseUrl/refresh") {
+    suspend fun storeFcmToken(request : StoreFcmTokenRequest) : StoreFcmTokenResponse{
+        return client.post("$baseUrl/store_fcm_token") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
     }
-    */
 }

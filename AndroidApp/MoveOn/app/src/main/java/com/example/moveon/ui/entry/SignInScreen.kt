@@ -1,5 +1,6 @@
 package com.example.moveon.ui.entry
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -44,9 +45,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material3.Icon
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
+import com.example.moveon.client.jsonClasses.StoreFcmTokenRequest
+import com.google.firebase.messaging.FirebaseMessaging
+
 
 private fun isValidEmail(email: String): Boolean {
     val regex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
@@ -76,6 +81,7 @@ fun SignInScreen(navController: NavController) {
     var isPasswordError by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     fun validateAndLogin() {
         val emailValid = isValidEmail(email)
@@ -90,6 +96,18 @@ fun SignInScreen(navController: NavController) {
                 val response = Handlers.entryHandler.login(request)
                 if (response.success && !response.accessToken.isNullOrBlank() && !response.refreshToken.isNullOrBlank()) {
                     saveTokens(response.accessToken, response.refreshToken)
+
+                    val prefs = context.getSharedPreferences("fcm", Context.MODE_PRIVATE)
+                    val token = prefs.getString("token", null)
+                    if (!token.isNullOrEmpty()) {
+                        val fcmRequest = StoreFcmTokenRequest(token)
+                        scope.launch {
+                            Handlers.entryHandler.storeFcmToken(
+                                StoreFcmTokenRequest(token)
+                            )
+                        }
+
+                    }
                     navController.navigate("main") {
                         popUpTo(navController.graph.id) {
                             inclusive = true

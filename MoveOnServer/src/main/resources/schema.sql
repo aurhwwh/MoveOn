@@ -8,7 +8,8 @@ CREATE TABLE users (
                        gender VARCHAR(10) NOT NULL,
                        description TEXT,
                        photo_id INTEGER,
-                       refresh_token_hash VARCHAR(512) UNIQUE
+                       refresh_token_hash VARCHAR(512) UNIQUE,
+                       fcm_token TEXT UNIQUE
 );
 
 CREATE TABLE events (
