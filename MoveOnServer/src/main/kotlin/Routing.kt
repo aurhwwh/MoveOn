@@ -27,15 +27,15 @@ import kotlin.time.toKotlinInstant
 @OptIn(ExperimentalTime::class)
 fun Application.configureRouting() {
     routing {
-        get("/"){
+        get("/") {
             call.respondText("Server running")
         }
-        get("/route_options"){
+        get("/route_options") {
             val lat = call.request.queryParameters["lat"]?.toDoubleOrNull()
             val lon = call.request.queryParameters["lon"]?.toDoubleOrNull()
             val radius = call.request.queryParameters["radius"]?.toIntOrNull()
             if (lat == null || lon == null || radius == null) {
-                call.respond(RouteOptionsResponse(false,"Incorrect request format"))
+                call.respond(RouteOptionsResponse(false, "Incorrect request format"))
                 return@get
             }
             val hopper = GraphHopperProvider.hopper
@@ -47,7 +47,7 @@ fun Application.configureRouting() {
                 com.graphhopper.routing.util.EdgeFilter.ALL_EDGES
             )
             if (snap == null || !snap.isValid) {
-                call.respond(RouteOptionsResponse(false,"Unable to find nearest point"))
+                call.respond(RouteOptionsResponse(false, "Unable to find nearest point"))
                 return@get
             }
             val node = snap.closestNode
@@ -59,14 +59,11 @@ fun Application.configureRouting() {
             val count = 6
             for (i in 0 until count) {
                 val angle = 2 * Math.PI * i / count
-
                 val dx = radius * cos(angle)
                 val dy = radius * sin(angle)
-
                 val newLat = centralLat + (dy / earthRadius) * (180 / Math.PI)
                 val newLon = centralLon + (dx / earthRadius) * (180 / Math.PI) /
                         cos(centralLat * Math.PI / 180)
-
                 val snap = hopper.locationIndex.findClosest(
                     newLat,
                     newLon,
@@ -88,18 +85,14 @@ fun Application.configureRouting() {
                     point.lat,
                     point.lon
                 ).setProfile("foot")
-
                 val response = hopper.route(req)
-
                 if (response.hasErrors()) {
                     continue
                 }
                 responsePoints.add(point)
                 val path = response.best
                 val pathPoints = mutableListOf<Point>()
-
                 val pts = path.points
-
                 for (i in 0 until pts.size()) {
                     pathPoints.add(
                         Point(
@@ -124,7 +117,6 @@ fun Application.configureRouting() {
                     routes = responsePaths
                 )
             )
-
         }
         post("/refresh") {
             val request = try {
@@ -134,8 +126,8 @@ fun Application.configureRouting() {
                 return@post
             }
             val userId = getUserIdFromJWT(request.oldRefreshToken)
-            if(userId == null || !isRefreshToken(request.oldRefreshToken)) {
-                call.respond(HttpStatusCode.Unauthorized, RefreshResponse(false,"Invalid Refresh Token") )
+            if (userId == null || !isRefreshToken(request.oldRefreshToken)) {
+                call.respond(HttpStatusCode.Unauthorized, RefreshResponse(false, "Invalid Refresh Token"))
                 return@post
             }
             try {
@@ -161,7 +153,6 @@ fun Application.configureRouting() {
                 val newHash = hashRefreshToken(newRefreshToken)
                 Database.transaction { conn ->
                     val sql = "UPDATE users SET refresh_token_hash = ? WHERE id = ?"
-
                     conn.prepareStatement(sql).use { stmt ->
                         stmt.setString(1, newHash)
                         stmt.setInt(2, userId)
@@ -172,12 +163,9 @@ fun Application.configureRouting() {
                     HttpStatusCode.OK,
                     RefreshResponse(true, null, newRefreshToken, newAccessToken)
                 )
-
-
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, RefreshResponse(false, "Database error: ${e.message}"))
             }
-
         }
         post("/register") {
             val request = try {
@@ -186,7 +174,6 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.BadRequest, RegisterResponse(false, "Invalid JSON: ${e.message}"))
                 return@post
             }
-
             try {
                 val userId = Database.transaction { conn ->
                     val checkSql = "SELECT id FROM users WHERE email = ?"
@@ -195,9 +182,7 @@ fun Application.configureRouting() {
                         val rs = stmt.executeQuery()
                         if (rs.next()) return@transaction null
                     }
-
                     val hash = Security.hashPassword(request.password)
-
                     val insertSql = """
                         INSERT INTO users (user_name, user_surname, date_of_birth, email, password_hash, gender)
                         VALUES (?, ?, ?, ?, ?, ?) RETURNING id
@@ -214,7 +199,6 @@ fun Application.configureRouting() {
                         rs.getInt(1)
                     }
                 }
-
                 if (userId != null) {
                     call.respond(HttpStatusCode.OK, RegisterResponse(true))
                 } else {
@@ -224,7 +208,6 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.InternalServerError, RegisterResponse(false, "Database error: ${e.message}"))
             }
         }
-
         authenticate("auth-jwt") {
             post("/edit_profile") {
                 val request = try {
@@ -236,10 +219,8 @@ fun Application.configureRouting() {
                     )
                     return@post
                 }
-
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal!!.payload.getClaim("userId").asInt()
-
                 try {
                     Database.transaction { conn ->
                         val sql = """
@@ -247,29 +228,33 @@ fun Application.configureRouting() {
                                 user_name = ?,
                                 user_surname = ?,
                                 date_of_birth = ?,
-                                description = ?
+                                description = ?,
+                                photo_id = ?
                             WHERE id = ?
                         """.trimIndent()
-
                         conn.prepareStatement(sql).use { stmt ->
                             stmt.setString(1, request.userName)
                             stmt.setString(2, request.userSurname)
                             stmt.setObject(3, request.dateOfBirth.toJavaLocalDate())
                             stmt.setString(4, request.description)
-                            stmt.setInt(5, userId)
-
+                            if (request.photoId != null) {
+                                stmt.setInt(5, request.photoId)
+                            } else {
+                                stmt.setNull(5, java.sql.Types.INTEGER)
+                            }
+                            stmt.setInt(6, userId)
                             stmt.executeUpdate()
                         }
                     }
                     call.respond(HttpStatusCode.OK, EditProfileResponse(true))
-
                 } catch (e: Exception) {
-                    call.respond(HttpStatusCode.InternalServerError,
-                        RegisterResponse(false, "Database error: ${e.message}"))
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        EditProfileResponse(false, "Database error: ${e.message}")
+                    )
                 }
             }
         }
-
         post("/login") {
             val request = try {
                 call.receive<LoginRequest>()
@@ -277,7 +262,6 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.BadRequest, LoginResponse(false, "Invalid JSON: ${e.message}"))
                 return@post
             }
-
             try {
                 val user = Database.useConnection { conn ->
                     val sql = "SELECT id, password_hash FROM users WHERE email = ?"
@@ -289,20 +273,25 @@ fun Application.configureRouting() {
                         } else null
                     }
                 }
-
                 if (user != null && Security.verifyPassword(request.password, user.second)) {
                     val refreshToken = generateRefreshToken(user.first)
                     val refreshHash = hashRefreshToken(refreshToken)
                     Database.transaction { conn ->
                         val sql = "UPDATE users SET refresh_token_hash = ? WHERE id = ?"
-
                         conn.prepareStatement(sql).use { stmt ->
                             stmt.setString(1, refreshHash)
                             stmt.setInt(2, user.first)
                             stmt.executeUpdate()
                         }
                     }
-                    call.respond(HttpStatusCode.OK, LoginResponse(true, accessToken = generateAccessToken(user.first), refreshToken = refreshToken))
+                    call.respond(
+                        HttpStatusCode.OK,
+                        LoginResponse(
+                            true,
+                            accessToken = generateAccessToken(user.first),
+                            refreshToken = refreshToken
+                        )
+                    )
                 } else {
                     call.respond(HttpStatusCode.Unauthorized, LoginResponse(false, "Invalid credentials"))
                 }
@@ -310,14 +299,12 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.InternalServerError, LoginResponse(false, "Database error: ${e.message}"))
             }
         }
-
         get("/view_user_profile") {
             val userId = call.request.queryParameters["userId"]?.toIntOrNull()
             if (userId == null) {
                 call.respond(HttpStatusCode.BadRequest, ViewProfileResponse(false, "userId is required"))
                 return@get
             }
-
             try {
                 val profile = Database.useConnection { conn ->
                     val sql = """
@@ -330,7 +317,6 @@ fun Application.configureRouting() {
                         WHERE u.id = ?
                         GROUP BY u.id
                     """.trimIndent()
-
                     conn.prepareStatement(sql).use { stmt ->
                         stmt.setInt(1, userId)
                         val rs = stmt.executeQuery()
@@ -348,7 +334,6 @@ fun Application.configureRouting() {
                         } else null
                     }
                 }
-
                 if (profile != null) {
                     call.respond(HttpStatusCode.OK, profile)
                 } else {
@@ -358,9 +343,6 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.InternalServerError, ViewProfileResponse(false, "Database error: ${e.message}"))
             }
         }
-
-
-
         get("/view_filtered_events_list") {
             val title = call.request.queryParameters["title"]
             val city = call.request.queryParameters["city"]
@@ -370,7 +352,7 @@ fun Application.configureRouting() {
             val creatorRating = call.request.queryParameters["creatorRating"]?.toDouble()
             val page = call.request.queryParameters["page"]?.toInt()
             val limit = call.request.queryParameters["limit"]?.toInt()
-            if (page==null || limit == null){
+            if (page == null || limit == null) {
                 call.respond(
                     HttpStatusCode.BadRequest,
                     ViewFilteredEventsListResponse(false,
@@ -378,53 +360,47 @@ fun Application.configureRouting() {
                 )
                 return@get
             }
-
             try {
                 val events = Database.useConnection { conn ->
                     val sqlBuilder = StringBuilder("""
                         SELECT e.id, e.title, e.description, e.city, e.sport_type, e.time, e.max_amount_of_people,  
                                (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount,
-                               COALESCE((SELECT AVG(rating) FROM ratings WHERE to_user_id = e.creator_id), 0.0) as creator_rating
+                               COALESCE((SELECT AVG(rating) FROM ratings WHERE to_user_id = e.creator_id), 0.0) as creator_rating,
+                               u.photo_id
                         FROM events e
+                        JOIN users u ON e.creator_id = u.id
                         WHERE 1=1 
                     """.trimIndent())
-
                     val conditions = mutableListOf<String>()
                     val params = mutableListOf<Any>()
-
                     conditions.add("e.time >= NOW()")
                     if (nextDays != null) {
                         conditions.add("e.time <= NOW() + (? * INTERVAL '1 day')")
                         params.add(nextDays)
                     }
-
                     if (title != null) {
                         conditions.add("e.title ILIKE ?")
                         params.add("%${title}%")
                     }
-                    if (city!= null) {
+                    if (city != null) {
                         conditions.add("e.city ILIKE ?")
                         params.add("%${city}%")
                     }
-                    if (sportType!= null) {
+                    if (sportType != null) {
                         conditions.add("e.sport_type = ?")
                         params.add(sportType)
                     }
-
                     if (maxAmountOfPeople != null) {
                         conditions.add("e.max_amount_of_people <= ?")
                         params.add(maxAmountOfPeople)
                     }
-
                     if (conditions.isNotEmpty()) {
                         sqlBuilder.append(" AND ").append(conditions.joinToString(" AND "))
                     }
-
                     sqlBuilder.append(" ORDER BY e.time ASC")
                     sqlBuilder.append(" LIMIT ? OFFSET ?")
                     params.add(limit)
                     params.add(page * limit)
-
                     val sql = sqlBuilder.toString()
                     conn.prepareStatement(sql).use { stmt ->
                         params.forEachIndexed { index, value ->
@@ -438,19 +414,17 @@ fun Application.configureRouting() {
                         while (rs.next()) {
                             val creatorRating1 = rs.getDouble("creator_rating")
                             if (creatorRating != null && creatorRating > 0.0 && creatorRating1 < creatorRating) continue
-
                             result.add(
                                 EventListElement(
                                     eventId = rs.getInt("id"),
                                     title = rs.getString("title"),
                                     city = rs.getString("city"),
                                     sportType = rs.getString("sport_type"),
-                                    //date = rs.getDate("date").toString(),
                                     dateTime = rs.getTimestamp("time")?.toInstant()?.toKotlinInstant(),
                                     maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                     currentAmountOfPeople = rs.getInt("current_amount"),
                                     creatorRating = creatorRating1,
-                                    photoId = 1, //todo: add params to db
+                                    photoId = rs.getInt("photo_id").takeIf { !rs.wasNull() } ?: 0,
                                     description = rs.getString("description") ?: ""
                                 )
                             )
@@ -458,26 +432,21 @@ fun Application.configureRouting() {
                         result
                     }
                 }
-
                 call.respond(HttpStatusCode.OK, ViewFilteredEventsListResponse(true, events = events))
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, ViewFilteredEventsListResponse(false, "Database error: ${e.message}"))
             }
         }
-
-
-
         get("/get_persons_list") {
             val eventId = call.request.queryParameters["eventId"]?.toIntOrNull()
             if (eventId == null) {
                 call.respond(HttpStatusCode.BadRequest, GetPersonsListResponse(false, "eventId is required"))
                 return@get
             }
-
             try {
                 val persons = Database.useConnection { conn ->
                     val sql = """
-                        SELECT u.id, u.user_name, u.user_surname
+                        SELECT u.id, u.user_name, u.user_surname, u.photo_id
                         FROM users u
                         JOIN event_participants ep ON u.id = ep.user_id
                         WHERE ep.event_id = ? AND ep.status = 'accepted'
@@ -491,20 +460,19 @@ fun Application.configureRouting() {
                                 Person(
                                     id = rs.getInt("id"),
                                     name = rs.getString("user_name"),
-                                    surname = rs.getString("user_surname")
+                                    surname = rs.getString("user_surname"),
+                                    photoId = rs.getInt("photo_id").takeIf { !rs.wasNull() }
                                 )
                             )
                         }
                         list
                     }
                 }
-
                 call.respond(HttpStatusCode.OK, GetPersonsListResponse(true, persons = persons))
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, GetPersonsListResponse(false, "Database error: ${e.message}"))
             }
         }
-
         authenticate("auth-jwt") {
             get("/view_event") {
                 val principal = call.principal<JWTPrincipal>()
@@ -514,7 +482,6 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.BadRequest, ViewEventResponse(false, "eventId is required"))
                     return@get
                 }
-
                 try {
                     val eventData = Database.useConnection { conn ->
                         val sql = """
@@ -537,14 +504,14 @@ fun Application.configureRouting() {
                                     }
                                 }
                                 val participants = conn.prepareStatement(
-                                    """SELECT u.id, u.user_name AS name, u.user_surname AS surname,
+                                    """SELECT u.id, u.user_name AS name, u.user_surname AS surname, u.photo_id,
                                     AVG(r.rating) AS rating,
                                     CASE WHEN u.id = ? THEN 1 ELSE 0 END AS is_creator
                                     FROM users u
                                     JOIN event_participants ep ON u.id = ep.user_id
                                     LEFT JOIN ratings r ON r.to_user_id = u.id
                                     WHERE ep.event_id = ? AND ep.status = 'accepted'
-                                    GROUP BY u.id, u.user_name, u.user_surname
+                                    GROUP BY u.id, u.user_name, u.user_surname, u.photo_id
                                     ORDER BY is_creator DESC, u.id
                                     """
                                 ).use { pstmt ->
@@ -553,7 +520,6 @@ fun Application.configureRouting() {
                                     val rs = pstmt.executeQuery()
                                     val list = mutableListOf<Person>()
                                     var isUserParticipant = false
-
                                     while (rs.next()) {
                                         val participantId = rs.getInt("id")
                                         if (participantId == userId) {
@@ -564,14 +530,13 @@ fun Application.configureRouting() {
                                                 id = rs.getInt("id"),
                                                 name = rs.getString("name"),
                                                 surname = rs.getString("surname"),
-                                                rating = rs.getDouble("rating")
+                                                rating = rs.getDouble("rating"),
+                                                photoId = rs.getInt("photo_id").takeIf { !rs.wasNull() }
                                             )
                                         )
                                     }
                                     Pair(list, isUserParticipant)
                                 }
-
-
                                 ViewEventResponse(
                                     success = true,
                                     creatorId = rs.getInt("creator_id"),
@@ -582,7 +547,7 @@ fun Application.configureRouting() {
                                     currentAmountOfPeople = rs.getInt("current_amount"),
                                     maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                     sportType = rs.getString("sport_type"),
-                                    isUserCreator = (userId==rs.getInt("creator_id")),
+                                    isUserCreator = (userId == rs.getInt("creator_id")),
                                     isUserParticipant = participants.second,
                                     lat = rs.getDouble("lat"),
                                     lon = rs.getDouble("lon"),
@@ -594,7 +559,6 @@ fun Application.configureRouting() {
                             } else null
                         }
                     }
-
                     if (eventData != null) {
                         call.respond(HttpStatusCode.OK, eventData)
                     } else {
@@ -604,7 +568,6 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, ViewEventResponse(false, "Database error: ${e.message}"))
                 }
             }
-
             get("/view_my_profile") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal!!.payload.getClaim("userId").asInt()
@@ -612,7 +575,6 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.BadRequest, ViewProfileResponse(false, "userId is required"))
                     return@get
                 }
-
                 try {
                     val profile = Database.useConnection { conn ->
                         val sql = """
@@ -625,7 +587,6 @@ fun Application.configureRouting() {
                         WHERE u.id = ?
                         GROUP BY u.id
                     """.trimIndent()
-
                         conn.prepareStatement(sql).use { stmt ->
                             stmt.setInt(1, userId)
                             val rs = stmt.executeQuery()
@@ -643,7 +604,6 @@ fun Application.configureRouting() {
                             } else null
                         }
                     }
-
                     if (profile != null) {
                         call.respond(HttpStatusCode.OK, profile)
                     } else {
@@ -653,8 +613,6 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, ViewProfileResponse(false, "Database error: ${e.message}"))
                 }
             }
-
-
             post("/create_event") {
                 val request = try {
                     call.receive<CreateEventRequest>()
@@ -666,7 +624,6 @@ fun Application.configureRouting() {
                 val creatorId = principal!!.payload.getClaim("userId").asInt()
                 try {
                     val eventId = Database.transaction { conn ->
-
                         val sqlEvent = """
                             INSERT INTO events (
                                 title,
@@ -683,7 +640,6 @@ fun Application.configureRouting() {
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             RETURNING id
                         """.trimIndent()
-
                         val id = conn.prepareStatement(sqlEvent).use { stmt ->
                             stmt.setString(1, request.title)
                             stmt.setString(2, request.description)
@@ -695,26 +651,21 @@ fun Application.configureRouting() {
                             stmt.setInt(8, request.maxAmountOfPeople)
                             stmt.setString(9, request.sportType)
                             stmt.setInt(10, creatorId)
-
                             val rs = stmt.executeQuery()
                             rs.next()
                             rs.getInt(1)
                         }
-
                         val sqlParticipant = """
                             INSERT INTO event_participants (event_id, user_id, status)
                             VALUES (?, ?, 'accepted')
                         """.trimIndent()
-
                         conn.prepareStatement(sqlParticipant).use { stmt ->
                             stmt.setInt(1, id)
                             stmt.setInt(2, creatorId)
                             stmt.executeUpdate()
                         }
-
                         id
                     }
-
                     call.respond(HttpStatusCode.OK, CreateEventResponse(true, eventId = eventId))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, CreateEventResponse(false, "Database error: ${e.message}"))
@@ -731,7 +682,6 @@ fun Application.configureRouting() {
                 val creatorId = principal!!.payload.getClaim("userId").asInt()
                 try {
                     val eventId = Database.transaction { conn ->
-
                         val sqlEvent = """
                             INSERT INTO events (
                                 title,
@@ -749,7 +699,6 @@ fun Application.configureRouting() {
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             RETURNING id
                         """.trimIndent()
-
                         val id = conn.prepareStatement(sqlEvent).use { stmt ->
                             stmt.setString(1, request.title)
                             stmt.setString(2, request.description)
@@ -766,33 +715,26 @@ fun Application.configureRouting() {
                                 value = Json.encodeToString(request.route)
                             }
                             stmt.setObject(11, json)
-
                             val rs = stmt.executeQuery()
                             rs.next()
                             rs.getInt(1)
                         }
-
                         val sqlParticipant = """
                             INSERT INTO event_participants (event_id, user_id, status)
                             VALUES (?, ?, 'accepted')
                         """.trimIndent()
-
                         conn.prepareStatement(sqlParticipant).use { stmt ->
                             stmt.setInt(1, id)
                             stmt.setInt(2, creatorId)
                             stmt.executeUpdate()
                         }
-
                         id
                     }
-
                     call.respond(HttpStatusCode.OK, CreateEventResponse(true, eventId = eventId))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, CreateEventResponse(false, "Database error: ${e.message}"))
                 }
             }
-
-
             post("/join_application") {
                 val request = try {
                     call.receive<JoinApplicationRequest>()
@@ -811,15 +753,13 @@ fun Application.configureRouting() {
                             val rs = stmt.executeQuery()
                             if (rs.next()) return@transaction false
                         }
-                        //temporary for mvp
-                        //val insertSql = "INSERT INTO event_participants (event_id, user_id, status) VALUES (?, ?, 'pending')"
-                        val insertSql = "INSERT INTO event_participants (event_id, user_id, status) VALUES (?, ?, 'accepted')"
+                        val insertSql =
+                            "INSERT INTO event_participants (event_id, user_id, status) VALUES (?, ?, 'accepted')"
                         conn.prepareStatement(insertSql).use { stmt ->
                             stmt.setInt(1, request.eventId)
                             stmt.setInt(2, userId)
                             stmt.executeUpdate()
                         }
-
                         val creatorSql = "SELECT creator_id FROM events WHERE id = ?"
                         conn.prepareStatement(creatorSql).use { stmt ->
                             stmt.setInt(1, request.eventId)
@@ -840,7 +780,6 @@ fun Application.configureRouting() {
                         }
                         true
                     }
-
                     if (success) {
                         call.respond(HttpStatusCode.OK, JoinApplicationResponse(true))
                     } else {
@@ -850,15 +789,12 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, JoinApplicationResponse(false, "Database error: ${e.message}"))
                 }
             }
-
-            // Уведомления
             get("/open_notifications") {
                 val userId = call.request.queryParameters["userId"]?.toIntOrNull()
                 if (userId == null) {
                     call.respond(HttpStatusCode.BadRequest, OpenNotificationsResponse(false, "userId is required"))
                     return@get
                 }
-
                 try {
                     val notifications = Database.useConnection { conn ->
                         val sql = """
@@ -882,7 +818,6 @@ fun Application.configureRouting() {
                             list
                         }
                     }
-
                     call.respond(HttpStatusCode.OK, OpenNotificationsResponse(true, notifications = notifications))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, OpenNotificationsResponse(false, "Database error: ${e.message}"))
@@ -896,7 +831,6 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.BadRequest, OpenApplicationListResponse(false, "userId is required"))
                     return@get
                 }
-
                 try {
                     val applications = Database.useConnection { conn ->
                         val sqlBuilder = StringBuilder("""
@@ -906,9 +840,7 @@ fun Application.configureRouting() {
                         JOIN event_participants ep ON e.id = ep.event_id
                         WHERE ep.user_id = ? AND ep.status = 'pending'
                     """.trimIndent())
-
                         val params = mutableListOf<Any>(userId)
-
                         if (hasEventPassed != null) {
                             if (hasEventPassed) {
                                 sqlBuilder.append(" AND e.time < CURRENT_TIMESTAMP")
@@ -916,9 +848,7 @@ fun Application.configureRouting() {
                                 sqlBuilder.append(" AND e.time >= CURRENT_TIMESTAMP")
                             }
                         }
-
                         sqlBuilder.append(" ORDER BY e.time ASC")
-
                         conn.prepareStatement(sqlBuilder.toString()).use { stmt ->
                             params.forEachIndexed { index, value ->
                                 stmt.setInt(index + 1, value as Int)
@@ -939,14 +869,11 @@ fun Application.configureRouting() {
                             list
                         }
                     }
-
                     call.respond(HttpStatusCode.OK, OpenApplicationListResponse(true, eventApplications = applications))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, OpenApplicationListResponse(false, "Database error: ${e.message}"))
                 }
             }
-
-
             post("/rate") {
                 val request = try {
                     call.receive<RateRequest>()
@@ -956,7 +883,6 @@ fun Application.configureRouting() {
                 }
                 val principal = call.principal<JWTPrincipal>()
                 val userWhoRatesId = principal!!.payload.getClaim("userId").asInt()
-
                 try {
                     Database.transaction { conn ->
                         val sql = "INSERT INTO ratings (from_user_id, to_user_id, event_id, rating) VALUES (?, ?, ?, ?)"
@@ -966,34 +892,33 @@ fun Application.configureRouting() {
                                 stmt.setInt(2, rating.ratedUserId)
                                 stmt.setInt(3, request.eventId)
                                 stmt.setDouble(4, rating.rating)
-
                                 stmt.addBatch()
                             }
                             stmt.executeBatch()
                         }
                     }
-
                     call.respond(HttpStatusCode.OK, RateResponse(true))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, RateResponse(false, "Database error: ${e.message}"))
                 }
             }
-
-
             post("/accept_or_decline_event_application") {
                 val request = try {
                     call.receive<AcceptOrDeclineEventApplicationRequest>()
                 } catch (e: Exception) {
-                    call.respond(HttpStatusCode.BadRequest, AcceptOrDeclineEventApplicationResponse(false, "Invalid JSON: ${e.message}"))
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        AcceptOrDeclineEventApplicationResponse(false, "Invalid JSON: ${e.message}")
+                    )
                     return@post
                 }
                 val principal = call.principal<JWTPrincipal>()
-                val creatorId = principal!!.payload.getClaim("userId").asInt()//todo add check for creating this event
-
+                val creatorId = principal!!.payload.getClaim("userId").asInt()
                 try {
                     val success = Database.transaction { conn ->
                         val newStatus = if (request.isAccepted) "accepted" else "declined"
-                        val updateSql = "UPDATE event_participants SET status = ? WHERE event_id = ? AND user_id = ?"
+                        val updateSql =
+                            "UPDATE event_participants SET status = ? WHERE event_id = ? AND user_id = ?"
                         val updatedRows = conn.prepareStatement(updateSql).use { stmt ->
                             stmt.setString(1, newStatus)
                             stmt.setInt(2, request.eventId)
@@ -1001,7 +926,6 @@ fun Application.configureRouting() {
                             stmt.executeUpdate()
                         }
                         if (updatedRows == 0) return@transaction false
-
                         val notifType = if (request.isAccepted) "application_accepted" else "application_declined"
                         val notifSql = """
                         INSERT INTO notifications (user_id, type, event_id, other_user_id)
@@ -1016,18 +940,21 @@ fun Application.configureRouting() {
                         }
                         true
                     }
-
                     if (success) {
                         call.respond(HttpStatusCode.OK, AcceptOrDeclineEventApplicationResponse(true))
                     } else {
-                        call.respond(HttpStatusCode.NotFound, AcceptOrDeclineEventApplicationResponse(false, "Application not found"))
+                        call.respond(
+                            HttpStatusCode.NotFound,
+                            AcceptOrDeclineEventApplicationResponse(false, "Application not found")
+                        )
                     }
                 } catch (e: Exception) {
-                    call.respond(HttpStatusCode.InternalServerError, AcceptOrDeclineEventApplicationResponse(false, "Database error: ${e.message}"))
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        AcceptOrDeclineEventApplicationResponse(false, "Database error: ${e.message}")
+                    )
                 }
             }
-
-
             get("/view_my_events_list") {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal!!.payload.getClaim("userId").asInt()
@@ -1035,41 +962,35 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.BadRequest, ViewMyEventsListResponse(false, "userId is required"))
                     return@get
                 }
-
                 val type = call.request.queryParameters["type"]
-
                 try {
                     val events = Database.useConnection { conn ->
                         val sqlBuilder = StringBuilder("""
                         SELECT e.id, e.title, e.description, e.city, e.sport_type, e.time, e.max_amount_of_people,  
                                (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'accepted') as current_amount,
                                COALESCE((SELECT AVG(rating) FROM ratings WHERE to_user_id = e.creator_id), 0.0) as creator_rating,
-                               (e.creator_id = ?) as is_creator
+                               (e.creator_id = ?) as is_creator,
+                               u.photo_id
                         FROM events e
+                        JOIN users u ON e.creator_id = u.id
                         WHERE 1=1
                         AND EXISTS (
                             SELECT 1 FROM event_participants ep WHERE ep.event_id = e.id AND ep.user_id = ?
                         )
                     """.trimIndent())
-
                         when (type) {
                             "upcoming" -> sqlBuilder.append(" AND e.time > CURRENT_TIMESTAMP")
                             "past" -> sqlBuilder.append(" AND e.time <= CURRENT_TIMESTAMP")
                         }
-
                         sqlBuilder.append(" ORDER BY e.time ASC")
-
                         val sql = sqlBuilder.toString()
-
                         conn.prepareStatement(sql).use { stmt ->
                             stmt.setInt(1, userId)
                             stmt.setInt(2, userId)
-
                             val rs = stmt.executeQuery()
                             val result = mutableListOf<EventListElement>()
                             while (rs.next()) {
                                 val creatorRating1 = rs.getDouble("creator_rating")
-
                                 result.add(
                                     EventListElement(
                                         eventId = rs.getInt("id"),
@@ -1080,7 +1001,7 @@ fun Application.configureRouting() {
                                         maxAmountOfPeople = rs.getInt("max_amount_of_people"),
                                         currentAmountOfPeople = rs.getInt("current_amount"),
                                         creatorRating = creatorRating1,
-                                        photoId = 1, //todo: add params to db
+                                        photoId = rs.getInt("photo_id").takeIf { !rs.wasNull() } ?: 0,
                                         description = rs.getString("description") ?: "",
                                         isCreator = rs.getBoolean("is_creator")
                                     )
@@ -1089,20 +1010,16 @@ fun Application.configureRouting() {
                             result
                         }
                     }
-
                     call.respond(HttpStatusCode.OK, ViewMyEventsListResponse(true, events = events))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, ViewMyEventsListResponse(false, "Database error: ${e.message}"))
                 }
             }
-
-
             get("/view_events_markers") {
                 val minLat = call.request.queryParameters["minLat"]?.toDoubleOrNull()
                 val maxLat = call.request.queryParameters["maxLat"]?.toDoubleOrNull()
                 val minLon = call.request.queryParameters["minLon"]?.toDoubleOrNull()
                 val maxLon = call.request.queryParameters["maxLon"]?.toDoubleOrNull()
-
                 if (
                     minLat == null || maxLat == null || minLon == null || maxLon == null
                 ) {
@@ -1115,7 +1032,6 @@ fun Application.configureRouting() {
                     )
                     return@get
                 }
-
                 try {
                     val events = Database.useConnection { conn ->
                         val sql = """ 
@@ -1134,18 +1050,13 @@ fun Application.configureRouting() {
                               AND e.lon BETWEEN ? AND ?
                             GROUP BY e.id
                             """.trimIndent()
-
                         conn.prepareStatement(sql).use { stmt ->
-
                             stmt.setDouble(1, minLat)
                             stmt.setDouble(2, maxLat)
                             stmt.setDouble(3, minLon)
                             stmt.setDouble(4, maxLon)
-
                             val rs = stmt.executeQuery()
-
                             val result = mutableListOf<EventsMarker>()
-
                             while (rs.next()) {
                                 result.add(
                                     EventsMarker(
@@ -1160,11 +1071,9 @@ fun Application.configureRouting() {
                                     )
                                 )
                             }
-
                             result
                         }
                     }
-
                     call.respond(
                         HttpStatusCode.OK,
                         ViewEventsMarkersResponse(
@@ -1182,8 +1091,6 @@ fun Application.configureRouting() {
                     )
                 }
             }
-
-            // ---------- Чат (форум) событий ----------
             post("/send_message") {
                 val request = try {
                     call.receive<SendMessageRequest>()
@@ -1204,7 +1111,6 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, SendMessageResponse(success = false, error = "Database error: ${e.message}"))
                 }
             }
-
             get("/messages/{eventId}") {
                 val eventId = call.parameters["eventId"]?.toIntOrNull()
                 if (eventId == null) {

@@ -76,7 +76,8 @@ class ProfileViewModel : ViewModel() {
         name: String,
         surname: String,
         birth: LocalDate,
-        description: String
+        description: String,
+        photoId: Int? = null
     ) {
         viewModelScope.launch {
             isEditing = true
@@ -88,7 +89,8 @@ class ProfileViewModel : ViewModel() {
                     userName = name,
                     userSurname = surname,
                     dateOfBirth = birth,
-                    description = description
+                    description = description,
+                    photoId = photoId
                 )
 
                 handler.editProfile(request)
@@ -97,7 +99,8 @@ class ProfileViewModel : ViewModel() {
                     name = name,
                     surname = surname,
                     birth = birth,
-                    description = description
+                    description = description,
+                    photoId = photoId
                 )
 
                 editSuccess = true

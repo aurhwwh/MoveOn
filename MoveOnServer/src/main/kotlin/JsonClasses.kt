@@ -282,7 +282,8 @@ data class EditProfileRequest(
     val userName: String,
     val userSurname: String,
     val dateOfBirth: LocalDate,
-    val description: String?
+    val description: String?,
+    val photoId: Int? = null
 )
 
 @Serializable
