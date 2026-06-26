@@ -760,25 +760,43 @@ fun Application.configureRouting() {
                             stmt.setInt(2, userId)
                             stmt.executeUpdate()
                         }
-                        val creatorSql = "SELECT creator_id FROM events WHERE id = ?"
-                        conn.prepareStatement(creatorSql).use { stmt ->
-                            stmt.setInt(1, request.eventId)
-                            val rs = stmt.executeQuery()
-                            if (rs.next()) {
-                                val creatorId = rs.getInt("creator_id")
-                                val notifSql = """
-                                INSERT INTO notifications (user_id, type, event_id, other_user_id)
-                                VALUES (?, 'join_request', ?, ?)
-                            """.trimIndent()
-                                conn.prepareStatement(notifSql).use { nstmt ->
-                                    nstmt.setInt(1, creatorId)
-                                    nstmt.setInt(2, request.eventId)
-                                    nstmt.setInt(3, userId)
-                                    nstmt.executeUpdate()
-                                }
-                            }
-                        }
                         true
+                    }
+                    val info = Database.useConnection { conn ->
+
+                        conn.prepareStatement(
+                            """
+                                SELECT 
+                                    u2.fcm_token AS creator_token,
+                                    u1.user_name AS applicant_name,
+                                    e.title AS event_title
+                                FROM events e
+                                JOIN users u2 ON u2.id = e.creator_id
+                                JOIN users u1 ON u1.id = ?
+                                WHERE e.id = ?
+                                """
+                        ).use { stmt ->
+
+                            stmt.setInt(1, userId)
+                            stmt.setInt(2, request.eventId)
+
+                            val rs = stmt.executeQuery()
+
+                            if (rs.next()) {
+                                JoinInfo(
+                                    creatorToken = rs.getString("creator_token"),
+                                    applicantName = rs.getString("applicant_name"),
+                                    eventTitle = rs.getString("event_title")
+                                )
+                            } else null
+                        }
+                    }
+                    if (success && info?.creatorToken != null) {
+                        sendPushNotification(
+                            deviceToken = info.creatorToken,
+                            title = "Новая заявка",
+                            body = "${info.applicantName} участвует в событии ${info.eventTitle}"
+                        )
                     }
                     if (success) {
                         call.respond(HttpStatusCode.OK, JoinApplicationResponse(true))
@@ -897,6 +915,39 @@ fun Application.configureRouting() {
                             stmt.executeBatch()
                         }
                     }
+                    val name = Database.useConnection { conn ->
+                        conn.prepareStatement(
+                            "SELECT user_name FROM users WHERE id = ?"
+                        ).use { stmt ->
+                            stmt.setInt(1, userWhoRatesId)
+
+                            val rs = stmt.executeQuery()
+                            if (rs.next()) rs.getString("user_name") else "Кто-то"
+                        }
+                    }
+
+                    request.ratings.forEach { rating ->
+
+                        val token = Database.useConnection { conn ->
+                            conn.prepareStatement(
+                                "SELECT fcm_token FROM users WHERE id = ?"
+                            ).use { stmt ->
+                                stmt.setInt(1, rating.ratedUserId)
+
+                                val rs = stmt.executeQuery()
+                                if (rs.next()) rs.getString("fcm_token") else null
+                            }
+                        }
+
+                        if (!token.isNullOrBlank()) {
+                            sendPushNotification(
+                                deviceToken = token,
+                                title = "Новая оценка",
+                                body = "$name оценил(а) вас на ${rating.rating}⭐"
+                            )
+                        }
+                    }
+
                     call.respond(HttpStatusCode.OK, RateResponse(true))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, RateResponse(false, "Database error: ${e.message}"))
@@ -1129,6 +1180,48 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.OK, GetMessagesResponse(success = true, messages = messages))
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.InternalServerError, GetMessagesResponse(success = false, error = "Database error: ${e.message}"))
+                }
+            }
+
+            post("/store_fcm_token") {
+                val request = try {
+                    call.receive<StoreFcmTokenRequest>()
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, StoreFcmTokenResponse(success = false, errorMessage = "Invalid JSON: ${e.message}"))
+                    return@post
+                }
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal!!.payload.getClaim("userId").asInt()
+                val token = request.token
+                try {
+                    Database.transaction { conn ->
+                        val sql = """
+                            UPDATE users
+                            SET fcm_token = NULL
+                            WHERE fcm_token = ?
+                            """.trimIndent()
+                        conn.prepareStatement(sql).use { stmt ->
+                            stmt.setString(1, token)
+                            stmt.executeUpdate()
+                        }
+                        val sql2 = """
+                            UPDATE users
+                            SET fcm_token = ?
+                            WHERE id = ?
+                            """.trimIndent()
+                        conn.prepareStatement(sql2).use { stmt ->
+                            stmt.setString(1, token)
+                            stmt.setInt(2, userId)
+                            stmt.executeUpdate()
+                        }
+
+                    }
+                    call.respond(
+                        HttpStatusCode.OK,
+                        StoreFcmTokenResponse(success = true)
+                    )
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, StoreFcmTokenResponse(success = false, errorMessage = "Database error: ${e.message}"))
                 }
             }
         }

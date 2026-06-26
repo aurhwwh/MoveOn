@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import androidx.core.content.edit
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -19,9 +20,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-
         Log.d("FCM_TOKEN", token)
-        // позже отправим на сервер
+        val prefs = getSharedPreferences("fcm", Context.MODE_PRIVATE)
+        prefs.edit { putString("token", token) }
     }
 
     private fun showNotification(title: String, body: String) {

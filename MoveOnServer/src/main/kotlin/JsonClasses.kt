@@ -323,3 +323,19 @@ data class GetMessagesResponse(
     val messages: List<EventMessage> = emptyList(),
     val error: String? = null
 )
+
+@Serializable
+data class StoreFcmTokenRequest(
+    val token: String
+)
+@Serializable
+data class StoreFcmTokenResponse(
+    val success: Boolean,
+    val errorMessage: String? = null
+)
+
+data class JoinInfo(
+    val creatorToken: String?,
+    val applicantName: String,
+    val eventTitle: String
+)

@@ -7,6 +7,13 @@ import com.example.moveon.client.jsonClasses.RefreshRequest
 import com.example.moveon.client.jsonClasses.RefreshResponse
 import com.example.moveon.client.jsonClasses.RegisterRequest
 import com.example.moveon.client.jsonClasses.RegisterResponse
+import com.example.moveon.client.jsonClasses.StoreFcmTokenRequest
+import com.example.moveon.client.jsonClasses.StoreFcmTokenResponse
+import io.ktor.client.call.body
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 
 class EntryHandler(private val api : EntryApi) {
 
@@ -18,7 +25,7 @@ class EntryHandler(private val api : EntryApi) {
         return api.login(request)
     }
 
-    /*suspend fun refresh(request: RefreshRequest): RefreshResponse {
-        return api.refresh(request)
-    }*/
+    suspend fun storeFcmToken(request : StoreFcmTokenRequest) : StoreFcmTokenResponse{
+        return api.storeFcmToken(request)
+    }
 }
