@@ -7,7 +7,7 @@ import kotlinx.datetime.LocalDate
 data class ViewProfile(
     val success: Boolean,
     val errorMessage: String? = null,
-    val photoId: Int? = null, //temporary
+    val photoId: Int? = null,
     val userName: String? = null,
     val userSurname: String? = null,
     val dateOfBirth: LocalDate? = null,

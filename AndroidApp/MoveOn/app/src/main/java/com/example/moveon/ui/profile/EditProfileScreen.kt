@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -67,6 +69,8 @@ import com.example.moveon.R
 import com.example.moveon.data.TokenStorage
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.utils.AvatarUtils
+import com.example.moveon.utils.UserAvatar
 import com.example.moveon.viewModel.ProfileViewModel
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -78,19 +82,19 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-
-
+@OptIn(ExperimentalTime::class)
 @Composable
 fun EditProfileScreen(
-    navController : NavController,
-    viewModel: ProfileViewModel
+    navController: NavController,
+    viewModel: ProfileViewModel = viewModel()
 ) {
     val profile = viewModel.profile ?: return
 
-    var name by remember(profile) {mutableStateOf(profile.name)}
-    var surname by remember (profile) {mutableStateOf(profile.surname)}
-    var birth by remember (profile) {mutableStateOf(profile.birth)}
-    var description by remember (profile) {mutableStateOf(profile.description)}
+    var name by remember(profile) { mutableStateOf(profile.name ?: "") }
+    var surname by remember(profile) { mutableStateOf(profile.surname ?: "") }
+    var birth by remember(profile) { mutableStateOf(profile.birth) }
+    var description by remember(profile) { mutableStateOf(profile.description ?: "") }
+    var selectedPhotoId by remember(profile) { mutableStateOf(profile.photoId) }
 
     var isNameError by remember { mutableStateOf(false) }
     var isSurnameError by remember { mutableStateOf(false) }
@@ -111,10 +115,13 @@ fun EditProfileScreen(
     ) {
         MoveOnTopBar(navController, "profile")
 
-        Image(painter = painterResource(id = R.drawable.img),
-            contentDescription = "image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).size(100.dp).clip(CircleShape),
+        UserAvatar(
+            photoId = selectedPhotoId,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 10.dp)
+                .size(100.dp)
+                .clip(CircleShape)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -122,7 +129,7 @@ fun EditProfileScreen(
         TextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Name") },
+            label = { Text("Имя") },
             modifier = Modifier.fillMaxWidth(),
             isError = isNameError,
             singleLine = true,
@@ -141,7 +148,7 @@ fun EditProfileScreen(
         TextField(
             value = surname,
             onValueChange = { surname = it },
-            label = { Text("Surname") },
+            label = { Text("Фамилия") },
             modifier = Modifier.fillMaxWidth(),
             isError = isSurnameError,
             singleLine = true,
@@ -172,7 +179,7 @@ fun EditProfileScreen(
         TextField(
             value = description,
             onValueChange = { description = it },
-            label = { Text("Description") },
+            label = { Text("О себе") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done
@@ -187,21 +194,56 @@ fun EditProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Text(
+            text = "Выберите аватарку",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(start = 8.dp)
+        )
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(AvatarUtils.avatarIds) { id ->
+                val isSelected = selectedPhotoId == id
+                UserAvatar(
+                    photoId = id,
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .clickable { selectedPhotoId = id }
+                        .let { mod ->
+                            if (isSelected) {
+                                mod.background(
+                                    color = MGreen,
+                                    shape = CircleShape
+                                )
+                            } else mod
+                        }
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             onClick = {
+                if (birth == null) return@Button
                 viewModel.editProfile(
                     name = name,
                     surname = surname,
-                    birth = birth,
-                    description = description
+                    birth = birth!!,
+                    description = description,
+                    photoId = selectedPhotoId
                 )
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MGreen
             )
         ) {
-            Text(fontSize = 20.sp, text = "Save")
+            Text(fontSize = 20.sp, text = "Сохранить")
         }
 
         Spacer(modifier = Modifier.height(64.dp))
@@ -211,7 +253,6 @@ fun EditProfileScreen(
             enabled = !viewModel.isEditing,
             onClick = {
                 TokenStorage.clear()
-
                 navController.navigate("login") {
                     popUpTo(0) {
                         inclusive = true
@@ -225,11 +266,10 @@ fun EditProfileScreen(
                 containerColor = Color.Red
             )
         ) {
-            Text(fontSize = 20.sp, text = "Logout")
+            Text(fontSize = 20.sp, text = "Выйти")
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
@@ -254,7 +294,7 @@ fun BirthDatePicker(
             onValueChange = {},
             readOnly = true,
             enabled = false,
-            label = { Text("Date of birth") },
+            label = { Text("Дата рождения") },
             modifier = Modifier.fillMaxWidth(width),
             isError = isError,
             trailingIcon = {
@@ -265,7 +305,6 @@ fun BirthDatePicker(
             }
         )
     }
-
 
     val today = Instant.fromEpochMilliseconds(System.currentTimeMillis())
         .toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -313,5 +352,3 @@ fun BirthDatePicker(
         }
     }
 }
-
-

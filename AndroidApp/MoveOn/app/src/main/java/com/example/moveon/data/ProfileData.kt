@@ -3,7 +3,7 @@ package com.example.moveon.data
 import kotlinx.datetime.LocalDate
 
 data class ProfileData (
-    val photoId: Int,
+    val photoId: Int? = null,
     val name: String,
     val surname: String,
     val birth: LocalDate,

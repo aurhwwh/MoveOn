@@ -24,7 +24,7 @@ class ProfileApi(private val client: HttpClient) {
         return client.get("$baseUrl/view_my_profile").body()
     }
 
-    suspend fun editProfile(request : EditProfileRequest) : EditProfileResponse {
+    suspend fun editProfile(request: EditProfileRequest): EditProfileResponse {
         return client.post("$baseUrl/edit_profile") {
             contentType(ContentType.Application.Json)
             setBody(request)

@@ -63,6 +63,7 @@ import com.example.moveon.client.jsonClasses.Person
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.profile.DrawStars
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.utils.UserAvatar
 import com.example.moveon.viewModel.EventDetailsViewModel
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
@@ -343,7 +344,7 @@ fun EventDetails(
                     && data.isUserParticipant == true
                     && !data.isEventRatedByUser
                     && !viewModel.isRating
-                    ) {
+                ) {
                     Button(
                         modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
                         onClick = { viewModel.openRating() },
@@ -386,11 +387,12 @@ fun EventDetails(
 @Composable
 fun Participant(participant: Person, onClick: () -> Unit) {
     Row(modifier = Modifier.padding(8.dp).clickable { onClick() }) {
-        Image(
-            painter = painterResource(R.drawable.img),
-            contentDescription = "image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.padding(5.dp).size(50.dp).clip(CircleShape)
+        UserAvatar(
+            photoId = participant.photoId,
+            modifier = Modifier
+                .padding(5.dp)
+                .size(50.dp)
+                .clip(CircleShape)
         )
 
         Column(modifier = Modifier.padding(start = 10.dp, top = 8.dp)) {
@@ -404,7 +406,6 @@ fun Participant(participant: Person, onClick: () -> Unit) {
         }
     }
 }
-
 
 @Composable
 fun MessageItem(message: com.example.moveon.client.jsonClasses.EventMessage) {

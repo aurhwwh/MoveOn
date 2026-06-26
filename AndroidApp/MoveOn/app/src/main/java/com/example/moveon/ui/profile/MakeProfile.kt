@@ -25,19 +25,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moveon.R
 import com.example.moveon.data.ProfileData
+import com.example.moveon.utils.UserAvatar   // добавлен импорт
 import kotlinx.datetime.toJavaLocalDate
-
-
 
 @Composable
 fun MakeProfile(data: ProfileData) {
     Box(modifier = Modifier.padding(8.dp)) {
         Column() {
             Row() {
-                Image(painter = painterResource(/*id = data.photoId ?: R.drawable.img*/R.drawable.img),
-                    contentDescription = "image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.padding(5.dp).size(100.dp).clip(CircleShape))
+                UserAvatar(
+                    photoId = data.photoId,
+                    modifier = Modifier.padding(5.dp).size(100.dp).clip(CircleShape)
+                )
 
                 Column(modifier = Modifier.padding(start = 10.dp, top = 8.dp)) {
                     Text(text = data.name + " " + data.surname,
@@ -62,7 +61,6 @@ fun MakeProfile(data: ProfileData) {
         }
     }
 }
-
 
 @Composable
 fun DrawStars(rating: Double) {
