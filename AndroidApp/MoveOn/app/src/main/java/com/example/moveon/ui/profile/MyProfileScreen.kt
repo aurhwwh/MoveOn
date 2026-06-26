@@ -80,7 +80,6 @@ fun MyProfileScreen(navController : NavController,
                         }
                     }
 
-                    // ProfileBottomIcons()
                 }
             }
 
