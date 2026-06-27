@@ -64,7 +64,7 @@ import kotlin.math.log
 
 
 private fun isValidName(name: String): Boolean {
-    val regex = Regex("^[a-zA-Z0-9]+$")
+    val regex = Regex("^[a-zA-ZА-Яа-яЁё]+$")
     return name.isNotBlank() && regex.matches(name)
 }
 
