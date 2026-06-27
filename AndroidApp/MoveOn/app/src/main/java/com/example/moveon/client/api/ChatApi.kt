@@ -13,7 +13,7 @@ import io.ktor.http.contentType
 
 object ChatApi {
     private val client = Client.client
-    private val baseUrl = "http://10.0.2.2:8080"
+    private val baseUrl = "http://46.243.211.49:8080/"
 
     suspend fun sendMessage(request: SendMessageRequest): SendMessageResponse {
         return client.post {

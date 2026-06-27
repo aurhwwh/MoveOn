@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 data class StoreFcmTokenRequest(
     val token: String
 )
+@Serializable
 data class StoreFcmTokenResponse(
     val success: Boolean,
     val errorMessage: String? = null

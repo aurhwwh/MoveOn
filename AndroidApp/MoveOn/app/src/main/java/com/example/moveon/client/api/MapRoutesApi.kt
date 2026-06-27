@@ -7,7 +7,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 
 class MapRoutesApi(private val client: HttpClient) {
-    private val baseUrl = "http://10.0.2.2:8080"
+    private val baseUrl = "http://46.243.211.49:8080/"
 
     suspend fun getRouteOptions(lat: Double, lon : Double, radius: Int): RouteOptionsResponse {
         return client.get("$baseUrl/route_options") {

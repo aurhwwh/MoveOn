@@ -102,9 +102,12 @@ fun SignInScreen(navController: NavController) {
                     if (!token.isNullOrEmpty()) {
                         val fcmRequest = StoreFcmTokenRequest(token)
                         scope.launch {
-                            Handlers.entryHandler.storeFcmToken(
+                            val res = Handlers.entryHandler.storeFcmToken(
                                 StoreFcmTokenRequest(token)
                             )
+                            if (!res.success){
+                                println("FCM_TOKEN "+res.errorMessage)
+                            }
                         }
 
                     }

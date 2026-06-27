@@ -12,7 +12,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
 class ProfileApi(private val client: HttpClient) {
-    private val baseUrl = "http://10.0.2.2:8080"
+    private val baseUrl = "http://46.243.211.49:8080/"
 
     suspend fun getUserProfile(userId: Int): ViewProfile {
         return client.get("$baseUrl/view_user_profile") {

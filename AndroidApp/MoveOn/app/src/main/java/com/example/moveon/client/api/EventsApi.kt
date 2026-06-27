@@ -24,7 +24,7 @@ import io.ktor.http.contentType
 import kotlin.time.ExperimentalTime
 
 class EventsApi(private val client: HttpClient) {
-    private val baseUrl = "http://10.0.2.2:8080"
+    private val baseUrl = "http://46.243.211.49:8080/"
 
     @OptIn(ExperimentalTime::class)
     suspend fun getFilteredEventsList(

@@ -1,5 +1,6 @@
 package com.example.moveon.ui.entry
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontFamily
@@ -52,6 +54,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.moveon.client.handlers.Handlers
 import com.example.moveon.client.jsonClasses.LoginRequest
 import com.example.moveon.client.jsonClasses.RegisterRequest
+import com.example.moveon.client.jsonClasses.StoreFcmTokenRequest
 import com.example.moveon.data.TokenStorage.saveTokens
 import com.example.moveon.ui.profile.BirthDatePicker
 import com.example.moveon.ui.theme.MGreen
@@ -78,6 +81,7 @@ private fun isValidPassword(password: String): Boolean {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(navController: NavController) {
+    val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
@@ -141,6 +145,20 @@ fun SignUpScreen(navController: NavController) {
                             }
                             launchSingleTop = true
                             restoreState = false
+                        }
+                        val prefs = context.getSharedPreferences("fcm", Context.MODE_PRIVATE)
+                        val token = prefs.getString("token", null)
+                        if (!token.isNullOrEmpty()) {
+                            val fcmRequest = StoreFcmTokenRequest(token)
+                            scope.launch {
+                                val res = Handlers.entryHandler.storeFcmToken(
+                                    StoreFcmTokenRequest(token)
+                                )
+                                if (!res.success){
+                                    println("FCM_TOKEN "+res.errorMessage)
+                                }
+                            }
+
                         }
                     }
                     else{
