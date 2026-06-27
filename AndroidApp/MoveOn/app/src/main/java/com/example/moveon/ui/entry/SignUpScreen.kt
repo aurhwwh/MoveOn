@@ -179,7 +179,7 @@ fun SignUpScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Welcome to MoveOn!",
+            text = "Добро пожаловать!",
             fontWeight = FontWeight.Bold,
             fontStyle = FontStyle.Italic,
             fontFamily = FontFamily.SansSerif,
@@ -194,7 +194,7 @@ fun SignUpScreen(navController: NavController) {
                 name = it
                 isNameError = false
             },
-            label = { Text("name") },
+            label = { Text("Имя") },
             isError = isNameError,
             modifier = Modifier.fillMaxWidth(0.7f),
             singleLine = true,
@@ -216,7 +216,7 @@ fun SignUpScreen(navController: NavController) {
                 surname = it
                 isSurnameError = false
             },
-            label = { Text("surname") },
+            label = { Text("Фамилия") },
             isError = isSurnameError,
             modifier = Modifier.fillMaxWidth(0.7f),
             singleLine = true,
@@ -284,7 +284,7 @@ fun SignUpScreen(navController: NavController) {
                 isPasswordError = false
                 isRepeatPasswordError = false
             },
-            label = { Text("password") },
+            label = { Text("Пароль") },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -315,7 +315,7 @@ fun SignUpScreen(navController: NavController) {
                 repeatPassword = it
                 isRepeatPasswordError = false
             },
-            label = { Text("repeat password") },
+            label = { Text("Повторите пароль") },
             visualTransformation = if (repeatPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { repeatPasswordVisible = !repeatPasswordVisible }) {
@@ -346,7 +346,7 @@ fun SignUpScreen(navController: NavController) {
             onClick = { validateAndRegister() },
             colors = ButtonDefaults.buttonColors(containerColor = MGreen)
         ) {
-            Text(fontSize = 25.sp, text = "Sign Up")
+            Text(fontSize = 25.sp, text = "Регистрация")
         }
     }
 }
@@ -370,7 +370,7 @@ fun PickGender(
             value = selectedGender,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Gender") },
+            label = { Text("Пол") },
             isError = isError,
             trailingIcon = {
                 Icon(

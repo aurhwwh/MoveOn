@@ -54,7 +54,7 @@ fun EventDatePicker(
             onValueChange = {},
             readOnly = true,
             enabled = false,
-            label = { Text("Event date") },
+            label = { Text("Дата") },
             modifier = Modifier.fillMaxWidth(),
             isError = isError,
 
@@ -147,7 +147,7 @@ fun TimePickerField(
             onValueChange = {},
             readOnly = true,
             enabled = false,
-            label = { Text("Time") },
+            label = { Text("Время") },
             modifier = Modifier.fillMaxWidth(),
             isError = isError
         )

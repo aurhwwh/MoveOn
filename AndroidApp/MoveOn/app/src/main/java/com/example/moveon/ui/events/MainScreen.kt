@@ -81,7 +81,7 @@ fun MainScreen(navController : NavController, cityViewModel: CityViewModel) {
                         Row(verticalAlignment = Alignment.CenterVertically)
                         {
                             Text(
-                                text = "Events ",
+                                text = "События ",
                                 color = Color.Black,
                                 fontFamily = FontFamily.SansSerif,
                                 fontSize = 28.sp,
@@ -103,7 +103,7 @@ fun MainScreen(navController : NavController, cityViewModel: CityViewModel) {
                         Row(verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.clickable {})
                         {
-                            Text(text = "Search ",
+                            Text(text = "Поиск ",
                                 color = Color.Black,
                                 fontFamily = FontFamily.SansSerif,
                                 fontSize = 28.sp
@@ -121,7 +121,7 @@ fun MainScreen(navController : NavController, cityViewModel: CityViewModel) {
                 val events = eventsViewModel.eventsFlow.collectAsLazyPagingItems()
 
                 when (val state = events.loadState.refresh) {
-                    is LoadState.Loading -> {Text("Loading")}
+                    is LoadState.Loading -> {Text("Загрузка")}
 
                     is LoadState.Error -> {
                         Column {

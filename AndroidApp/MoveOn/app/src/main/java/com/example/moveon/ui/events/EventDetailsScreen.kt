@@ -84,7 +84,7 @@ fun EventDetails(
     }
 
     when {
-        viewModel.isLoadingEvent -> Text("Loading")
+        viewModel.isLoadingEvent -> Text("Загрузка")
         viewModel.error != null -> Text("${viewModel.error}")
         else -> {
             val data = viewModel.event ?: run {
@@ -334,7 +334,7 @@ fun EventDetails(
                     ) {
                         Text(
                             fontSize = 25.sp,
-                            text = if (viewModel.isJoining) "Joining..." else "Join"
+                            text = if (viewModel.isJoining) "Присоединение..." else "Присоединиться"
                         )
                     }
                 }
@@ -354,7 +354,7 @@ fun EventDetails(
                     ) {
                         Text(
                             fontSize = 25.sp,
-                            text = "Rate participants"
+                            text = "Оценить участников"
                         )
                     }
                 }

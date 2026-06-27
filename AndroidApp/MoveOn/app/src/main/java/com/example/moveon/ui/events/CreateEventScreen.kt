@@ -126,14 +126,14 @@ fun CreateEvent(navController : NavController,
                     modifier = Modifier.padding(8.dp)
                 )
             }
-            var label = "Create Event with route"
+            var label = "Создать событие-маршрут"
             if(route.isNullOrEmpty()){
-                label = "Create Event at point"
+                label = "Создать событие на карте"
             }
             if(route.isNullOrEmpty() && lat == null && lon == null) {
                 MoveOnTopBar(navController, "main")
                 Spacer(modifier = Modifier.height(16.dp))
-                label = "Create Event"
+                label = "Создать событие"
             }
 
 
@@ -156,7 +156,7 @@ fun CreateEvent(navController : NavController,
                     isNameError = false
                 },
                 isError = isNameError,
-                label = { Text("Event name") },
+                label = { Text("Название") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -223,7 +223,7 @@ fun CreateEvent(navController : NavController,
                     }
                 },
                 isError = isMaxPeopleError,
-                label = { Text("Amount of people (2–20)") },
+                label = { Text("Количество участников(2–20)") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -259,7 +259,7 @@ fun CreateEvent(navController : NavController,
             TextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Description") },
+                label = { Text("Описание") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
@@ -337,7 +337,7 @@ fun CreateEvent(navController : NavController,
             },
             colors = ButtonDefaults.buttonColors(containerColor = MGreen)
         ) {
-            Text(fontSize = 25.sp, text = if (viewModel.isCreating) "Creating..." else "Create")
+            Text(fontSize = 25.sp, text = if (viewModel.isCreating) "Создание..." else "Создать")
         }
     }
 }
@@ -364,7 +364,7 @@ fun LocationSearchField(
                 onQueryChange(it)
                 expanded = it.isNotBlank()
             },
-            label = { Text("Location") },
+            label = { Text("Место") },
             isError = isError,
             singleLine = true,
             modifier = Modifier
@@ -434,7 +434,7 @@ fun SportPicker(
         "Хоккей",
         "Теннис",
         "Воллейбол",
-        "Бадбинтон",
+        "Бадминтон",
         "Бег",
         "Велоспорт",
         "Ролики",
@@ -442,7 +442,6 @@ fun SportPicker(
         "Лыжи",
         "Шашки",
         "Шахматы",
-        "Прес качат",
         "Другое"
     )
 
@@ -457,7 +456,7 @@ fun SportPicker(
             value = selectedSport,
             onValueChange = {},
             readOnly = true,
-            label = { Text(text = "Sport type") },
+            label = { Text(text = "Вид спорта") },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded)
             },

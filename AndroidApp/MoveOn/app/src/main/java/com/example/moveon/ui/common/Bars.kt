@@ -77,7 +77,7 @@ fun BottomBar(
         .padding(WindowInsets.navigationBars.asPaddingValues())
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(
@@ -113,44 +113,6 @@ fun BottomBar(
                 Icon(
                     imageVector = Icons.Default.Map,
                     contentDescription = "Map",
-                    tint = Color.White,
-                    modifier = Modifier.size(50.dp).padding(top = 10.dp)
-                )
-            }
-
-            IconButton(
-                onClick = {
-                    navController.navigate("messages") {
-                        launchSingleTop = true
-                        restoreState = true
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                    }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ChatBubble,
-                    contentDescription = "Messages",
-                    tint = Color.White,
-                    modifier = Modifier.size(50.dp).padding(top = 10.dp)
-                )
-            }
-
-            IconButton(
-                onClick = {
-                    navController.navigate("notifications") {
-                        launchSingleTop = true
-                        restoreState = true
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                    }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Notifications,
-                    contentDescription = "Notifications",
                     tint = Color.White,
                     modifier = Modifier.size(50.dp).padding(top = 10.dp)
                 )

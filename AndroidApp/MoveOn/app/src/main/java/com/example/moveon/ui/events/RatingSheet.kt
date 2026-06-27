@@ -72,7 +72,7 @@ fun RatingSheet(
     Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
 
         Text(
-            text = "Rate participants",
+            text = "Оценить участников",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
@@ -121,8 +121,8 @@ fun RatingSheet(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                if (isRating) "Submitting..."
-                else "Submit Ratings"
+                if (isRating) "Отправка..."
+                else "Отправить"
             )
         }
     }

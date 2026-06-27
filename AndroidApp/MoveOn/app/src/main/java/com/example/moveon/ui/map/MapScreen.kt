@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.moveon.client.jsonClasses.CreateEventWithRouteRequest
 import com.example.moveon.client.jsonClasses.EventsMarker
@@ -385,7 +386,7 @@ fun MapScreen(navController : NavController,
                         }
                     }
                 ) {
-                    Text("Create event")
+                    Text("Создать событие",fontSize = 12.sp)
                 }
             }
             if (showCreateEventPoint) {

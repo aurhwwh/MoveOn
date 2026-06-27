@@ -57,7 +57,7 @@ fun MyProfileScreen(navController : NavController,
             .fillMaxSize()
             .padding(padding) ) {
             when {
-                viewModel.isProfileLoading -> Text("Loading profile")
+                viewModel.isProfileLoading -> Text("Загрузка")
                 viewModel.profileError != null -> Text(
                     text = viewModel.profileError ?: "Unknown error"
                 )
@@ -86,7 +86,7 @@ fun MyProfileScreen(navController : NavController,
             Spacer(modifier = Modifier.size(30.dp))
 
             Text(
-                text = "Events",
+                text = "События",
                 color = Color.Black,
                 fontFamily = FontFamily.SansSerif,
                 fontStyle = FontStyle.Italic,
@@ -106,7 +106,7 @@ fun MyProfileScreen(navController : NavController,
                     onClick = {
                         viewModel.updateTimeFilter(EventTimeFilter.UPCOMING)
                     },
-                    label = {Text(text = "Upcoming", fontSize = 18.sp)}
+                    label = {Text(text = "Будущие", fontSize = 18.sp)}
                 )
 
                 Spacer(Modifier.size(4.dp))
@@ -117,7 +117,7 @@ fun MyProfileScreen(navController : NavController,
                     onClick = {
                         viewModel.updateTimeFilter(EventTimeFilter.PAST)
                     },
-                    label = {Text(text = "Past", fontSize = 18.sp)}
+                    label = {Text(text = "Прошедшие", fontSize = 18.sp)}
                 )
 
                 Spacer(Modifier.size(4.dp))
@@ -135,13 +135,13 @@ fun MyProfileScreen(navController : NavController,
                     }
                 )
 
-                Text(text = "Show only created by me", fontSize = 17.sp)
+                Text(text = "Созданные мною", fontSize = 17.sp)
             }
 
             when {
                 viewModel.isEventsLoading -> {
                     Text(
-                        text = "Loading events...",
+                        text = "Загрузка...",
                         modifier = Modifier.padding(16.dp)
                     )
                 }

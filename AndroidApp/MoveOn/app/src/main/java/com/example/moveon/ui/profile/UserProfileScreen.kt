@@ -46,7 +46,7 @@ fun UserProfileScreen(navController : NavController,
 
         Column( modifier = Modifier.fillMaxSize().padding(padding) ) {
             when {
-                viewModel.isProfileLoading -> Text("Loading")
+                viewModel.isProfileLoading -> Text("Загрузка")
                 viewModel.profileError != null -> Text(text = viewModel.profileError ?: "Unknown error")
 
                 viewModel.profile != null -> {

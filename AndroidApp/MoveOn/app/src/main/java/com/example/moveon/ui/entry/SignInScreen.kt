@@ -135,7 +135,7 @@ fun SignInScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Welcome to MoveOn!",
+            text = "Добро пожаловать!",
             fontWeight = FontWeight.Bold,
             fontStyle = FontStyle.Italic,
             fontFamily = FontFamily.SansSerif,
@@ -150,7 +150,7 @@ fun SignInScreen(navController: NavController) {
                 email = it
                 isEmailError = false
             },
-            label = { Text("email") },
+            label = { Text("Электронная почта") },
             isError = isEmailError,
             modifier = Modifier.fillMaxWidth(0.7f),
             singleLine = true,
@@ -172,7 +172,7 @@ fun SignInScreen(navController: NavController) {
                 password = it
                 isPasswordError = false
             },
-            label = { Text("password") },
+            label = { Text("Пароль") },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -203,19 +203,19 @@ fun SignInScreen(navController: NavController) {
             onClick = { validateAndLogin() },
             colors = ButtonDefaults.buttonColors(containerColor = MGreen)
         ) {
-            Text(fontSize = 20.sp, text = "Sign in")
+            Text(fontSize = 20.sp, text = "Войти")
         }
 
         Spacer(modifier = Modifier.height(80.dp))
 
-        Text(text = "Do not have an account?", fontSize = 20.sp, fontStyle = FontStyle.Italic)
+        Text(text = "Ещё нет аккаунта?", fontSize = 20.sp, fontStyle = FontStyle.Italic)
 
         Button(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             onClick = { navController.navigate("register") },
             colors = ButtonDefaults.buttonColors(containerColor = MGreen)
         ) {
-            Text(fontSize = 15.sp, text = "Sign up")
+            Text(fontSize = 15.sp, text = "Зарегистрироваться")
         }
     }
 }

@@ -63,7 +63,7 @@ fun MyEventsRow(onClick: () -> Unit, modifier: Modifier = Modifier) {
             .clickable { onClick() }
     ) {
         Text(
-            text = "My Events",
+            text = "Мои события",
             color = Color.Black,
             fontFamily = FontFamily.SansSerif,
             fontSize = 22.sp

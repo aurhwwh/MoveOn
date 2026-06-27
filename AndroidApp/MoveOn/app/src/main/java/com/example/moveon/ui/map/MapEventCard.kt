@@ -87,7 +87,7 @@ fun MapEventCard(
                         navController.navigate("eventDetails/${event.eventId}")
                     }
                 ) {
-                    Text("Info")
+                    Text("О событии")
                 }
 
                 Spacer(
@@ -97,7 +97,7 @@ fun MapEventCard(
                 OutlinedButton(
                     onClick = onDismiss
                 ) {
-                    Text("Close")
+                    Text("Закрыть")
                 }
             }
         }
