@@ -12,6 +12,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectCity(
     selectedCity: String,
@@ -37,16 +41,24 @@ fun SelectCity(
 
     var expanded by remember { mutableStateOf(false) }
 
-    Box {
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
         Surface(
             shape = RoundedCornerShape(20.dp),
             color = Color.White.copy(alpha = 0.9f),
-            modifier = Modifier.clickable { expanded = true }
+            modifier = Modifier.menuAnchor(
+                    type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                    enabled = true
+            ),
+            tonalElevation = 2.dp,
+            shadowElevation = 2.dp
         ) {
             Row(modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
-                )
+            )
             {
                 Icon(
                     imageVector = Icons.Outlined.LocationOn,
@@ -70,13 +82,17 @@ fun SelectCity(
                 )
             }
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = {expanded = false}) {
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor =  Color.White.copy(alpha = 0.9f)
+        ) {
             cities.forEach { city -> DropdownMenuItem(
                 text = {
                     Text(
                         text = city,
                         fontSize = 15.sp,
-                        color = if (city == selectedCity) Color(0xFF06AC9F) else MaterialTheme.colorScheme.onSurface
+                        color = if (city == selectedCity) Color(0xFF0F6E56) else MaterialTheme.colorScheme.onSurface
                     )
                 },
                 onClick = {

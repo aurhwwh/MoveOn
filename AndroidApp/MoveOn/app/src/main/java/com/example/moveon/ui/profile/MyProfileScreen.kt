@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -32,6 +33,9 @@ import androidx.navigation.NavController
 import com.example.moveon.ui.common.BottomBar
 import com.example.moveon.ui.common.CityTopBar
 import com.example.moveon.ui.events.MakeEvent
+import com.example.moveon.ui.theme.DLightGreen
+import com.example.moveon.ui.theme.LightGreen
+import com.example.moveon.ui.theme.MGreen
 import com.example.moveon.viewModel.CityViewModel
 import com.example.moveon.viewModel.EventOwnerFilter
 import com.example.moveon.viewModel.EventTimeFilter
@@ -50,7 +54,8 @@ fun MyProfileScreen(navController : NavController,
 
     Scaffold(
         topBar = { CityTopBar(cityViewModel) },
-        bottomBar = { BottomBar(navController) }
+        bottomBar = { BottomBar(navController) },
+        //containerColor = LightGreen
     ) { padding ->
 
         Column( modifier = Modifier
@@ -83,7 +88,7 @@ fun MyProfileScreen(navController : NavController,
                 }
             }
 
-            Spacer(modifier = Modifier.size(30.dp))
+            Spacer(modifier = Modifier.size(16.dp))
 
             Text(
                 text = "События",
@@ -106,7 +111,11 @@ fun MyProfileScreen(navController : NavController,
                     onClick = {
                         viewModel.updateTimeFilter(EventTimeFilter.UPCOMING)
                     },
-                    label = {Text(text = "Будущие", fontSize = 18.sp)}
+                    label = {Text(text = "Будущие", fontSize = 18.sp)},
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = DLightGreen,
+                        containerColor = Color.White
+                    )
                 )
 
                 Spacer(Modifier.size(4.dp))
@@ -117,7 +126,11 @@ fun MyProfileScreen(navController : NavController,
                     onClick = {
                         viewModel.updateTimeFilter(EventTimeFilter.PAST)
                     },
-                    label = {Text(text = "Прошедшие", fontSize = 18.sp)}
+                    label = {Text(text = "Прошедшие", fontSize = 18.sp)},
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = DLightGreen,
+                        containerColor = Color.White
+                    )
                 )
 
                 Spacer(Modifier.size(4.dp))

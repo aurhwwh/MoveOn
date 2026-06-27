@@ -55,35 +55,6 @@ fun UserProfileScreen(navController : NavController,
                         Box(modifier = Modifier.fillMaxWidth()) {
                             MakeProfile(viewModel.profile!!)
                         }
-
-                        Row(modifier = Modifier.fillMaxWidth().padding(8.dp).padding(top = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly)
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Accessibility,
-                                contentDescription = null,
-                                tint = Color.Black,
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Icon(
-                                imageVector = Icons.Filled.AddReaction,
-                                contentDescription = null,
-                                tint = Color.Black,
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Icon(
-                                imageVector = Icons.Filled.Build,
-                                contentDescription = null,
-                                tint = Color.Black,
-                                modifier = Modifier.size(30.dp)
-                            )
-                            Icon(
-                                imageVector = Icons.Filled.AutoAwesome,
-                                contentDescription = null,
-                                tint = Color.Black,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
                     }
                 }
             }
