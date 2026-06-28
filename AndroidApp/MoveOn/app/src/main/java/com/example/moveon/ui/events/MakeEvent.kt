@@ -49,8 +49,7 @@ fun MakeEvent(data: EventListElement, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
-            .padding(top = 8.dp),
+            .padding(4.dp),
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)

@@ -6,11 +6,14 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,14 +29,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DirectionsRun
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.DirectionsRun
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -47,18 +62,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.moveon.R
 import com.example.moveon.client.jsonClasses.Person
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.profile.DrawStars
@@ -70,6 +84,7 @@ import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 import androidx.core.net.toUri
+import com.example.moveon.ui.theme.DLightGreen
 import kotlin.time.Clock
 
 @OptIn(ExperimentalTime::class)
@@ -92,6 +107,7 @@ fun EventDetails(
                 return
             }
             val context = LocalContext.current
+
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
@@ -99,288 +115,340 @@ fun EventDetails(
                     val previousRoute = navController.previousBackStackEntry?.destination?.route
                     MoveOnTopBar(navController, previousRoute ?: "main")
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = data.title!!,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.SansSerif,
-                            fontSize = 30.sp,
-                            modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterStart).padding(end = 120.dp)
-                        )
-
-                        val localDateTime =
-                            data.dateTime!!.toLocalDateTime(TimeZone.currentSystemDefault())
-
-                        val date = remember(localDateTime) {
-                            java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy")
-                                .format(localDateTime.toJavaLocalDateTime())
-                        }
-
-                        val time = remember(localDateTime) {
-                            java.time.format.DateTimeFormatter.ofPattern("HH:mm")
-                                .format(localDateTime.toJavaLocalDateTime())
-                        }
-
-                        Column(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .align(Alignment.TopEnd),
-                            horizontalAlignment = Alignment.End
-                        ) {
-                            Text(
-                                text = date,
-                                fontSize = 20.sp,
-                                fontStyle = FontStyle.Italic,
-                                color = Color.Gray
-                            )
-
-                            Text(
-                                text = time,
-                                fontSize = 20.sp,
-                                fontStyle = FontStyle.Italic,
-                                color = Color.Gray
-                            )
-                        }
-                    }
-
-                    Text(
-                        text = "Вид спорта: " + data.sportType!!,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(8.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp).padding(8.dp))
-
-                    Text(text = data.description ?: "", fontSize = 20.sp, modifier = Modifier.padding(8.dp))
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
+                            .padding(horizontal = 16.dp, vertical = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Surface(
+                            shape = RoundedCornerShape(28.dp),
+                            color = DLightGreen
+                        ) {
+                            Text(
+                                text = data.sportType!!,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF0F6E56),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            )
+                        }
+
+                        Spacer(Modifier.width(6.dp))
+
                         Text(
-                            text = data.place ?: "",
-                            modifier = Modifier.weight(1f),
-                            fontSize = 18.sp,
-                            fontStyle = FontStyle.Italic
+                            text = data.title!!,
+                            fontSize = 23.sp,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 28.sp
                         )
-
-                        Button(
-                            modifier = Modifier.padding(end = 8.dp),
-                            onClick = {
-                                val uri = "geo:${data.lat},${data.lon}?q=${data.lat},${data.lon}".toUri()
-                                val intent = Intent(Intent.ACTION_VIEW, uri)
-                                context.startActivity(intent)
-                            }
-                        ) {
-                            Text("Открыть в...")
-                        }
-                    }
-                    if (!data.route.isNullOrEmpty()) {
-                        Button(
-                            modifier = Modifier.padding(start = 8.dp, top = 13.dp),
-                            onClick = {
-                                navController.navigate("map/$eventId")
-                            }
-                        ) {
-                            Text("Открыть маршрут на карте")
-                        }
                     }
 
-                    Spacer(modifier = Modifier.height(18.dp))
+                    Spacer(Modifier.height(8.dp))
 
-                    Text(text = "Организатор:", fontSize = 20.sp, modifier = Modifier.padding(8.dp))
+                    val localDateTime =
+                        data.dateTime!!.toLocalDateTime(TimeZone.currentSystemDefault())
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    val date = remember(localDateTime) {
+                        java.time.format.DateTimeFormatter.ofPattern("d MMMM")
+                            .format(localDateTime.toJavaLocalDateTime())
+                    }
 
-                    Participant(
-                        data.participants!![0],
-                        onClick = { navController.navigate("profile") }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    var expanded by remember { mutableStateOf(true) }
+                    val time = remember(localDateTime) {
+                        java.time.format.DateTimeFormatter.ofPattern("HH:mm")
+                            .format(localDateTime.toJavaLocalDateTime())
+                    }
 
                     Row(
-                        modifier = Modifier.clickable { expanded = !expanded }.padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Участники: ${data.currentAmountOfPeople}/${data.maxAmountOfPeople}",
-                            fontSize = 20.sp
-                        )
-
-                        Spacer(modifier = Modifier.width(4.dp))
-
-                        Icon(
-                            imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null,
-                            tint = Color.Black,
-                            modifier = Modifier.size(25.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                        MetaItem(icon = Icons.Default.CalendarToday, text = date)
+                        MetaItem(icon = Icons.Default.AccessTime, text = time)
+                        MetaItem(
+                            icon = Icons.Default.Group,
+                            text = "${data.currentAmountOfPeople}/${data.maxAmountOfPeople}"
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(color = Color(0xFF0F6E56))
 
-                    AnimatedVisibility(
-                        visible = expanded,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
-                    ) {
-                        Column {
-                            data.participants.drop(0).forEach { participant ->
-                                Participant(
-                                    participant = participant,
-                                    onClick = { navController.navigate("profile/${participant.id}") }
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                        }
+                    SectionBlock(label = "Описание") {
+                        Text(
+                            text = data.description ?: "",
+                            fontSize = 18.sp,
+                            lineHeight = 22.sp,
+                            color = Color(0xFF555555)
+                        )
                     }
 
-                    if (data.isUserParticipant == true) {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "Чат",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(8.dp)
-                        )
-
-                        if (viewModel.isLoadingMessages) {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        } else {
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(300.dp)
-                                    .padding(horizontal = 8.dp)
-                            ) {
-                                items(viewModel.messages) { message ->
-                                    MessageItem(message)
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                }
-                            }
-                        }
-
-                        var text by remember { mutableStateOf("") }
+                    SectionBlock(label = "Место") {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            verticalAlignment = Alignment.Bottom,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            OutlinedTextField(
-                                value = text,
-                                onValueChange = { text = it },
-                                modifier = Modifier.weight(1f),
-                                placeholder = { Text("Написать сообщение...") },
-                                enabled = !viewModel.isSendingMessage
+                            Icon(
+                                Icons.Default.Place,
+                                contentDescription = null,
+                                tint = MGreen,
+                                modifier = Modifier.size(22.dp)
                             )
-                            IconButton(
+                            Text(
+                                text = data.place ?: "",
+                                modifier = Modifier.weight(1f),
+                                fontSize = 18.sp,
+                                color = Color(0xFF555555)
+                            )
+                            OutlinedButton(
                                 onClick = {
-                                    val cleanedText = text.trim()
-                                    if (cleanedText.isNotEmpty()) {
-                                        viewModel.sendMessage(eventId, text)
-                                        text = ""
-                                    }
+                                    val uri = "geo:${data.lat},${data.lon}?q=${data.lat},${data.lon}".toUri()
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
                                 },
-                                enabled = !viewModel.isSendingMessage
+                                shape = CircleShape,
+                                border = BorderStroke(1.5.dp, MGreen),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MGreen),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                if (viewModel.isSendingMessage) {
-                                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                } else {
-                                    Icon(Icons.Default.Send, contentDescription = "Отправить", tint = MGreen)
-                                }
+                                Text("Открыть в...", fontSize = 14.sp)
                             }
                         }
-                        viewModel.sendMessageError?.let {
-                            Text(
-                                text = it,
-                                color = Color.Red,
-                                modifier = Modifier.padding(8.dp)
-                            )
+
+                        if (!data.route.isNullOrEmpty()) {
+                            Spacer(Modifier.height(10.dp))
+                            Button(
+                                onClick = { navController.navigate("map/$eventId") },
+                                shape = CircleShape,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = DLightGreen,
+                                    contentColor = Color(0xFF0F6E56)
+                                ),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                            ) {
+                                Icon(Icons.Default.Route, contentDescription = null, modifier = Modifier.size(15.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("Открыть маршрут на карте", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                            }
                         }
-                    }
-                }
 
-                viewModel.error?.let {
-                    Text(
-                        text = it,
-                        color = Color.Red,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
+                        Spacer(Modifier.height(10.dp))
+                        HorizontalDivider(color = Color(0xFF0F6E56))
+                        Spacer(Modifier.height(10.dp))
 
-                if (data.isUserParticipant != true) {
-                    Button(
-                        modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
-                        onClick = { viewModel.joinEvent(eventId) },
-                        enabled = !viewModel.isJoining,
-                        colors = ButtonDefaults.buttonColors(containerColor = MGreen)
-                    ) {
-                        Text(
-                            fontSize = 25.sp,
-                            text = if (viewModel.isJoining) "Присоединение..." else "Присоединиться"
-                        )
-                    }
-                }
-
-
-                if(data.dateTime!! <= Clock.System.now()
-                    && data.isUserParticipant == true
-                    && !data.isEventRatedByUser
-                    && !viewModel.isRating
-                ) {
-                    Button(
-                        modifier = Modifier.align(Alignment.BottomCenter).padding(18.dp),
-                        onClick = { viewModel.openRating() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MGreen
-                        )
-                    ) {
-                        Text(
-                            fontSize = 25.sp,
-                            text = "Оценить участников"
-                        )
-                    }
-                }
-
-                if (viewModel.showRating && !viewModel.isRating) {
-                    Dialog(onDismissRequest = { viewModel.closeRating() }) {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            tonalElevation = 8.dp
-                        ) {
-                            RatingSheet(
-                                participants = data.participants ?: emptyList(),
-                                currentUserId = data.userId!!,
-                                isRating = viewModel.isRating,
-                                onSubmit = {ratings ->
-                                    viewModel.rateEvent(
-                                        eventId = eventId,
-                                        ratings = ratings
+                        SectionBlock(label = "Организатор") {
+                            data.participants?.firstOrNull()?.let { organizer ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .clickable { navController.navigate("profile/${organizer.id}") }
+                                        .background(Color(0xFFF7FFF8)),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    UserAvatar(
+                                        photoId = organizer.photoId,
+                                        modifier = Modifier
+                                            .size(50.dp)
+                                            .clip(CircleShape)
+                                    )
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "${organizer.name} ${organizer.surname}",
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                        DrawStars(organizer.rating ?: 0.0)
+                                    }
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                        contentDescription = null,
+                                        tint = Color.LightGray
                                     )
                                 }
+                            }
+                        }
+
+                        var expanded by remember { mutableStateOf(true) }
+                        SectionBlock(label = "Участники") {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().clickable{ expanded = !expanded},
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(Icons.Default.Group, contentDescription = null, tint = MGreen, modifier = Modifier.size(17.dp))
+
+                                    Text(
+                                        text = "${data.currentAmountOfPeople}/${data.maxAmountOfPeople}",
+                                        fontSize = 15.sp
+                                    )
+                                }
+                                Icon(
+                                    imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = Color.LightGray
+                                )
+                            }
+
+                            Spacer(Modifier.height(10.dp))
+
+                            val progress = (data.currentAmountOfPeople?.toFloat() ?: 0f) / (data.maxAmountOfPeople?.toFloat() ?: 1f)
+                            LinearProgressIndicator(
+                                progress = { progress },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(2.dp)),
+                                color = MGreen,
+                                trackColor = DLightGreen
                             )
+
+                            AnimatedVisibility(
+                                visible = expanded,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
+                                Column {
+                                    data.participants?.drop(0)?.forEach { participant ->
+                                        Participant(
+                                            participant = participant,
+                                            onClick = { navController.navigate("profile/${participant.id}") }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (data.isUserParticipant == true) {
+                            SectionBlock(label = "Чат") {
+                                if (viewModel.isLoadingMessages) {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                                else {
+                                    LazyColumn(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(300.dp)
+                                    ) {
+                                        items(viewModel.messages) { message ->
+                                            MessageItem(message)
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                        }
+                                    }
+                                }
+
+                                Spacer(Modifier.height(8.dp))
+
+                                var text by remember { mutableStateOf("") }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.Bottom,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    OutlinedTextField(
+                                        value = text,
+                                        onValueChange = { text = it },
+                                        modifier = Modifier.weight(1f),
+                                        placeholder = { Text("Написать сообщение...") },
+                                        enabled = !viewModel.isSendingMessage
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            val cleanedText = text.trim()
+                                            if (cleanedText.isNotEmpty()) {
+                                                viewModel.sendMessage(eventId, text)
+                                                text = ""
+                                            }
+                                        },
+                                        enabled = !viewModel.isSendingMessage
+                                    ) {
+                                        if (viewModel.isSendingMessage) {
+                                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                        } else {
+                                            Icon(Icons.Default.Send, contentDescription = "Отправить", tint = MGreen)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        //Spacer(Modifier.height(80.dp))
+                    }
+
+
+                    if (data.isUserParticipant != true) {
+                        Button(
+                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(18.dp),
+                            onClick = { viewModel.joinEvent(eventId) },
+                            enabled = !viewModel.isJoining,
+                            colors = ButtonDefaults.buttonColors(containerColor = MGreen)
+                        ) {
+                            Text(
+                                fontSize = 25.sp,
+                                text = if (viewModel.isJoining) "Присоединение..." else "Присоединиться"
+                            )
+                        }
+                    }
+
+                    if(data.dateTime <= Clock.System.now()
+                        && data.isUserParticipant == true
+                        && !data.isEventRatedByUser
+                        && !viewModel.isRating
+                    ) {
+                        Button(
+                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(18.dp),
+                            onClick = { viewModel.openRating() },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MGreen
+                            )
+                        ) {
+                            Text(
+                                fontSize = 25.sp,
+                                text = "Оценить участников"
+                            )
+                        }
+                    }
+
+                    if (viewModel.showRating && !viewModel.isRating) {
+                        Dialog(onDismissRequest = { viewModel.closeRating() }) {
+                            Surface(
+                                shape = RoundedCornerShape(16.dp),
+                                tonalElevation = 8.dp
+                            ) {
+                                RatingSheet(
+                                    participants = data.participants ?: emptyList(),
+                                    currentUserId = data.userId!!,
+                                    isRating = viewModel.isRating,
+                                    onSubmit = {ratings ->
+                                        viewModel.rateEvent(
+                                            eventId = eventId,
+                                            ratings = ratings
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+    }
+    viewModel.error?.let {
+        Text(
+            text = it,
+            color = Color.Red,
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
 
@@ -433,4 +501,37 @@ fun MessageItem(message: com.example.moveon.client.jsonClasses.EventMessage) {
             modifier = Modifier.padding(top = 4.dp)
         )
     }
+}
+
+
+@Composable
+fun MetaItem(icon: ImageVector, text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Icon(icon, contentDescription = null, tint = MGreen, modifier = Modifier.size(18.dp))
+        Text(text, fontSize = 17.sp, color = Color.Gray)
+    }
+}
+
+
+@Composable
+fun SectionBlock(label: String, content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = label.uppercase(),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            letterSpacing = 0.06.em,
+            color = Color.Gray,
+            modifier = Modifier.padding(bottom = 10.dp)
+        )
+        content()
+    }
+    HorizontalDivider(color = Color(0xFF0F6E56))
 }

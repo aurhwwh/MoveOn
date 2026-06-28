@@ -204,9 +204,11 @@ private fun BottomBarItem(
 fun MoveOnTopBar(navController : NavController, prevScreen : String) {
     Row(modifier = Modifier
         .fillMaxWidth()
+        .clip(RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp))
         .background(MGreen)
         .windowInsetsPadding(WindowInsets.statusBars)
-        .padding(vertical = 4.dp),
+        .padding(vertical = 4.dp)
+        .clip(RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -221,7 +223,7 @@ fun MoveOnTopBar(navController : NavController, prevScreen : String) {
 
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(fontWeight = FontWeight.Normal)) { append("Move") }
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Move") }
                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("On") }
             },
             color = Color.White,

@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -89,8 +90,8 @@ fun MainScreen(navController : NavController, cityViewModel: CityViewModel) {
                                 Icon(
                                     imageVector = Icons.Outlined.Tune,
                                     contentDescription = "Фильтры",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(18.dp)
+                                    tint = Color(0xFF0F6E56),
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
