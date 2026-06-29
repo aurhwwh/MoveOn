@@ -1,6 +1,7 @@
 package com.example.moveon.ui.entry
 
 import android.content.Context
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -37,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -58,6 +60,7 @@ import com.example.moveon.client.jsonClasses.StoreFcmTokenRequest
 import com.example.moveon.data.TokenStorage.saveTokens
 import com.example.moveon.ui.profile.BirthDatePicker
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.ui.theme.moveOnTextFieldColor
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlin.math.log
@@ -174,7 +177,14 @@ fun SignUpScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.statusBars),
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {
+                        focusManager.clearFocus()
+                    }
+                )
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -195,6 +205,7 @@ fun SignUpScreen(navController: NavController) {
                 isNameError = false
             },
             label = { Text("Имя") },
+            colors = moveOnTextFieldColor(),
             isError = isNameError,
             modifier = Modifier.fillMaxWidth(0.7f),
             singleLine = true,
@@ -217,6 +228,7 @@ fun SignUpScreen(navController: NavController) {
                 isSurnameError = false
             },
             label = { Text("Фамилия") },
+            colors = moveOnTextFieldColor(),
             isError = isSurnameError,
             modifier = Modifier.fillMaxWidth(0.7f),
             singleLine = true,
@@ -262,6 +274,7 @@ fun SignUpScreen(navController: NavController) {
                 isEmailError = false
             },
             label = { Text("email") },
+            colors = moveOnTextFieldColor(),
             isError = isEmailError,
             modifier = Modifier.fillMaxWidth(0.7f),
             singleLine = true,
@@ -285,6 +298,7 @@ fun SignUpScreen(navController: NavController) {
                 isRepeatPasswordError = false
             },
             label = { Text("Пароль") },
+            colors = moveOnTextFieldColor(),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -316,6 +330,7 @@ fun SignUpScreen(navController: NavController) {
                 isRepeatPasswordError = false
             },
             label = { Text("Повторите пароль") },
+            colors = moveOnTextFieldColor(),
             visualTransformation = if (repeatPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { repeatPasswordVisible = !repeatPasswordVisible }) {
@@ -371,6 +386,7 @@ fun PickGender(
             onValueChange = {},
             readOnly = true,
             label = { Text("Пол") },
+            colors = moveOnTextFieldColor(),
             isError = isError,
             trailingIcon = {
                 Icon(

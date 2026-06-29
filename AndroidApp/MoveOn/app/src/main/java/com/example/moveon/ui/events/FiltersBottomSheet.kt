@@ -1,5 +1,6 @@
 package com.example.moveon.ui.events
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,18 +16,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,12 +36,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moveon.client.jsonClasses.ViewFilteredEventsListRequest
+import com.example.moveon.ui.theme.DLightGreen
+import com.example.moveon.ui.theme.LightGreen
+import com.example.moveon.ui.theme.MGreen
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -78,17 +80,6 @@ fun FiltersBottomSheet(
     var selectedDays by remember {
         mutableStateOf(currentFilters.nextDays)
     }
-
-
-    val daysOptions = listOf(
-        null to "Любое время",
-        1 to "Сегодня",
-        3 to "3 дня",
-        7 to "Неделя",
-        14 to "2 недели",
-        30 to "Месяц",
-        60 to "2 месяца"
-    )
 
 
     ModalBottomSheet(
@@ -163,7 +154,14 @@ fun FiltersBottomSheet(
                     maxPeople = it
                 },
                 valueRange = 2f..20f,
-                steps = 18
+                steps = 18,
+                colors = SliderDefaults.colors(
+                    thumbColor = MGreen,
+                    disabledThumbColor = MGreen,
+                    activeTrackColor = MGreen,
+                    inactiveTrackColor = DLightGreen.copy(0.8f),
+                    inactiveTickColor = MGreen
+                )
             )
 
             Spacer(Modifier.height(24.dp))
@@ -191,7 +189,7 @@ fun FiltersBottomSheet(
 
                     Icon(
                         imageVector = Icons.Filled.Star,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = MGreen,
                         contentDescription = null
                     )
                 }
@@ -203,7 +201,14 @@ fun FiltersBottomSheet(
                     rating = (it * 2).roundToInt() / 2f
                 },
                 valueRange = 0f..5f,
-                steps = 9
+                steps = 9,
+                colors = SliderDefaults.colors(
+                    thumbColor = MGreen,
+                    disabledThumbColor = MGreen,
+                    activeTrackColor = MGreen,
+                    inactiveTrackColor = DLightGreen.copy(0.8f),
+                    inactiveTickColor = MGreen
+                )
             )
 
             Spacer(Modifier.height(24.dp))
@@ -252,7 +257,16 @@ fun FiltersBottomSheet(
                                         title,
                                         fontSize = 15.sp
                                     )
-                                }
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = DLightGreen
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    enabled = true,
+                                    selected = selectedDays == days,
+                                    borderColor = DLightGreen,
+                                    selectedBorderColor = DLightGreen
+                                )
                             )
                         }
                     }
@@ -267,7 +281,8 @@ fun FiltersBottomSheet(
             ) {
 
                 OutlinedButton(
-                    onClick = onClear
+                    onClick = onClear,
+                    border = BorderStroke(1.dp, MGreen)
                 ) {
                     Text(
                         "Сбросить",
@@ -276,6 +291,7 @@ fun FiltersBottomSheet(
                 }
 
                 Button(
+                    colors = ButtonDefaults.buttonColors(containerColor = MGreen),
                     onClick = {
                         onApply(
                             selectedSport,

@@ -83,7 +83,7 @@ fun MainScreen(navController : NavController, cityViewModel: CityViewModel) {
                         Surface(
                             shape = RoundedCornerShape(10.dp),
                             color = DLightGreen,
-                            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                            border = BorderStroke(0.5.dp, MGreen.copy(0.6f)),
                             modifier = Modifier.size(34.dp).clickable { showFilters = true }
                         ) {
                             Box(contentAlignment = Alignment.Center) {

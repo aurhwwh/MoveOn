@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,6 +23,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.example.moveon.ui.theme.DLightGreen
+import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.ui.theme.moveOnTextFieldColor
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -55,6 +59,7 @@ fun EventDatePicker(
             readOnly = true,
             enabled = false,
             label = { Text("Дата") },
+            colors = moveOnTextFieldColor(),
             modifier = Modifier.fillMaxWidth(),
             isError = isError,
 
@@ -95,24 +100,44 @@ fun EventDatePicker(
         DatePickerDialog(
             onDismissRequest = { showDialog = false },
             confirmButton = {
-                Button(onClick = {
-                    val millis = datePickerState.selectedDateMillis
-                    if (millis != null) {
-                        val date = Instant
-                            .fromEpochMilliseconds(millis)
-                            .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                Button(
+                    onClick = {
+                        val millis = datePickerState.selectedDateMillis
+                        if (millis != null) {
+                            val date = Instant
+                                .fromEpochMilliseconds(millis)
+                                .toLocalDateTime(TimeZone.currentSystemDefault()).date
 
-                        onDateSelected(date)
-                    }
-                    showDialog = false
-                }
+                            onDateSelected(date)
+                        }
+                        showDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MGreen
+                    )
                 ) {
                     Text("OK")
                 }
             }
         ) {
             DatePicker(
-                state = datePickerState
+                state = datePickerState,
+                colors = androidx.compose.material3.DatePickerDefaults.colors(
+                    selectedDayContainerColor = MGreen,
+
+                    disabledSelectedYearContainerColor = DLightGreen,
+                    disabledSelectedDayContainerColor = DLightGreen,
+
+                    todayContentColor = MGreen,
+                    todayDateBorderColor = MGreen,
+
+                    dayInSelectionRangeContainerColor = MGreen,
+
+                    dateTextFieldColors = moveOnTextFieldColor(),
+
+                    currentYearContentColor = MGreen,
+                    selectedYearContainerColor = MGreen
+                )
             )
         }
     }
@@ -148,6 +173,7 @@ fun TimePickerField(
             readOnly = true,
             enabled = false,
             label = { Text("Время") },
+            colors = moveOnTextFieldColor(),
             modifier = Modifier.fillMaxWidth(),
             isError = isError
         )
@@ -161,26 +187,38 @@ fun TimePickerField(
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { showDialog = false },
             confirmButton = {
-                Button(onClick = {
-                    val h = timeState.hour
-                    val m = timeState.minute
+                Button(
+                    onClick = {
+                        val h = timeState.hour
+                        val m = timeState.minute
 
-                    val isValid = if (isToday) {
-                        (h > now.hour + 1) || (h == now.hour + 1 && m >= now.minute)
-                    } else   {
-                        true
-                    }
+                        val isValid = if (isToday) {
+                            (h > now.hour + 1) || (h == now.hour + 1 && m >= now.minute)
+                        } else   {
+                            true
+                        }
 
-                    if (isValid) {
-                        onTimeSelected(h, m)
-                        showDialog = false
-                    }
-                }) {
+                        if (isValid) {
+                            onTimeSelected(h, m)
+                            showDialog = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MGreen
+                    )
+                ) {
                     Text("OK")
                 }
             },
             text = {
-                TimePicker(state = timeState)
+                TimePicker(
+                    state = timeState,
+                    colors = androidx.compose.material3.TimePickerDefaults.colors(
+                        selectorColor = MGreen,
+                        timeSelectorSelectedContainerColor = DLightGreen,
+                        periodSelectorSelectedContainerColor = DLightGreen
+                    )
+                )
             }
         )
     }

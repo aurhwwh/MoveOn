@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moveon.R
 import com.example.moveon.client.jsonClasses.Person
+import com.example.moveon.ui.theme.MGreen
 
 
 @Composable
@@ -47,7 +49,7 @@ fun RatingStars(
                 imageVector = Icons.Default.Star,
                 contentDescription = null,
                 tint = if (star <= rating)
-                    Color.Yellow
+                    Color(0xFFFFC107)
                 else
                     Color.Gray,
                 modifier = Modifier.size(32.dp).clickable { onRatingSelected(star) }
@@ -116,6 +118,7 @@ fun RatingSheet(
         Spacer(Modifier.height(16.dp))
 
         Button(
+            colors = ButtonDefaults.buttonColors(containerColor = MGreen),
             onClick = { onSubmit(ratings) },
             enabled = ratings.values.any{ it > 0} && !isRating,
             modifier = Modifier.fillMaxWidth()

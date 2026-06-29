@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -52,6 +54,7 @@ import com.example.moveon.client.jsonClasses.CreateEventWithRouteRequest
 import com.example.moveon.client.jsonClasses.Point
 import com.example.moveon.ui.common.MoveOnTopBar
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.ui.theme.moveOnTextFieldColor
 import com.example.moveon.viewModel.EventsViewModel
 import com.example.moveon.viewModel.GeocodingViewModel
 import kotlinx.datetime.LocalDate
@@ -115,7 +118,7 @@ fun CreateEvent(navController : NavController,
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Column(
             modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -157,6 +160,7 @@ fun CreateEvent(navController : NavController,
                 },
                 isError = isNameError,
                 label = { Text("Название") },
+                colors = moveOnTextFieldColor(),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -224,6 +228,7 @@ fun CreateEvent(navController : NavController,
                 },
                 isError = isMaxPeopleError,
                 label = { Text("Количество участников(2–20)") },
+                colors = moveOnTextFieldColor(),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -260,6 +265,7 @@ fun CreateEvent(navController : NavController,
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Описание") },
+                colors = moveOnTextFieldColor(),
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
@@ -365,6 +371,7 @@ fun LocationSearchField(
                 expanded = it.isNotBlank()
             },
             label = { Text("Место") },
+            colors = moveOnTextFieldColor(),
             isError = isError,
             singleLine = true,
             modifier = Modifier
@@ -457,6 +464,7 @@ fun SportPicker(
             onValueChange = {},
             readOnly = true,
             label = { Text(text = "Вид спорта") },
+            colors = moveOnTextFieldColor(),
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded)
             },

@@ -90,7 +90,7 @@ fun BottomBar(
         modifier = Modifier.fillMaxWidth(),
         color = DLightGreen,
         tonalElevation = 0.dp,
-        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant)
+        border = BorderStroke(1.5.dp, MGreen.copy(0.6f))
     ) {
         Row( modifier = Modifier
             .fillMaxWidth()

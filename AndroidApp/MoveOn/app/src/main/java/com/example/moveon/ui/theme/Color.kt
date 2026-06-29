@@ -16,3 +16,6 @@ val MGreen = Color(0xFF06AC9F)
 val LightGreen = Color(0xFFF7FFF8)
 
 val DLightGreen = Color(0xFFBBEAE0)
+
+val MOutlineColor = Color(0xFF077671)
+val MLabelColor = Color(0x9906AC9F)

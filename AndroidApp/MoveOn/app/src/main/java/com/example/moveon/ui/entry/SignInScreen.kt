@@ -1,6 +1,7 @@
 package com.example.moveon.ui.entry
 
 import android.content.Context
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -45,11 +46,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material3.Icon
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import com.example.moveon.client.jsonClasses.StoreFcmTokenRequest
+import com.example.moveon.ui.theme.moveOnTextFieldColor
 import com.google.firebase.messaging.FirebaseMessaging
 
 
@@ -130,7 +133,14 @@ fun SignInScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.statusBars),
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {
+                        focusManager.clearFocus()
+                    }
+                )
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -151,6 +161,7 @@ fun SignInScreen(navController: NavController) {
                 isEmailError = false
             },
             label = { Text("Электронная почта") },
+            colors = moveOnTextFieldColor(),
             isError = isEmailError,
             modifier = Modifier.fillMaxWidth(0.7f),
             singleLine = true,
@@ -173,6 +184,7 @@ fun SignInScreen(navController: NavController) {
                 isPasswordError = false
             },
             label = { Text("Пароль") },
+            colors = moveOnTextFieldColor(),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {

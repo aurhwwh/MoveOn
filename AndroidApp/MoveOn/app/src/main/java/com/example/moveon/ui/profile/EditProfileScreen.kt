@@ -5,6 +5,7 @@ import android.widget.DatePicker
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,9 +22,11 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.DateRange
@@ -35,9 +38,6 @@ import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -53,12 +53,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -68,7 +65,9 @@ import androidx.navigation.NavController
 import com.example.moveon.R
 import com.example.moveon.data.TokenStorage
 import com.example.moveon.ui.common.MoveOnTopBar
+import com.example.moveon.ui.theme.DLightGreen
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.ui.theme.moveOnTextFieldColor
 import com.example.moveon.utils.AvatarUtils
 import com.example.moveon.utils.UserAvatar
 import com.example.moveon.viewModel.ProfileViewModel
@@ -111,7 +110,13 @@ fun EditProfileScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).pointerInput(Unit) {
+            detectTapGestures(
+                onTap = {
+                    focusManager.clearFocus()
+                }
+            )
+        }
     ) {
         MoveOnTopBar(navController, "profile")
 
@@ -130,6 +135,7 @@ fun EditProfileScreen(
             value = name,
             onValueChange = { name = it },
             label = { Text("Имя") },
+            colors = moveOnTextFieldColor(),
             modifier = Modifier.fillMaxWidth(),
             isError = isNameError,
             singleLine = true,
@@ -149,6 +155,7 @@ fun EditProfileScreen(
             value = surname,
             onValueChange = { surname = it },
             label = { Text("Фамилия") },
+            colors = moveOnTextFieldColor(),
             modifier = Modifier.fillMaxWidth(),
             isError = isSurnameError,
             singleLine = true,
@@ -180,16 +187,8 @@ fun EditProfileScreen(
             value = description,
             onValueChange = { description = it },
             label = { Text("О себе") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    keyboardController?.hide()
-                    focusManager.clearFocus()
-                }
-            )
+            colors = moveOnTextFieldColor(),
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -235,7 +234,7 @@ fun EditProfileScreen(
                     name = name,
                     surname = surname,
                     birth = birth!!,
-                    description = description,
+                    description = description.trim(),
                     photoId = selectedPhotoId
                 )
             },
@@ -295,6 +294,7 @@ fun BirthDatePicker(
             readOnly = true,
             enabled = false,
             label = { Text("Дата рождения") },
+            colors = moveOnTextFieldColor(),
             modifier = Modifier.fillMaxWidth(width),
             isError = isError,
             trailingIcon = {
@@ -348,7 +348,25 @@ fun BirthDatePicker(
                 }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = MGreen,
+
+                    disabledSelectedYearContainerColor = DLightGreen,
+                    disabledSelectedDayContainerColor = DLightGreen,
+
+                    todayContentColor = MGreen,
+                    todayDateBorderColor = MGreen,
+
+                    dayInSelectionRangeContainerColor = MGreen,
+
+                    dateTextFieldColors = moveOnTextFieldColor(),
+
+                    currentYearContentColor = MGreen,
+                    selectedYearContainerColor = MGreen
+                )
+            )
         }
     }
 }

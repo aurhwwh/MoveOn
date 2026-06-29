@@ -75,7 +75,7 @@ fun MyProfileScreen(navController : NavController,
                             onClick = { navController.navigate("editProfile") },
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .padding(10.dp)
+                                .padding(horizontal = 10.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Edit,
@@ -148,7 +148,7 @@ fun MyProfileScreen(navController : NavController,
                     }
                 )
 
-                Text(text = "Созданные мною", fontSize = 17.sp)
+                Text(text = "Созданные мной", fontSize = 17.sp)
             }
 
             when {

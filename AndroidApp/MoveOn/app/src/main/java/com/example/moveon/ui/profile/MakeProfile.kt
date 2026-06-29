@@ -43,7 +43,9 @@ fun MakeProfile(data: ProfileData) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(5.dp),
         shape = RoundedCornerShape(16.dp),
-
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.8f)
+        )
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
