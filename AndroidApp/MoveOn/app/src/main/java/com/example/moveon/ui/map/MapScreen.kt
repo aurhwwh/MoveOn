@@ -32,6 +32,7 @@ import org.osmdroid.views.MapView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -45,6 +46,7 @@ import androidx.core.content.ContextCompat
 import com.example.moveon.client.jsonClasses.CreateEventWithRouteRequest
 import com.example.moveon.client.jsonClasses.EventsMarker
 import com.example.moveon.ui.events.CreateEvent
+import com.example.moveon.ui.theme.MGreen
 import kotlinx.coroutines.delay
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.views.overlay.MapEventsOverlay
@@ -384,7 +386,8 @@ fun MapScreen(navController : NavController,
                         else {
                             showCreateEventRoute = true
                         }
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MGreen)
                 ) {
                     Text("Создать событие",fontSize = 12.sp)
                 }
