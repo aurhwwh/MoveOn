@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import com.example.moveon.R
 import com.example.moveon.client.jsonClasses.Person
 import com.example.moveon.ui.theme.MGreen
+import com.example.moveon.utils.UserAvatar
 
 
 @Composable
@@ -89,11 +90,9 @@ fun RatingSheet(
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).heightIn(min = 80.dp),
                     verticalAlignment = Alignment.CenterVertically)
                 {
-                    Image(
-                        painter = painterResource(R.drawable.img),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.size(50.dp).clip(CircleShape)
+                    UserAvatar(
+                        photoId = participant.photoId,
+                        modifier = Modifier.size(50.dp)
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))
