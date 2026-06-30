@@ -1099,6 +1099,7 @@ fun Application.configureRouting() {
                             LEFT JOIN event_participants p ON e.id = p.event_id
                             WHERE e.lat BETWEEN ? AND ?
                               AND e.lon BETWEEN ? AND ?
+                              AND e.time > NOW()
                             GROUP BY e.id
                             """.trimIndent()
                         conn.prepareStatement(sql).use { stmt ->
@@ -1162,6 +1163,7 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.InternalServerError, SendMessageResponse(success = false, error = "Database error: ${e.message}"))
                 }
             }
+
             get("/messages/{eventId}") {
                 val eventId = call.parameters["eventId"]?.toIntOrNull()
                 if (eventId == null) {
